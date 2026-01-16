@@ -36,4 +36,6 @@ htmlcov/
 .env.local
 *~
 
-*.cahce
+*.cache
+cv_data.json
+cv_data_example.json
