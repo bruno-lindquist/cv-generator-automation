@@ -262,11 +262,6 @@ pip install -r requirements.txt
 
 Contribuições são bem-vindas!
 
-
-## 📄 Licença
-
-MIT License - veja [LICENSE](LICENSE) para detalhes.
-
 ## 👨‍💻 Autor
 
 **Bruno Lindquist**
