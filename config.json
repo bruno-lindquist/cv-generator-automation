@@ -1,0 +1,16 @@
+{
+  "files": {
+    "data": "cv_data.json",
+    "styles": "styles.json",
+    "translations": "translations.json",
+    "output_dir": "output"
+  },
+  "defaults": {
+    "language": "pt",
+    "encoding": "utf-8"
+  },
+  "logging": {
+    "enabled": true,
+    "level": "info"
+  }
+}

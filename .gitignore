@@ -1,0 +1,39 @@
+# Ambiente virtual
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.Python
+dist/
+build/
+
+# PDFs gerados
+output/
+
+# Arquivos do SO
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Variáveis de ambiente
+.env
+.env.local
+*~
+
+*.cahce

@@ -1,0 +1,342 @@
+{
+  "personal_info": {
+    "name": "Bruno Lindquist",
+    "email": "bruno-lindquist@hotmail.com",
+    "phone": "(11) 97894-3590",
+    "location": "Guarulhos, SP - Aberto a realocação",
+    "social": [
+      {
+        "label": "Behance",
+        "url": "https://www.behance.net/bruno-lindquist"
+      },
+      {
+        "label": "LinkedIn",
+        "url": "https://www.linkedin.com/in/bruno-lindquist/"
+      }
+    ]
+  },
+
+
+
+  "desired_role": {
+    "desired_role_pt": "Python Developer",
+    "desired_role_en": "Python Developer"
+  },
+
+
+
+  "summary": {
+    "description_pt": "Analista Desenvolvedor Python com experiência sólida em automação de processos, web scraping (Selenium, Requests, BeautifulSoup) e desenvolvimento de bibliotecas internas. Atuo criando módulos reutilizáveis, funções encapsuladas, pipelines de logs, validação de dados e integrações entre sistemas.\n\nTenho vivência real na manutenção, melhoria contínua e suporte técnico de bibliotecas Python, além de documentação técnica, testes unitários e versionamento com Git. Crio soluções escaláveis com foco em robustez, clareza e reuso.\n\nTrago uma base forte em P&D, UX e resolução de problemas complexos, aliando pensamento analítico com execução rápida. Também possuo experiência em treinar equipes para uso de inteligência artificial e automação, ampliando produtividade e eficiência operacional.",
+    "description_en": "Python Developer Analyst with solid experience in process automation, web scraping (Selenium, Requests, BeautifulSoup), and internal library development. I build reusable modules, encapsulated functions, log pipelines, data validation, and system integrations.\n\nHands-on experience maintaining, continuously improving, and supporting Python libraries, plus technical documentation, unit tests, and Git versioning. I build scalable solutions focused on robustness, clarity, and reuse.\n\nStrong background in R&D, UX, and complex problem solving, combining analytical thinking with fast execution. I also have experience training teams in AI and automation, increasing productivity and operational efficiency."
+  },
+
+
+
+  "experience": [
+    {
+      "company_pt": "Lindquist Design",
+      "company_en": "",
+
+      "position_pt": "Python Developer & Automação (autônomo)",
+      "position_en": "Python Developer & Automation (freelance)",
+      
+      "start_month": "1",
+      "start_year": "2018",
+      
+      "end_month": "",
+      "end_year": "",
+      
+      "description_pt": [
+        "Desenvolvi bibliotecas internas em Python para automação de scraping, análise e captura de dados, usando Selenium, Requests e lógica avançada.",
+        "Implementei funções encapsuladas para login, navegação, extração de identificadores, deduplicação e salvamento estruturado.",
+        "Estruturei pipelines completos com logs, validação, controle de exceções e persistência de dados.",
+        "Modelei sistemas de arquivos, manipulação eficiente de CSV/JSON e criação de módulos reutilizáveis.",
+        "Desenvolvi plataformas web (JS/PHP/HTML/CSS/MySQL) com alta disponibilidade, incluindo uma plataforma de aprendizado com +10 mil usuários ativos."
+      ],
+      "description_en": [
+        "Developed internal Python libraries for scraping automation, analysis, and data capture using Selenium, Requests, and advanced logic.",
+        "Implemented encapsulated functions for login, navigation, identifier extraction, deduplication, and structured storage.",
+        "Built end-to-end pipelines with logs, validation, exception handling, and data persistence.",
+        "Modeled file systems, efficient CSV/JSON handling, and reusable module creation.",
+        "Built web platforms (JS/PHP/HTML/CSS/MySQL) with high availability, including a learning platform with 10k+ active users."
+      ]
+    },
+    {
+      "company_pt": "Orakolo Tecnologia",
+      "company_en": "",
+      
+      "position_pt": "Designer Industrial e P&D",
+      "position_en": "Industrial Designer and R&D",
+      
+      "start_month": "9",
+      "start_year": "2020",
+      
+      "end_month": "7",
+      "end_year": "2023",
+      "description_pt": [
+        "Desenvolvi protótipos funcionais, automações e experimentos envolvendo sensores, hardware e integrações digitais.",
+        "Conduzi pesquisas avançadas sobre tecnologias emergentes, IA e tendências, convertendo insights em soluções aplicáveis.",
+        "Estruturei documentação, requisitos técnicos e coordenei equipes multidisciplinares em projetos complexos.",
+        "Criei ferramentas internas para otimização de fluxos de trabalho, combinando Python, IA e design."
+      ],
+      "description_en": [
+        "Developed functional prototypes, automations, and experiments involving sensors, hardware, and digital integrations.",
+        "Led advanced research on emerging technologies, AI, and trends, turning insights into applicable solutions.",
+        "Structured documentation, technical requirements, and coordinated multidisciplinary teams on complex projects.",
+        "Built internal tools to optimize workflows, combining Python, AI, and design."
+      ]
+    },
+    {
+      "company_pt": "Laboratório de Ergonomia e Interfaces",
+      "company_en": "Laboratório de Ergonomia e Interfaces",
+      
+      "position_pt": "Desenvolvedor & P&D",
+      "position_en": "Developer & R&D",
+      
+      "start_month": "3",
+      "start_year": "2018",
+      
+      "end_month": "8",
+      "end_year": "2020",
+      
+      "description_pt": [
+        "Liderança de projetos tecnológicos envolvendo dispositivos eletrônicos, testes, validação e documentação.",
+        "Desenvolvimento de sistemas de prototipagem rápida com impressão 3D, modelagem paramétrica e métricas de eficiência.",
+        "Gestão completa de produtos de hardware com foco em funcionalidade, confiabilidade e escalabilidade."
+      ],
+      "description_en": [
+        "Led technology projects involving electronic devices, testing, validation, and documentation.",
+        "Developed rapid prototyping systems with 3D printing, parametric modeling, and efficiency metrics.",
+        "Managed hardware products end-to-end with a focus on functionality, reliability, and scalability."
+      ]
+    },
+    {
+      "company_pt": "Kesseböhmer - Alemanha",
+      "company_en": "Kesseböhmer - Alemanha",
+      
+      "position_pt": "Estágio",
+      "position_en": "Internship",
+      
+      "start_month": "3",
+      "start_year": "2016",
+      
+      "end_month": "8",
+      "end_year": "2016",
+      
+      "description_pt": [
+        "Criação de soluções funcionais, testes e documentação de produtos industriais."
+      ],
+      "description_en": [
+        "Created functional solutions, testing, and documentation for industrial products."
+      ]
+    },
+    {
+      "company_pt": "Difusão de Tecnologia CAD e CNC",
+      "company_en": "Difusão de Tecnologia CAD e CNC",
+      
+      "position_pt": "Estágio",
+      "position_en": "Internship",
+      
+      "start_month": "9",
+      "start_year": "2013",
+      
+      "end_month": "7",
+      "end_year": "2014",
+      
+      "description_pt": [
+        "Participação no desenvolvimento de uma impressora 3D e máquina CNC, atuando na montagem e princípios de operação."
+      ],
+      "description_en": [
+        "Contributed to development of a 3D printer and CNC machine, working on assembly and operating principles."
+      ]
+    }
+  ],
+
+
+
+  "education": [
+    {
+      "institution_pt": "Unesp - Universidade Estadual Paulista",
+      "institution_en": "Unesp - Universidade Estadual Paulista",
+      
+      "degree_pt": "Mestrado em Design com foco em Ergonomia",
+      "degree_en": "Master's in Design focused on Ergonomics",
+      
+      "start_month": "2",
+      "start_year": "2018",
+      
+      "end_month": "8",
+      "end_year": "2020",
+      
+      "description_pt": [
+        "Conclusão com distinção e louvor"
+      ],
+      "description_en": [
+        "Graduated with distinction and honors"
+      ]
+    },
+    {
+      "institution_pt": "Unesp - Universidade Estadual Paulista",
+      "institution_en": "Unesp - Universidade Estadual Paulista",
+      
+      "degree_pt": "Bacharelado em Design Industrial",
+      "degree_en": "Bachelor's in Industrial Design",
+      
+      "start_month": "3",
+      "start_year": "2012",
+      
+      "end_month": "12",
+      "end_year": "2017",
+      
+      "description_pt": [
+        "2 anos de intercâmbio na Hochschule Osnabrück, Alemanha",
+        "Conclusão com distinção e louvor"
+      ],
+      "description_en": [
+        "2-year exchange at Hochschule Osnabrück, Germany",
+        "Graduated with distinction and honors"
+      ]
+    }
+  ],
+
+
+
+  "core_skills": [
+    {
+      "category_pt": "Python & Automação",
+      "category_en": "Python & Automation",
+      
+      "description_pt": [
+        "Desenvolvimento de bibliotecas e módulos internos em Python.",
+        "Web scraping com Selenium, Requests, BeautifulSoup.",
+        "Automação de fluxos complexos e integração entre sistemas.",
+        "Tratamento e armazenamento de dados (CSV/JSON/MySQL).",
+        "Criação de pipelines de logs, deduplicação, validação e rastreamento.",
+        "Escrita de funções encapsuladas, ferramentas reutilizáveis e abstrações."
+      ],
+      "description_en": [
+        "Development of internal Python libraries and modules.",
+        "Web scraping with Selenium, Requests, BeautifulSoup.",
+        "Automation of complex workflows and system integration.",
+        "Data processing and storage (CSV/JSON/MySQL).",
+        "Creation of log pipelines, deduplication, validation, and tracking.",
+        "Writing encapsulated functions, reusable tools, and abstractions."
+      ]
+    },
+    {
+      "category_pt": "Qualidade, Infra & Ferramentas",
+      "category_en": "Quality, Infra & Tools",
+      
+      "description_pt": [
+        "Git, GitHub, versionamento e controle de releases",
+        "Documentação técnica clara e estruturada",
+        "Familiaridade com PyTest e testes unitários",
+        "Noções de CI/CD (GitHub Actions)"
+      ],
+      "description_en": [
+        "Git, GitHub, versioning, and release control",
+        "Clear and structured technical documentation",
+        "Familiarity with PyTest and unit testing",
+        "Basics of CI/CD (GitHub Actions)"
+      ]
+    },
+    {
+      "category_pt": "IA & Resolução de Problemas",
+      "category_en": "AI & Problem Solving",
+      
+      "description_pt": [
+        "Uso prático de LLMs para ideação e otimização de processos.",
+        "Design centrado no usuário, testes de usabilidade e validação.",
+        "Mapeamento de requisitos e análise de viabilidade.",
+        "Suporte técnico a usuários e equipes multidisciplinares."
+      ],
+      "description_en": [
+        "Practical use of LLMs for ideation and process optimization.",
+        "User-centered design, usability testing, and validation.",
+        "Requirements mapping and feasibility analysis.",
+        "Technical support for users and multidisciplinary teams."
+      ]
+    }
+  ],
+
+  "skills": [
+    {
+      "category_pt": "Design e Engenharia",
+      "category_en": "Design and Engineering", 
+      "item": [
+        "SolidWorks",
+        "Rhino 3D",
+        "PTC / Creo",
+        "Keyshot",
+        "Grasshopper",
+        "3D Printing",
+        "3D Scanning",
+        "Design Thinking"
+      ]
+    },
+
+    {
+      "category_pt": "Design Gráfico e Interfaces",
+      "category_en": "Graphic and Interfaces", 
+      "item": [
+        "Illustrator",
+        "Photoshop",
+        "Figma",
+        "UX / UI",
+        "Microsoft Office"
+      ]
+    },
+
+    {
+      "category_pt": "Linguagens de Programação",
+      "category_en": "Programming Languages", 
+      "item": [
+        "Python",
+        "JavaScript",
+        "PHP",
+        "HTML",
+        "CSS",
+        "MySQL"
+      ]
+    }
+  ],
+
+
+
+  "languages": [
+    {
+      "language_pt": "Português",
+      "language_en": "Portuguese",
+      
+      "proficiency_pt": "Nativo",
+      "proficiency_en": "Native"
+    },
+    {
+      "language_pt": "Inglês",
+      "language_en": "English",
+      
+      "proficiency_pt": "Fluente",
+      "proficiency_en": "Fluent"
+    },
+    {
+      "language_pt": "Alemão",
+      "language_en": "German",
+      
+      "proficiency_pt": "Intermediário",
+      "proficiency_en": "Intermediate"
+    }
+  ],
+
+
+
+  "awards": [
+    {
+      "title_pt": "Vencedor do concurso \"Jovens Designers\"",
+      "title_en": "Winner of the \"Jovens Designers\" competition",
+      
+      "description_pt": "Produto exibido no Museu da Casa Brasileira, na Bienal Brasileira de Design e no Salone Satellite, em Milão.",
+      "description_en": "Product exhibited at Museu da Casa Brasileira, the Brazilian Design Biennial, and Salone Satellite in Milan."
+    }
+  ]
+}
+
