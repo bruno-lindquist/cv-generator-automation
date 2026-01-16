@@ -2,19 +2,20 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
+[![ReportLab 4.0.9](https://img.shields.io/badge/ReportLab-4.0.9-green.svg)](https://www.reportlab.com/)
 
-Ferramenta elegante para gerar currículos profissionais em PDF com suporte multilíngue (Português 🇧🇷 e Inglês 🇬🇧) usando dados estruturados em JSON. Separação completa entre dados, estilos e lógica.
+Ferramenta para gerar currículos em PDF com **suporte multilíngue completo** (Português 🇧🇷 e Inglês 🇬🇧) a partir de dados estruturados em JSON. Mantém separação total entre dados, estilos e lógica de geração, permitindo customização total sem tocar no código.
 
 ## ✨ Características
 
-- 🌍 **Multilíngue**: Suporte total para português e inglês com fallback automático
-- 📊 **Separação de responsabilidades**: Dados, estilos e configurações em arquivos JSON separados
-- 🎨 **Totalmente customizável**: Cores, fontes, margens, espaçamentos 100% configuráveis via JSON
-- 📝 **Logging integrado**: Rastreamento completo de erros e informações de geração
-- ⚡ **Otimizado**: Código limpo, sem repetições, métodos genéricos
-- 🔄 **Fallback automático**: Campo em inglês vazio? Usa português automaticamente
-- 📅 **Formatação inteligente**: Meses automaticamente abreviados conforme idioma (Jan, Fev, etc)
-- 🚀 **Fácil de usar**: Menu interativo ou linha de comando
+- 🌍 **Multilíngue automático**: Português e inglês com fallback inteligente (campos vazios em EN usam PT)
+- 📊 **Arquitetura limpa**: Dados em `cv_data.json`, estilos em `styles.json`, traduções em `translations.json`
+- 🎨 **100% customizável**: Cores, fontes, margens, espaçamentos via JSON (zero código)
+- 📝 **Logging estruturado**: Rastreamento completo de erros e operações
+- ⚡ **Eficiente**: Código otimizado, sem repetições, métodos reutilizáveis
+- 📅 **Datas inteligentes**: Formatação automática de meses (Jan, Fev, Mar... ou Jan, Feb, Mar...)
+- 🚀 **Duas interfaces**: Menu interativo (shell/batch) ou linha de comando Python
+- 🔧 **Pronto para CI/CD**: Suporta argumentos CLI para automação
 
 ## 📁 Estrutura do Projeto
 
@@ -25,8 +26,8 @@ cv-generator/
 ├── 📄 styles.json              # Estilos e formatação (cores, fonts, spacing)
 ├── 📄 translations.json        # Textos multilíngues (títulos de seções)
 ├── 🐍 cv_generator.py          # Script principal de geração
-├── 🔧 cv.sh                    # Menu interativo (macOS/Linux)
-├── 🔧 cv.bat                   # Menu interativo (Windows)
+├── 🔧 start_linux.sh           # Menu interativo (macOS/Linux)
+├── 🔧 start_windows.bat        # Menu interativo (Windows)
 ├── 📖 README.md                # Esta documentação
 ├── 📋 LICENSE                  # MIT License
 ├── 📋 requirements.txt         # Dependências Python
@@ -38,281 +39,229 @@ cv-generator/
 
 ### 1️⃣ Clonar Repositório
 ```bash
-git clone https://github.com/seu-usuario/cv-generator.git
+git clone https://github.com/seu-usuario/cv-generator-automation-.git
 cd cv-generator
 ```
 
 ### 2️⃣ Instalar Dependências
-```bash
-# Com script automático (macOS/Linux)
-chmod +x cv.sh
-./cv.sh
 
-# Ou manualmente
+**macOS/Linux com script automático:**
+```bash
+chmod +x start_linux.sh
+./start_linux.sh
+```
+
+**Windows com script automático:**
+```cmd
+start_windows.bat
+```
+
+**Manual (qualquer SO):**
+```bash
 python3 -m venv venv
 source venv/bin/activate      # macOS/Linux
-# source venv/Scripts/activate # Windows
+# venv\Scripts\activate.bat   # Windows
 pip install -r requirements.txt
 ```
 
-### 3️⃣ Editar Dados
-Abra `cv_data.json` e preencha com suas informações
+### 3️⃣ Editar Seus Dados
+Abra `cv_data.json` e preencha com suas informações pessoais, experiências, educação, etc.
 
 ### 4️⃣ Gerar CV
+
+**Menu interativo:**
 ```bash
-# Menu interativo
-./cv.sh
-
-# Ou por linha de comando
-python cv_generator.py           # Gera em português
-python cv_generator.py -l en     # Gera em inglês
+./start_linux.sh        # macOS/Linux
+# ou
+start_windows.bat       # Windows
 ```
 
-## 📋 Configuração
-
-### `config.json` - Centro de Controle
-```json
-{
-  "files": {
-    "data": "cv_data.json",
-    "styles": "styles.json",
-    "translations": "translations.json",
-    "output_dir": "output"
-  },
-  "defaults": {
-    "language": "pt",
-    "encoding": "utf-8"
-  },
-  "logging": {
-    "enabled": true,
-    "level": "info"
-  }
-}
+**Por linha de comando:**
+```bash
+python cv_generator.py              # CV em português
+python cv_generator.py -l en        # CV em inglês
+python cv_generator.py -l en -o curriculum.pdf  # Output customizado
 ```
 
-### `styles.json` - Customização Visual
-Todas as medidas em **milímetros (mm)**:
+## 📝 Estrutura de Dados (`cv_data.json`)
 
-```json
-{
-  "margins": { "top": 19, "bottom": 19, "left": 19, "right": 19 },
-  "spacing": {
-    "header_bottom": 5,
-    "section_bottom": 4,
-    "item_bottom": 3,
-    "small_bottom": 2,
-    "minimal_bottom": 1
-  },
-  "colors": {
-    "name": "#1a1a1a",
-    "section_title": "#2c3e50",
-    "text": "#404040"
-  },
-  "fonts": {
-    "name_size": 24,
-    "title_size": 12,
-    "section_size": 13,
-    "subheading_size": 11,
-    "body_size": 10
-  }
-}
-```
+O arquivo `cv_data.json` contém todas as informações do seu CV. Suporta **seções opcionais** - apenas inclua as que você precisa:
 
-### `translations.json` - Textos Multilíngues
-```json
-{
-  "pt": {
-    "sections": {
-      "summary": "RESUMO",
-      "experience": "EXPERIÊNCIA PROFISSIONAL",
-      "education": "FORMAÇÃO ACADÊMICA",
-      "core_skills": "CONHECIMENTOS",
-      "skills": "HABILIDADES",
-      "languages": "IDIOMAS",
-      "awards": "PRÊMIOS E RECONHECIMENTOS",
-      "certifications": "CERTIFICAÇÕES"
-    },
-    "labels": {
-      "current": "(até o momento)"
-    }
-  },
-  "en": {
-    "sections": {
-      "summary": "SUMMARY",
-      "experience": "PROFESSIONAL EXPERIENCE",
-      "education": "EDUCATION",
-      "core_skills": "CORE SKILLS",
-      "skills": "SKILLS",
-      "languages": "LANGUAGES",
-      "awards": "AWARDS",
-      "certifications": "CERTIFICATIONS"
-    },
-    "labels": {
-      "current": "(present)"
-    }
-  }
-}
-```
-
-### `cv_data.json` - Seus Dados
-Exemplo de estrutura completa:
+### Informações Pessoais
 
 ```json
 {
   "personal_info": {
-    "name": "Seu Nome",
+    "name": "Bruno",
     "email": "seu@email.com",
-    "phone": "+55 (11) 9999-9999",
-    "location": "Cidade, Estado",
+    "phone": "(11) 97894-0000",
+    "location": "Sao Paulo, SP",
     "social": [
       { "label": "LinkedIn", "url": "https://linkedin.com/in/seu-perfil" },
-      { "label": "GitHub", "url": "https://github.com/seu-usuario" }
+      { "label": "GitHub", "url": "https://github.com/seu-usuario" },
+      { "label": "Behance", "url": "https://behance.net/seu-portfolio" }
     ]
-  },
-  "desired_role_pt": "Desenvolvedor Python",
-  "desired_role_en": "Python Developer",
-  "summary_pt": "Profissional com experiência em...",
-  "summary_en": "Professional with experience in...",
+  }
+}
+```
+
+### Cargo Desejado
+
+```json
+{
+  "desired_role": {
+    "desired_role_pt": "Python Developer",
+    "desired_role_en": "Python Developer"
+  }
+}
+```
+
+### Resumo Profissional
+
+```json
+{
+  "summary": {
+    "description_pt": "Texto em português sobre sua experiência...",
+    "description_en": "Text in English about your experience..."
+  }
+}
+```
+
+### Experiência Profissional
+
+```json
+{
   "experience": [
     {
       "company_pt": "Empresa XYZ",
       "company_en": "XYZ Company",
-      "position_pt": "Desenvolvedor Python",
-      "position_en": "Python Developer",
+      "position_pt": "Desenvolvedor Python Sênior",
+      "position_en": "Senior Python Developer",
       "start_month": "1",
       "start_year": "2020",
       "end_month": "12",
       "end_year": "2023",
-      "description_pt": ["Desenvolveu sistema X", "Liderou equipe Y"],
-      "description_en": ["Developed system X", "Led team Y"]
+      "description_pt": [
+        "Desenvolveu sistema X com Python",
+        "Liderou equipe de 5 desenvolvedores",
+        "Implementou pipeline de CI/CD"
+      ],
+      "description_en": [
+        "Developed X system with Python",
+        "Led team of 5 developers",
+        "Implemented CI/CD pipeline"
+      ]
     }
   ]
 }
 ```
 
-## 💻 Uso Avançado
-
-### Linha de Comando
-```bash
-# Gerar CV em português
-python cv_generator.py
-
-# Gerar CV em inglês
-python cv_generator.py -l en
-
-# Especificar arquivo de saída
-python cv_generator.py -o meu_cv_2024.pdf
-
-# Usar configuração customizada
-python cv_generator.py -c config_alternativo.json
-
-# Combinar opções
-python cv_generator.py -l en -o curriculum_en.pdf -c config_custom.json
-```
-
-### Scripts Interativos
-
-**macOS/Linux:**
-```bash
-chmod +x cv.sh
-./cv.sh              # Menu interativo
-./cv.sh pt           # Apenas português
-./cv.sh en           # Apenas inglês
-./cv.sh todas        # Ambas versões
-```
-
-**Windows:**
-```cmd
-cv.bat              # Menu interativo
-cv.bat pt           # Apenas português
-cv.bat en           # Apenas inglês
-cv.bat todas        # Ambas versões
-```
-
-## 🎨 Personalizando Seu CV
-
-### Mudar Cores
-Edite `styles.json`:
-```json
-"colors": {
-  "name": "#000000",           # Seu nome
-  "section_title": "#0066cc",  # Títulos de seção
-  "text": "#333333"            # Texto do corpo
-}
-```
-
-### Ajustar Espaçamentos
-Todos em milímetros (1 mm ≈ 2.83 pixels):
-```json
-"spacing": {
-  "header_bottom": 5,    # Espaço após cabeçalho
-  "section_bottom": 4,   # Espaço após seção
-  "item_bottom": 3,      # Espaço entre itens
-  "small_bottom": 2,
-  "minimal_bottom": 1
-}
-```
-
-### Customizar Fontes
-Tamanhos em pontos:
-```json
-"fonts": {
-  "name_size": 24,
-  "title_size": 12,
-  "section_size": 13,
-  "subheading_size": 11,
-  "body_size": 10
-}
-```
-
-## 🌍 Suporte Multilíngue
-
-O sistema usa fallback automático para campos em inglês vazios:
+### Educação
 
 ```json
 {
-  "position_pt": "Desenvolvedor Python",
-  "position_en": ""  // Automaticamente usa position_pt
+  "education": [
+    {
+      "institution_pt": "Universidade XYZ",
+      "institution_en": "XYZ University",
+      "course_pt": "Bacharelado em Ciência da Computação",
+      "course_en": "Bachelor's in Computer Science",
+      "start_month": "2",
+      "start_year": "2016",
+      "end_month": "12",
+      "end_year": "2020"
+    }
+  ]
 }
 ```
 
-**Formatação de datas:** As datas são formatadas em 3 letras conforme idioma (Jan, Fev...) ou (Jan, Feb...)
+### Competências
+
+```json
+{
+  "core_skills": [
+    "Python", "Web Scraping", "API REST", "SQL", "Git", "CI/CD"
+  ],
+  
+  "skills": [
+    {
+      "category_pt": "Backend",
+      "category_en": "Backend",
+      "items": ["Python", "Django", "FastAPI", "PostgreSQL"]
+    },
+    {
+      "category_pt": "Frontend",
+      "category_en": "Frontend",
+      "items": ["React", "TypeScript", "CSS3", "HTML5"]
+    }
+  ]
+}
+```
+
+### Idiomas
+
+```json
+{
+  "languages": [
+    {
+      "language": "Português",
+      "level_pt": "Nativo",
+      "level_en": "Native"
+    },
+    {
+      "language": "Inglês",
+      "level_pt": "Fluente",
+      "level_en": "Fluent"
+    }
+  ]
+}
+```
+
+### Prêmios e Certificações
+
+```json
+{
+  "awards": [
+    {
+      "title_pt": "Melhor Projeto",
+      "title_en": "Best Project",
+      "issuer_pt": "Hackathon XYZ",
+      "issuer_en": "XYZ Hackathon",
+      "year": "2021"
+    }
+  ],
+  
+  "certifications": [
+    {
+      "title_pt": "AWS Certified Developer",
+      "title_en": "AWS Certified Developer",
+      "issuer": "Amazon",
+      "year": "2023"
+    }
+  ]
+}
+```
+
+
+Os scripts realizam automaticamente:
+1. ✅ Criação de ambiente virtual (se não existir)
+2. ✅ Instalação de dependências
+3. ✅ Geração do(s) CV(s) no idioma escolhido
+
 
 ## 📦 Dependências
 
-- Python 3.7+
-- reportlab 4.0.9
+- **Python**: 3.7 ou superior
+- **reportlab**: 4.0.9 (para geração de PDF)
 
 ```bash
 pip install -r requirements.txt
-```
-
-## 🐛 Troubleshooting
-
-### JSON inválido
-```bash
-python3 -m json.tool cv_data.json
-```
-
-### Arquivo não encontrado
-```bash
-ls -la config.json cv_data.json styles.json translations.json
-```
-
-### Ver logs detalhados
-```bash
-python cv_generator.py 2>&1 | head -20
 ```
 
 ## 🤝 Contribuindo
 
 Contribuições são bem-vindas!
 
-```bash
-git checkout -b feature/minha-melhoria
-git commit -am 'Descreve sua mudança'
-git push origin feature/minha-melhoria
-```
 
 ## 📄 Licença
 
