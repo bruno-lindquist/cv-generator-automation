@@ -1,14 +1,14 @@
 #!/bin/bash
-# Script para gerar CV em PDF
-# Gera automaticamente CV em Português (PT) e Inglês (EN)
+# Script to generate CV as PDF
+# Automatically generates CV in Portuguese (PT) and English (EN)
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$SCRIPT_DIR"
 
-# Detecta o sistema operacional
+# Detect operating system
 OS=$(uname -s)
 
-# Função para ativar venv
+# Function to activate venv
 activate_venv() {
     if [[ "$VIRTUAL_ENV" == "" ]]; then
         case "$OS" in
@@ -22,7 +22,7 @@ activate_venv() {
     fi
 }
 
-# Função para gerar CV
+# Function to generate CV
 generate_cv() {
     local lang=$1
     local lang_name=$2
@@ -32,21 +32,21 @@ generate_cv() {
     [ ! -f "$PYTHON_CMD" ] && PYTHON_CMD="python3"
     
     echo ""
-    echo "$lang_name Gerando CV em $lang_name..."
+    echo "$lang_name Generating CV in $lang_name..."
     "$PYTHON_CMD" cv_generator.py -l "$lang"
 }
 
-# Gera automaticamente ambas as versões
+# Automatically generate both versions
 echo ""
 echo "========================================"
-echo "   Gerador de CV - Automático"
+echo "   CV Generator - Automatic"
 echo "========================================"
 
 generate_cv "pt" "🇧🇷"
 generate_cv "en" "🇬🇧"
 
 echo ""
-echo "✅ Ambas as versões geradas com sucesso!"
+echo "✅ Both versions generated successfully!"
 echo "========================================"
 echo ""
 

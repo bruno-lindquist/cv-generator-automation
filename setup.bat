@@ -1,53 +1,53 @@
 @echo off
-REM Setup automático - Gerador de CV
+REM Automatic Setup - CV Generator
 
 cd /d "%~dp0"
 
 echo.
-echo 🚀 Setup Gerador de CV
-echo =======================
+echo 🚀 CV Generator Setup
+echo =====================
 echo.
 
-REM Verifica Python
+REM Check Python
 python --version >nul 2>&1
 if errorlevel 1 (
-    echo ❌ Python não encontrado!
-    echo Instale Python de https://www.python.org
+    echo ❌ Python not found!
+    echo Install Python from https://www.python.org
     pause
     exit /b 1
 )
 
-echo ✓ Python encontrado:
+echo ✓ Python found:
 python --version
 
-REM Cria venv
+REM Create venv
 if not exist "venv" (
-    echo 📦 Criando ambiente virtual...
+    echo 📦 Creating virtual environment...
     python -m venv venv
-    echo ✓ Ambiente virtual criado
+    echo ✓ Virtual environment created
 ) else (
-    echo ✓ Ambiente virtual já existe
+    echo ✓ Virtual environment already exists
 )
 
-REM Ativa venv
+REM Activate venv
 call venv\Scripts\activate.bat
 
-REM Instala dependências
-echo 📥 Instalando dependências...
+REM Install dependencies
+echo 📥 Installing dependencies...
 pip install -q reportlab
-echo ✓ Dependências instaladas
+echo ✓ Dependencies installed
 
-REM Valida cv_data.json
-echo ✓ Validando cv_data.json...
+REM Validate cv_data.json
+echo ✓ Validating cv_data.json...
 python -c "from cv_generator import CVGenerator; CVGenerator('cv_data.json')" >nul 2>&1
 if errorlevel 1 (
-    echo ⚠️ cv_data.json com problemas (verifique e tente novamente)
+    echo ⚠️ cv_data.json has issues (verify and try again)
 ) else (
-    echo ✓ cv_data.json válido
+    echo ✓ cv_data.json valid
 )
 
 echo.
-echo ✅ Setup completo!
+echo ✅ Setup complete!
 echo.
 echo Próximos passos:
 echo   1. Edite cv_data.json com seus dados
