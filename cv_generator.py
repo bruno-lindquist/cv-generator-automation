@@ -1,15 +1,5 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""
-Resume/CV Generator in PDF with multilingual support
-=====================================================
-
-This script reads data from a JSON file and generates a professional resume in PDF format.
-Supports multiple languages (Portuguese and English) in a single data file.
-
-Usage:
-    python cv_generator.py cv_data.json -l pt -o output.pdf
-"""
 
 # ============================================================================
 # 1. IMPORTS - Required libraries
@@ -620,54 +610,6 @@ class CVGenerator:
         # Add spacing after section
         pdf_elements.append(Spacer(1, spacing['item_bottom'] * mm))
     
-    def _add_paragraph(self, pdf_elements, text, style, escape=True):
-        """
-        Helper method to add a formatted paragraph to PDF elements.
-        Reduces code repetition in formatters.
-        
-        Parameters:
-            pdf_elements (list): List of PDF elements
-            text (str): Text to add
-            style (str): Style name to apply
-            escape (bool): Whether to escape special characters
-        """
-        if text:
-            safe_text = self._escape_text(text) if escape else text
-            pdf_elements.append(Paragraph(safe_text, style))
-    
-    def _add_item_header(self, pdf_elements, styles, main_text, secondary_text, date_text=None):
-        """
-        Helper method to add item header (title, subtitle, date).
-        Used by experience, education, and similar formatters.
-        
-        Parameters:
-            pdf_elements (list): List of PDF elements
-            styles (StyleSheet1): Text styles
-            main_text (str): Main heading (position, degree, etc)
-            secondary_text (str): Secondary heading (company, institution, etc)
-            date_text (str): Optional date/period text
-        """
-        if main_text:
-            self._add_paragraph(pdf_elements, f"<b>{main_text}</b>", styles['H3'])
-        if secondary_text:
-            self._add_paragraph(pdf_elements, f"<b>{secondary_text}</b>", styles['H4'])
-        if date_text:
-            self._add_paragraph(pdf_elements, f"<i>{date_text}</i>", styles['Date'])
-    
-    def _add_bullet_points(self, pdf_elements, styles, items):
-        """
-        Helper method to add bullet point items.
-        Used by multiple formatters to add descriptions.
-        
-        Parameters:
-            pdf_elements (list): List of PDF elements
-            styles (StyleSheet1): Text styles
-            items (list): List of text items to add as bullet points
-        """
-        for item in items:
-            if item:
-                self._add_paragraph(pdf_elements, f"• {item}", styles['BodyStyle'])
-    
     
     # ========================================================================
     # 2.8 ITEM FORMATTERS - Functions to format each item type
@@ -691,19 +633,26 @@ class CVGenerator:
         """
         spacing = self.settings['spacing']
         
-        # Get and format data
+        # Get data
         position = self._get_localized_field(work, 'position')
         company = self._get_localized_field(work, 'company')
         period = self._format_period(work.get('start_month', ''), work.get('start_year', ''), work.get('end_month', ''), work.get('end_year', ''))
         
-        # Add header (title, company, date)
-        self._add_item_header(pdf_elements, styles, position, company, period)
+        # Add position in bold
+        pdf_elements.append(Paragraph(f"<b>{self._escape_text(position)}</b>", styles['H3']))
         
-        # Add descriptions
+        # Add company
+        pdf_elements.append(Paragraph(f"<b>{self._escape_text(company)}</b>", styles['H4']))
+        
+        # Add period
+        pdf_elements.append(Paragraph(f"<i>{self._escape_text(period)}</i>", styles['Date']))
+        
+        # Add descriptions (bullet points)
         descriptions = work.get(f'description_{self.language}') or work.get('description_pt', [])
-        self._add_bullet_points(pdf_elements, styles, descriptions)
+        for description in descriptions:
+            pdf_elements.append(Paragraph(f"• {self._escape_text(description)}", styles['BodyStyle']))
         
-        # Add spacing between items
+        # Add small spacing between items
         pdf_elements.append(Spacer(1, spacing['small_bottom'] * mm))
     
     def _format_education_item(self, pdf_elements, styles, education):
@@ -723,19 +672,27 @@ class CVGenerator:
         """
         spacing = self.settings['spacing']
         
-        # Get and format data
+        # Get data
         degree = self._get_localized_field(education, 'degree')
         institution = self._get_localized_field(education, 'institution')
-        period = self._format_period(education.get('start_month', ''), education.get('start_year', ''), education.get('end_month', ''), education.get('end_year', ''))
+        period = self._format_period(education.get('start_month', ''), education.get('start_year', ''), education.get('end_month', ''), education.get('end_year', '') )
         
-        # Add header (degree, institution, date)
-        self._add_item_header(pdf_elements, styles, degree, institution, period if period.strip() else None)
+        # Add degree in bold
+        pdf_elements.append(Paragraph(f"<b>{self._escape_text(degree)}</b>", styles['H3']))
         
-        # Add descriptions
+        # Add institution
+        pdf_elements.append(Paragraph(f"<b>{self._escape_text(institution)}</b>", styles['H4']))
+        
+        # Add period (if exists)
+        if period.strip():
+            pdf_elements.append(Paragraph(f"<i>{self._escape_text(period)}</i>", styles['Date']))
+        
+        # Add additional notes (bullet points)
         descriptions = education.get(f'description_{self.language}') or education.get('description_pt', [])
-        self._add_bullet_points(pdf_elements, styles, descriptions)
+        for note in descriptions:
+            pdf_elements.append(Paragraph(f"• {self._escape_text(note)}", styles['BodyStyle']))
         
-        # Add spacing between items
+        # Add small spacing between items
         pdf_elements.append(Spacer(1, spacing['small_bottom'] * mm))
     
     def _format_core_skills_item(self, pdf_elements, styles, skill_group):
@@ -752,16 +709,18 @@ class CVGenerator:
             styles (StyleSheet1): Text styles
             skill_group (dict): Dictionary with category and skills
         """
-        # Get data
+        # Get category (e.g., "Leadership")
         category = self._get_localized_field(skill_group, 'category')
+        # Get list of skills
         descriptions = skill_group.get(f'description_{self.language}') or skill_group.get('description_pt', [])
         
-        # Add category header
+        # Add category in bold (if exists)
         if category:
-            self._add_paragraph(pdf_elements, category, styles['H3'])
+            pdf_elements.append(Paragraph(self._escape_text(category), styles['H3']))
         
-        # Add skills as bullet points
-        self._add_bullet_points(pdf_elements, styles, descriptions)
+        # Add each skill with bullet point
+        for item in descriptions:
+            pdf_elements.append(Paragraph(f"• {self._escape_text(item)}", styles['BodyStyle']))
         
         # Small spacing
         pdf_elements.append(Spacer(1, self.settings['spacing']['minimal_bottom'] * mm))
@@ -830,15 +789,20 @@ class CVGenerator:
             styles (StyleSheet1): Text styles
             award (dict): Dictionary with award title and description
         """
-        # Get data
-        title = self._get_localized_field(award, 'title')
+        # Get title and description
+        award_title = self._get_localized_field(award, 'title')
         description = self._get_localized_field(award, 'description')
         
-        # Format text
-        award_text = self._format_title_description(title, description)
+        # Format text (bold title - description)
+        if award_title and description:
+            award_text = f"<b>{self._escape_text(award_title)}</b> - {self._escape_text(description)}"
+        else:
+            # If not both, use what we have
+            award_text = self._escape_text(award_title or description)
         
-        # Add to PDF
-        self._add_paragraph(pdf_elements, award_text, styles['BodyStyle'])
+        # Add to PDF (if has text)
+        if award_text:
+            pdf_elements.append(Paragraph(award_text, styles['BodyStyle']))
     
     def _format_certification_item(self, pdf_elements, styles, certification):
         """
@@ -857,11 +821,20 @@ class CVGenerator:
         issuer = self._get_localized_field(certification, 'issuer')
         year = certification.get('year', '')
         
-        # Format text
-        cert_text = self._format_title_issuer_year(name, issuer, year)
+        # Format according to available data
+        if name and issuer and year:
+            # If has everything: Name - Issuer (Year)
+            cert_text = f"<b>{self._escape_text(name)}</b> - {self._escape_text(issuer)} ({self._escape_text(year)})"
+        elif name and issuer:
+            # If no year: Name - Issuer
+            cert_text = f"<b>{self._escape_text(name)}</b> - {self._escape_text(issuer)}"
+        else:
+            # If issuer missing: Name only
+            cert_text = self._escape_text(name or issuer)
         
-        # Add to PDF
-        self._add_paragraph(pdf_elements, cert_text, styles['BodyStyle'])
+        # Add to PDF (if has text)
+        if cert_text:
+            pdf_elements.append(Paragraph(cert_text, styles['BodyStyle']))
     
     def _format_publication_item(self, pdf_elements, styles, publication):
         """
@@ -880,98 +853,21 @@ class CVGenerator:
         description = self._get_localized_field(publication, 'description')
         year = publication.get('year', '')
         
-        # Format text
-        pub_text = self._format_title_description_year(title, description, year)
-        
-        # Add to PDF
-        self._add_paragraph(pdf_elements, pub_text, styles['BodyStyle'])
-    
-    def _format_title_description(self, title, description):
-        """
-        Format title - description pattern (for awards, etc).
-        
-        Parameters:
-            title (str): Main title
-            description (str): Description text
-            
-        Returns:
-            str: Formatted text or empty string if no data
-        """
-        if not title and not description:
-            return ''
-        
-        if title and description:
-            return f"<b>{self._escape_text(title)}</b> - {self._escape_text(description)}"
-        return self._escape_text(title or description)
-    
-    def _format_title_issuer_year(self, title, issuer, year):
-        """
-        Format title - issuer (year) pattern (for certifications, etc).
-        
-        Parameters:
-            title (str): Certification/award title
-            issuer (str): Issuing organization
-            year (str): Year of issue
-            
-        Returns:
-            str: Formatted text or empty string if no data
-        """
-        if not title and not issuer:
-            return ''
-        
-        if title and issuer and year:
-            return f"<b>{self._escape_text(title)}</b> - {self._escape_text(issuer)} ({self._escape_text(year)})"
-        elif title and issuer:
-            return f"<b>{self._escape_text(title)}</b> - {self._escape_text(issuer)}"
-        return self._escape_text(title or issuer)
-    
-    def _format_title_description_year(self, title, description, year):
-        """
-        Format title - description (year) pattern (for publications, etc).
-        
-        Parameters:
-            title (str): Publication title
-            description (str): Description text
-            year (str): Year of publication
-            
-        Returns:
-            str: Formatted text or empty string if no data
-        """
-        if not title and not description:
-            return ''
-        
+        # Format according to available data
         if title and year:
-            return f"<b>{self._escape_text(title)}</b> ({self._escape_text(year)})"
+            # If has title and year: Title (Year)
+            pub_text = f"<b>{self._escape_text(title)}</b> ({self._escape_text(year)})"
         elif title and description:
-            return f"<b>{self._escape_text(title)}</b> - {self._escape_text(description)}"
-        return self._escape_text(title or description)
+            # If has title and description: Title - Description
+            pub_text = f"<b>{self._escape_text(title)}</b> - {self._escape_text(description)}"
+        else:
+            # If has title only
+            pub_text = self._escape_text(title or description)
+        
+        # Add to PDF (if has text)
+        if pub_text:
+            pdf_elements.append(Paragraph(pub_text, styles['BodyStyle']))
     
-    def _render_default_sections(self, pdf_elements, styles):
-        """
-        Render sections using default order for backward compatibility.
-        Called when no section configuration is found in JSON.
-        
-        Parameters:
-            pdf_elements (list): List of PDF elements
-            styles (StyleSheet1): Text styles
-        """
-        self.logger.info("Using default section configuration (no 'sections' in JSON)")
-        
-        # Define default section rendering order
-        default_sections = [
-            ('experience', self._format_experience_item),
-            ('education', self._format_education_item),
-            ('core_skills', self._format_core_skills_item),
-            ('skills', self._format_skills_item),
-            ('languages', self._format_language_item),
-            ('awards', self._format_award_item),
-            ('certifications', self._format_certification_item),
-        ]
-        
-        # Render each section
-        for section_type, formatter in default_sections:
-            items = self.data.get(section_type, [])
-            self._add_section_items(pdf_elements, styles, section_type, items, formatter)
     
     # ========================================================================
     # 2.9 SECTION MAPPER - Map section types to functions
@@ -1082,7 +978,56 @@ class CVGenerator:
                 )
         else:
             # FALLBACK: If no section configuration, use default order (compatibility)
-            self._render_default_sections(pdf_elements, styles)
+            self.logger.info("Using default section configuration (no 'sections' in JSON)")
+            
+            # Experience section
+            self._add_section_items(
+                pdf_elements, styles, 'experience',
+                self.data.get('experience', []),
+                self._format_experience_item
+            )
+            
+            # Education section
+            self._add_section_items(
+                pdf_elements, styles, 'education',
+                self.data.get('education', []),
+                self._format_education_item
+            )
+            
+            # Core skills section
+            self._add_section_items(
+                pdf_elements, styles, 'core_skills',
+                self.data.get('core_skills', []),
+                self._format_core_skills_item
+            )
+            
+            # Technical skills section
+            self._add_section_items(
+                pdf_elements, styles, 'skills',
+                self.data.get('skills', []),
+                self._format_skills_item
+            )
+            
+            # Languages section
+            self._add_section_items(
+                pdf_elements, styles, 'languages',
+                self.data.get('languages', []),
+                self._format_language_item
+            )
+            
+            # Awards and recognition section
+            self._add_section_items(
+                pdf_elements, styles, 'awards',
+                self.data.get('awards', []),
+                self._format_award_item
+            )
+            
+            # Certifications section
+            self._add_section_items(
+                pdf_elements, styles, 'certifications',
+                self.data.get('certifications', []),
+                self._format_certification_item
+            )
         
         # ====== Build and save PDF ======
         doc.build(pdf_elements)
