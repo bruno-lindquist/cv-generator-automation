@@ -14,14 +14,12 @@ from xml.sax.saxutils import escape   # For escaping special characters in XML
 import argparse                       # For processing command-line arguments
 
 # ReportLab library imports (for PDF creation)
-from reportlab.lib.pagesizes import A4                  # A4 page size
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle  # Text styles
-from reportlab.lib.units import mm                      # Unit of measurement (millimeters)
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer  # PDF elements
-from reportlab.lib import colors                        # Colors for PDF
-from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY   # Text alignment
-from reportlab.pdfbase import pdfmetrics              # For hyperlink support
-from reportlab.lib.styles import getSampleStyleSheet   # For standard styles
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import mm
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
 
 # ============================================================================
 # 2. MAIN CLASS - CV Generator
@@ -37,6 +35,13 @@ class CVGenerator:
     
     # Month abbreviations in English
     MONTHS_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+    
+    # Tag markers for protected formatting
+    TAG_MARKERS = {
+        '<b>': '___BOLD_START___', '</b>': '___BOLD_END___',
+        '<i>': '___ITALIC_START___', '</i>': '___ITALIC_END___',
+        '<u>': '___UNDERLINE_START___', '</u>': '___UNDERLINE_END___'
+    }
     
     
     # ========================================================================
@@ -187,24 +192,12 @@ class CVGenerator:
         return key
     
     def _get_localized_field(self, data, field_name, default=''):
-        # Check if data is really a dictionary
         if not isinstance(data, dict):
             return default
-        
-        # Try with current language (e.g., 'position_en')
-        localized_field = f"{field_name}_{self.language}"
-        value = data.get(localized_field, '').strip() if isinstance(data.get(localized_field), str) else ''
-        
-        # If empty and not Portuguese, try Portuguese as fallback
-        if not value and self.language != 'pt':
-            value = data.get(f"{field_name}_pt", '').strip() if isinstance(data.get(f"{field_name}_pt"), str) else ''
-        
-        # If still empty, try without language suffix
-        if not value:
-            value = data.get(field_name, '').strip() if isinstance(data.get(field_name), str) else ''
-        
-        # Return found value or default
-        return value if value else default
+        value = (data.get(f"{field_name}_{self.language}") or 
+                (data.get(f"{field_name}_pt") if self.language != 'pt' else None) or 
+                data.get(field_name) or '')
+        return (value.strip() if isinstance(value, str) else str(value)).strip() or default
     
     
     # ========================================================================
@@ -213,26 +206,15 @@ class CVGenerator:
     
     def _escape_text(self, text):
         text_str = str(text)
-        # First, protect allowed tags by replacing them temporarily
-        protected_text = text_str
-        protected_text = protected_text.replace('<b>', '___BOLD_START___')
-        protected_text = protected_text.replace('</b>', '___BOLD_END___')
-        protected_text = protected_text.replace('<i>', '___ITALIC_START___')
-        protected_text = protected_text.replace('</i>', '___ITALIC_END___')
-        protected_text = protected_text.replace('<u>', '___UNDERLINE_START___')
-        protected_text = protected_text.replace('</u>', '___UNDERLINE_END___')
+        protected = text_str
+        for tag, marker in self.TAG_MARKERS.items():
+            protected = protected.replace(tag, marker)
         
-        # Escape the text
-        escaped = escape(protected_text, {"'": "&apos;", '"': "&quot;"})
+        escaped = escape(protected, {"'": "&apos;", '"': "&quot;"})
         
-        # Restore the protected tags
-        escaped = escaped.replace('___BOLD_START___', '<b>')
-        escaped = escaped.replace('___BOLD_END___', '</b>')
-        escaped = escaped.replace('___ITALIC_START___', '<i>')
-        escaped = escaped.replace('___ITALIC_END___', '</i>')
-        escaped = escaped.replace('___UNDERLINE_START___', '<u>')
-        escaped = escaped.replace('___UNDERLINE_END___', '</u>')
-        
+        reverse_markers = {v: k for k, v in self.TAG_MARKERS.items()}
+        for marker, tag in reverse_markers.items():
+            escaped = escaped.replace(marker, tag)
         return escaped
     
     def _process_tags(self, text):
@@ -434,44 +416,21 @@ class CVGenerator:
         pdf_elements.append(Spacer(1, spacing['header_bottom'] * mm))
     
     def _add_summary(self, pdf_elements, styles):
-        summary_data = self.data.get('summary', {})
-        summary = self._get_localized_field(summary_data, 'description').strip()
-        
-        # If no summary, don't add anything
+        summary = self._get_localized_field(self.data.get('summary', {}), 'description').strip()
         if not summary:
             return
         
-        spacing = self.settings['spacing']
-        section_title = self._get_text('summary', 'sections')
-        
-        # Add section title
-        pdf_elements.append(Paragraph(section_title, styles['H2']))
-        
-        # Process text with tag support
-        safe_summary = self._process_tags(summary)
-        pdf_elements.append(Paragraph(safe_summary, styles['BodyStyle']))
-        
-        # Add spacing after section
-        pdf_elements.append(Spacer(1, spacing['section_bottom'] * mm))
+        pdf_elements.append(Paragraph(self._get_text('summary', 'sections'), styles['H2']))
+        pdf_elements.append(Paragraph(self._process_tags(summary), styles['BodyStyle']))
+        pdf_elements.append(Spacer(1, self.settings['spacing']['section_bottom'] * mm))
     
     def _add_section_items(self, pdf_elements, styles, section_key, items, item_formatter):
-        # If no items, don't add anything
         if not items:
             return
-        
-        spacing = self.settings['spacing']
-        # Get translated section title
-        section_title = self._get_text(section_key, 'sections')
-        
-        # Add section title
-        pdf_elements.append(Paragraph(section_title, styles['H2']))
-        
-        # For each item in section, call formatter function
+        pdf_elements.append(Paragraph(self._get_text(section_key, 'sections'), styles['H2']))
         for item in items:
             item_formatter(pdf_elements, styles, item)
-        
-        # Add spacing after section
-        pdf_elements.append(Spacer(1, spacing['item_bottom'] * mm))
+        pdf_elements.append(Spacer(1, self.settings['spacing']['item_bottom'] * mm))
     
     
     # ========================================================================
@@ -479,137 +438,85 @@ class CVGenerator:
     # ========================================================================
     
     def _format_experience_item(self, pdf_elements, styles, work):
-        spacing = self.settings['spacing']
-        
-        # Get data
         position = self._get_localized_field(work, 'position')
         company = self._get_localized_field(work, 'company')
-        period = self._format_period(work.get('start_month', ''), work.get('start_year', ''), work.get('end_month', ''), work.get('end_year', ''))
+        period = self._format_period(work.get('start_month', ''), work.get('start_year', ''), 
+                                    work.get('end_month', ''), work.get('end_year', ''))
         
-        # Add position in bold
         pdf_elements.append(Paragraph(f"<b>{self._escape_text(position)}</b>", styles['H3']))
-        
-        # Add company
         pdf_elements.append(Paragraph(f"<b>{self._escape_text(company)}</b>", styles['H4']))
-        
-        # Add period
         pdf_elements.append(Paragraph(f"<i>{self._escape_text(period)}</i>", styles['Date']))
         
-        # Add descriptions (bullet points)
         descriptions = work.get(f'description_{self.language}') or work.get('description_pt', [])
-        for description in descriptions:
-            pdf_elements.append(Paragraph(f"• {self._escape_text(description)}", styles['BodyStyle']))
-        
-        # Add small spacing between items
-        pdf_elements.append(Spacer(1, spacing['small_bottom'] * mm))
+        for desc in descriptions:
+            pdf_elements.append(Paragraph(f"• {self._escape_text(desc)}", styles['BodyStyle']))
+        pdf_elements.append(Spacer(1, self.settings['spacing']['small_bottom'] * mm))
     
     def _format_education_item(self, pdf_elements, styles, education):
-        spacing = self.settings['spacing']
-        
-        # Get data
         degree = self._get_localized_field(education, 'degree')
         institution = self._get_localized_field(education, 'institution')
-        period = self._format_period(education.get('start_month', ''), education.get('start_year', ''), education.get('end_month', ''), education.get('end_year', '') )
+        period = self._format_period(education.get('start_month', ''), education.get('start_year', ''), 
+                                    education.get('end_month', ''), education.get('end_year', ''))
         
-        # Add degree in bold
         pdf_elements.append(Paragraph(f"<b>{self._escape_text(degree)}</b>", styles['H3']))
-        
-        # Add institution
         pdf_elements.append(Paragraph(f"<b>{self._escape_text(institution)}</b>", styles['H4']))
-        
-        # Add period (if exists)
         if period.strip():
             pdf_elements.append(Paragraph(f"<i>{self._escape_text(period)}</i>", styles['Date']))
         
-        # Add additional notes (bullet points)
         descriptions = education.get(f'description_{self.language}') or education.get('description_pt', [])
         for note in descriptions:
             pdf_elements.append(Paragraph(f"• {self._escape_text(note)}", styles['BodyStyle']))
-        
-        # Add small spacing between items
-        pdf_elements.append(Spacer(1, spacing['small_bottom'] * mm))
+        pdf_elements.append(Spacer(1, self.settings['spacing']['small_bottom'] * mm))
     
     def _format_core_skills_item(self, pdf_elements, styles, skill_group):
-        # Get category (e.g., "Leadership")
         category = self._get_localized_field(skill_group, 'category')
-        # Get list of skills
         descriptions = skill_group.get(f'description_{self.language}') or skill_group.get('description_pt', [])
         
-        # Add category in bold (if exists)
         if category:
             pdf_elements.append(Paragraph(self._escape_text(category), styles['H3']))
-        
-        # Add each skill with bullet point
         for item in descriptions:
             pdf_elements.append(Paragraph(f"• {self._escape_text(item)}", styles['BodyStyle']))
-        
-        # Small spacing
         pdf_elements.append(Spacer(1, self.settings['spacing']['minimal_bottom'] * mm))
     
     def _format_skills_item(self, pdf_elements, styles, skill_group):
-        # Get category (e.g., "Programming Languages")
         category = self._get_localized_field(skill_group, 'category')
-        # Get list of items
         items = skill_group.get('item', [])
         
-        # Add category in bold (if exists)
         if category:
             pdf_elements.append(Paragraph(self._escape_text(category), styles['H3']))
-        
-        # If has items, join all with comma and add in one line
         if items:
             item_text = ', '.join([self._escape_text(item) for item in items])
             pdf_elements.append(Paragraph(item_text, styles['BodyStyle']))
-        
-        # Spacing after section
         pdf_elements.append(Spacer(1, self.settings['spacing']['item_bottom'] * mm))
     
     def _format_language_item(self, pdf_elements, styles, language):
-        # Get language
         language_name = self._get_localized_field(language, 'language')
-        # Get proficiency level
         proficiency = self._get_localized_field(language, 'proficiency')
-        
-        # Format: [BOLD] Language - Proficiency
-        language_text = f"<b>{self._escape_text(language_name)}</b> - {self._escape_text(proficiency)}"
-        pdf_elements.append(Paragraph(language_text, styles['BodyStyle']))
+        text = f"<b>{self._escape_text(language_name)}</b> - {self._escape_text(proficiency)}"
+        pdf_elements.append(Paragraph(text, styles['BodyStyle']))
     
     def _format_award_item(self, pdf_elements, styles, award):
-        # Get title and description
-        award_title = self._get_localized_field(award, 'title')
-        description = self._get_localized_field(award, 'description')
-        
-        # Format text (bold title - description)
-        if award_title and description:
-            award_text = f"<b>{self._escape_text(award_title)}</b> - {self._escape_text(description)}"
-        else:
-            # If not both, use what we have
-            award_text = self._escape_text(award_title or description)
-        
-        # Add to PDF (if has text)
-        if award_text:
-            pdf_elements.append(Paragraph(award_text, styles['BodyStyle']))
+        title = self._get_localized_field(award, 'title')
+        desc = self._get_localized_field(award, 'description')
+        text = (f"<b>{self._escape_text(title)}</b> - {self._escape_text(desc)}" 
+                if title and desc else self._escape_text(title or desc))
+        if text:
+            pdf_elements.append(Paragraph(text, styles['BodyStyle']))
     
-    def _format_certification_item(self, pdf_elements, styles, certification):
-        # Get data
-        name = self._get_localized_field(certification, 'name')
-        issuer = self._get_localized_field(certification, 'issuer')
-        year = certification.get('year', '')
+    def _format_certification_item(self, pdf_elements, styles, cert):
+        name = self._get_localized_field(cert, 'name')
+        issuer = self._get_localized_field(cert, 'issuer')
+        year = cert.get('year', '')
         
-        # Format according to available data
         if name and issuer and year:
-            # If has everything: Name - Issuer (Year)
-            cert_text = f"<b>{self._escape_text(name)}</b> - {self._escape_text(issuer)} ({self._escape_text(year)})"
+            text = f"<b>{self._escape_text(name)}</b> - {self._escape_text(issuer)} ({self._escape_text(year)})"
         elif name and issuer:
-            # If no year: Name - Issuer
-            cert_text = f"<b>{self._escape_text(name)}</b> - {self._escape_text(issuer)}"
+            text = f"<b>{self._escape_text(name)}</b> - {self._escape_text(issuer)}"
         else:
-            # If issuer missing: Name only
-            cert_text = self._escape_text(name or issuer)
+            text = self._escape_text(name or issuer)
         
-        # Add to PDF (if has text)
-        if cert_text:
-            pdf_elements.append(Paragraph(cert_text, styles['BodyStyle']))
+        if text:
+            pdf_elements.append(Paragraph(text, styles['BodyStyle']))
     
     # ========================================================================
     # 2.9 SECTION MAPPER - Map section types to functions
