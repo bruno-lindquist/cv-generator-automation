@@ -3,6 +3,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
 [![ReportLab 4.0.9](https://img.shields.io/badge/ReportLab-4.0.9-green.svg)](https://www.reportlab.com/)
+[![Test Suite](https://github.com/seu-usuario/cv-generator-automation/actions/workflows/test.yml/badge.svg)](https://github.com/seu-usuario/cv-generator-automation/actions/workflows/test.yml)
+[![Code Quality](https://github.com/seu-usuario/cv-generator-automation/actions/workflows/lint.yml/badge.svg)](https://github.com/seu-usuario/cv-generator-automation/actions/workflows/lint.yml)
 
 Ferramenta para gerar currículos em PDF com **suporte multilíngue completo** (Português 🇧🇷 e Inglês 🇬🇧) a partir de dados estruturados em JSON. Mantém separação total entre dados, estilos e lógica de geração, permitindo customização total sem tocar no código.
 
@@ -250,7 +252,32 @@ Os scripts realizam automaticamente:
 3. ✅ Geração do(s) CV(s) no idioma escolhido
 
 
-## 📦 Dependências
+## � CI/CD - Automação com GitHub Actions
+
+Este projeto utiliza **GitHub Actions** para validação automática. A cada commit/push:
+
+### ✅ Testes Automáticos (`.github/workflows/test.yml`)
+
+- ✓ Valida sintaxe Python em múltiplas versões (3.9, 3.10, 3.11)
+- ✓ Valida JSON de todos os arquivos de configuração
+- ✓ Gera CV em Português
+- ✓ Gera CV em Inglês
+- ✓ Verifica se PDFs foram criados com sucesso
+- ✓ Valida tamanho dos PDFs gerados
+
+### 📊 Validação de Código (`.github/workflows/lint.yml`)
+
+- ✓ Verifica imports Python
+- ✓ Linting com flake8
+- ✓ Validação de encoding UTF-8
+- ✓ Detecção de problemas comuns
+
+**Status atual:** 
+- [![Test Suite](https://github.com/seu-usuario/cv-generator-automation/actions/workflows/test.yml/badge.svg)](https://github.com/seu-usuario/cv-generator-automation/actions/workflows/test.yml)
+- [![Code Quality](https://github.com/seu-usuario/cv-generator-automation/actions/workflows/lint.yml/badge.svg)](https://github.com/seu-usuario/cv-generator-automation/actions/workflows/lint.yml)
+
+
+## �📦 Dependências
 
 - **Python**: 3.7 ou superior
 - **reportlab**: 4.0.9 (para geração de PDF)

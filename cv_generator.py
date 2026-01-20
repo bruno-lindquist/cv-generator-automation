@@ -258,12 +258,15 @@ class CVGenerator:
     def _get_localized_field(self, dados, nome_campo, padrao=''):
         """
         Obtém um campo localizado (traduzido) dos dados.
-        Se não encontrar no idioma atual, tenta português como fallback.
+        Implementa fallback inteligente: idioma atual → português → sem sufixo → padrão.
         
         Exemplo:
             _get_localized_field(dados, 'position')
-            Procura: position_en (se idioma for 'en')
-            Se não achar: procura position_pt
+            Procura em ordem:
+            1. position_en (se idioma for 'en')
+            2. position_pt (fallback para português)
+            3. position (sem sufixo de idioma)
+            4. padrao (valor padrão se tudo falhar)
         
         Parâmetros:
             dados (dict): Dicionário com os dados
@@ -277,16 +280,20 @@ class CVGenerator:
         if not isinstance(dados, dict):
             return padrao
         
-        # Monta o nome do campo com o idioma (ex: 'position_en')
+        # 1️⃣ Tenta com o idioma atual (ex: 'position_en')
         campo_localizado = f"{nome_campo}_{self.language}"
-        valor = dados.get(campo_localizado, '')
+        valor = dados.get(campo_localizado, '').strip() if isinstance(dados.get(campo_localizado), str) else ''
         
-        # Se não encontrou e o idioma não é português, tenta português
+        # 2️⃣ Se vazio e não é português, tenta português como fallback
         if not valor and self.language != 'pt':
-            valor = dados.get(f"{nome_campo}_pt", '')
+            valor = dados.get(f"{nome_campo}_pt", '').strip() if isinstance(dados.get(f"{nome_campo}_pt"), str) else ''
         
-        # Retorna o valor encontrado ou o padrão
-        return valor or padrao
+        # 3️⃣ Se ainda vazio, tenta sem sufixo de idioma
+        if not valor:
+            valor = dados.get(nome_campo, '').strip() if isinstance(dados.get(nome_campo), str) else ''
+        
+        # 4️⃣ Retorna o valor encontrado ou o padrão
+        return valor if valor else padrao
     
     
     # ========================================================================
@@ -376,73 +383,83 @@ class CVGenerator:
         """
         Cria os estilos personalizados para o PDF.
         Define tamanho, cor, alinhamento e fonte de cada tipo de texto.
+        Cores e fontes são hardcoded (não dependem de arquivo externo).
         
         Retorna:
             StyleSheet1: Objeto com todos os estilos definidos
         """
+        # ====== DEFINIÇÕES DE CORES E FONTES (Hardcoded) ======
+        FONT_NAME = 'Helvetica-Bold'
+        FONT_NAME_REGULAR = 'Helvetica'
+        COLOR_NAME = '#000000'           # Nome (preto)
+        COLOR_TITLE = '#000000'          # Título (preto)
+        COLOR_SECTION = '#666666'        # Títulos de seção (cinza escuro)
+        COLOR_TEXT = '#000000'           # Texto do corpo (preto)
+        
+        FONT_SIZE_NAME = 24              # Tamanho do nome
+        FONT_SIZE_TITLE = 12             # Tamanho do título
+        FONT_SIZE_SECTION = 14           # Tamanho de títulos de seção
+        FONT_SIZE_SUBHEADING = 12        # Tamanho de subtítulos
+        FONT_SIZE_BODY = 10              # Tamanho do texto do corpo
+        FONT_SIZE_DATE = 9               # Tamanho de datas
+        
         # Obtém os estilos básicos da ReportLab
         estilos = getSampleStyleSheet()
-        
-        # Obtém configurações de cor do arquivo settings
-        config_cores = self.settings.get('colors', {})
-        # Obtém configurações de fonte do arquivo settings
-        config_fontes = self.settings.get('fonts', {})
         
         # Cria estilo para o NOME (grande, negrito, centralizado)
         estilos.add(ParagraphStyle(
             name='NameStyle',
             parent=estilos['Heading1'],
-            fontSize=config_fontes.get('name_size', 24),
-            textColor=colors.HexColor(config_cores.get('name', '#000000')),
+            fontSize=FONT_SIZE_NAME,
+            textColor=colors.HexColor(COLOR_NAME),
             spaceAfter=6,
             alignment=TA_CENTER,
-            fontName='Helvetica-Bold'
+            fontName=FONT_NAME
         ))
         
         # Cria estilo para o TÍTULO (cargo desejado)
         estilos.add(ParagraphStyle(
             name='TitleStyle',
             parent=estilos['Normal'],
-            fontSize=config_fontes.get('title_size', 12),
-            textColor=colors.HexColor(config_cores.get('section_title', '#000000')),
+            fontSize=FONT_SIZE_TITLE,
+            textColor=colors.HexColor(COLOR_TITLE),
             spaceAfter=24,
             alignment=TA_CENTER,
-            fontName='Helvetica-Bold'
+            fontName=FONT_NAME
         ))
         
         # Cria estilo para TÍTULOS DE SEÇÃO (Experiência, Educação, etc)
         estilos.add(ParagraphStyle(
             name='H2',
             parent=estilos['Normal'],
-            fontSize=config_fontes.get('section_size', 14),
-            textColor=colors.HexColor(config_cores.get('section_title', "#888888")),
+            fontSize=FONT_SIZE_SECTION,
+            textColor=colors.HexColor(COLOR_SECTION),
             spaceBefore=14,
             spaceAfter=6,
-            fontName='Helvetica-Bold',
-            #keepWithNext=1
+            fontName=FONT_NAME
         ))
         
         # Cria estilo para SUBTÍTULOS (Cargo, Empresa, Grau, Universidade)
         estilos.add(ParagraphStyle(
             name='H3',
             parent=estilos['Normal'],
-            fontSize=config_fontes.get('subheading_size', 12),
-            textColor=colors.HexColor(config_cores.get('section_title', '#000000')),
+            fontSize=FONT_SIZE_SUBHEADING,
+            textColor=colors.HexColor(COLOR_SECTION),
             spaceBefore=10,
             spaceAfter=4,
             leftIndent=10,
-            fontName='Helvetica-Bold',
+            fontName=FONT_NAME,
             keepWithNext=1
         ))
 
         estilos.add(ParagraphStyle(
             name='H4',
             parent=estilos['Normal'],
-            fontSize=config_fontes.get('subheading_size', 11),
-            textColor=colors.HexColor(config_cores.get('section_title', '#000000')),
+            fontSize=FONT_SIZE_SUBHEADING - 1,
+            textColor=colors.HexColor(COLOR_SECTION),
             spaceAfter=2,
             leftIndent=10,
-            fontName='Helvetica-Bold',
+            fontName=FONT_NAME,
             keepWithNext=1
         ))
         
@@ -450,28 +467,31 @@ class CVGenerator:
         estilos.add(ParagraphStyle(
             name='BodyStyle',
             parent=estilos['Normal'],
-            fontSize=config_fontes.get('body_size', 10),
-            textColor=colors.HexColor(config_cores.get('text', '#000000')),
+            fontSize=FONT_SIZE_BODY,
+            textColor=colors.HexColor(COLOR_TEXT),
             spaceAfter=2,
             leftIndent=28,
-            alignment=TA_JUSTIFY
+            alignment=TA_JUSTIFY,
+            fontName=FONT_NAME_REGULAR
         ))
 
         estilos.add(ParagraphStyle(
             name='ContactStyle',
-            fontSize=config_fontes.get('body_size', 11),
+            fontSize=FONT_SIZE_BODY + 1,
             parent=estilos['BodyStyle'],
             alignment=TA_CENTER,
-            leftIndent=0
+            leftIndent=0,
+            fontName=FONT_NAME_REGULAR
         ))
 
         estilos.add(ParagraphStyle(
             name='Date',
             parent=estilos['Normal'],
-            fontSize=config_fontes.get('body_size', 9),
-            textColor=colors.HexColor(config_cores.get('text', '#000000')),
+            fontSize=FONT_SIZE_DATE,
+            textColor=colors.HexColor(COLOR_TEXT),
             leftIndent=10,
-            spaceAfter=2
+            spaceAfter=2,
+            fontName=FONT_NAME_REGULAR
         ))
         
         return estilos
@@ -826,9 +846,69 @@ class CVGenerator:
         if texto_cert:
             elementos_pdf.append(Paragraph(texto_cert, estilos['BodyStyle']))
     
+    def _format_publication_item(self, elementos_pdf, estilos, publicacao):
+        """
+        Formata um item de publicação.
+        
+        Exemplo de saída:
+            [NEGRITO] Automação em Python - 2023
+        
+        Parâmetros:
+            elementos_pdf (list): Lista de elementos do PDF
+            estilos (StyleSheet1): Estilos de texto
+            publicacao (dict): Dicionário com título, descrição e ano
+        """
+        # Obtém os dados
+        titulo = self._get_localized_field(publicacao, 'title')
+        descricao = self._get_localized_field(publicacao, 'description')
+        ano = publicacao.get('year', '')
+        
+        # Formata conforme os dados disponíveis
+        if titulo and ano:
+            # Se tem título e ano: Título (Ano)
+            texto_pub = f"<b>{self._escape_text(titulo)}</b> ({self._escape_text(ano)})"
+        elif titulo and descricao:
+            # Se tem título e descrição: Título - Descrição
+            texto_pub = f"<b>{self._escape_text(titulo)}</b> - {self._escape_text(descricao)}"
+        else:
+            # Se tem apenas título
+            texto_pub = self._escape_text(titulo or descricao)
+        
+        # Adiciona ao PDF (se tiver algum texto)
+        if texto_pub:
+            elementos_pdf.append(Paragraph(texto_pub, estilos['BodyStyle']))
+    
     
     # ========================================================================
-    # 2.9 GERAÇÃO DO PDF - Função principal
+    # 2.9 MAPEADOR DE SEÇÕES - Mapa tipos de seção para funções
+    # ========================================================================
+    
+    def _get_section_formatador(self, tipo_secao):
+        """
+        Retorna a função formatadora para um tipo de seção.
+        Permite fácil extensão com novos tipos de seção.
+        
+        Parâmetros:
+            tipo_secao (str): Tipo da seção (experience, education, skills, etc)
+            
+        Retorna:
+            function: Função que formata cada item da seção
+        """
+        mapeador = {
+            'experience': self._format_experience_item,
+            'education': self._format_education_item,
+            'core_skills': self._format_core_skills_item,
+            'skills': self._format_skills_item,
+            'languages': self._format_language_item,
+            'awards': self._format_award_item,
+            'certifications': self._format_certification_item,
+            'publications': self._format_publication_item,
+        }
+        return mapeador.get(tipo_secao, None)
+    
+    
+    # ========================================================================
+    # 2.10 GERAÇÃO DO PDF - Função principal
     # ========================================================================
     
     def generate(self):
@@ -875,54 +955,89 @@ class CVGenerator:
         # Resumo profissional
         self._add_summary(elementos_pdf, estilos)
         
-        # Seção de Experiência
-        self._add_section_items(
-            elementos_pdf, estilos, 'experience',
-            self.data.get('experience', []),
-            self._format_experience_item
-        )
+        # ====== RENDERIZAR SEÇÕES DINÂMICAS ======
+        # Tenta usar a configuração de seções (se existir)
+        secoes_config = self.data.get('sections', None)
         
-        # Seção de Educação
-        self._add_section_items(
-            elementos_pdf, estilos, 'education',
-            self.data.get('education', []),
-            self._format_education_item
-        )
-        
-        # Seção de Competências Principais
-        self._add_section_items(
-            elementos_pdf, estilos, 'core_skills',
-            self.data.get('core_skills', []),
-            self._format_core_skills_item
-        )
-        
-        # Seção de Habilidades Técnicas
-        self._add_section_items(
-            elementos_pdf, estilos, 'skills',
-            self.data.get('skills', []),
-            self._format_skills_item
-        )
-        
-        # Seção de Idiomas
-        self._add_section_items(
-            elementos_pdf, estilos, 'languages',
-            self.data.get('languages', []),
-            self._format_language_item
-        )
-        
-        # Seção de Prêmios e Reconhecimentos
-        self._add_section_items(
-            elementos_pdf, estilos, 'awards',
-            self.data.get('awards', []),
-            self._format_award_item
-        )
-        
-        # Seção de Certificações
-        self._add_section_items(
-            elementos_pdf, estilos, 'certifications',
-            self.data.get('certifications', []),
-            self._format_certification_item
-        )
+        if secoes_config and isinstance(secoes_config, list):
+            # Se tem configuração de seções, ordena e renderiza dinamicamente
+            secoes_ordenadas = sorted(
+                [s for s in secoes_config if s.get('enabled', True)],
+                key=lambda x: x.get('order', 999)
+            )
+            
+            for secao in secoes_ordenadas:
+                tipo_secao = secao.get('type')
+                if not tipo_secao:
+                    continue
+                
+                # Obtém a função formatadora para este tipo
+                formatador = self._get_section_formatador(tipo_secao)
+                if not formatador:
+                    self.logger.warning(f"Tipo de seção desconhecido: {tipo_secao}")
+                    continue
+                
+                # Obtém os dados da seção
+                itens = self.data.get(tipo_secao, [])
+                
+                # Renderiza a seção
+                self._add_section_items(
+                    elementos_pdf, estilos, tipo_secao,
+                    itens,
+                    formatador
+                )
+        else:
+            # FALLBACK: Se não tem configuração de seções, usa ordem padrão (compatibilidade)
+            self.logger.info("Usando configuração padrão de seções (sem 'sections' no JSON)")
+            
+            # Seção de Experiência
+            self._add_section_items(
+                elementos_pdf, estilos, 'experience',
+                self.data.get('experience', []),
+                self._format_experience_item
+            )
+            
+            # Seção de Educação
+            self._add_section_items(
+                elementos_pdf, estilos, 'education',
+                self.data.get('education', []),
+                self._format_education_item
+            )
+            
+            # Seção de Competências Principais
+            self._add_section_items(
+                elementos_pdf, estilos, 'core_skills',
+                self.data.get('core_skills', []),
+                self._format_core_skills_item
+            )
+            
+            # Seção de Habilidades Técnicas
+            self._add_section_items(
+                elementos_pdf, estilos, 'skills',
+                self.data.get('skills', []),
+                self._format_skills_item
+            )
+            
+            # Seção de Idiomas
+            self._add_section_items(
+                elementos_pdf, estilos, 'languages',
+                self.data.get('languages', []),
+                self._format_language_item
+            )
+            
+            # Seção de Prêmios e Reconhecimentos
+            self._add_section_items(
+                elementos_pdf, estilos, 'awards',
+                self.data.get('awards', []),
+                self._format_award_item
+            )
+            
+            # Seção de Certificações
+            self._add_section_items(
+                elementos_pdf, estilos, 'certifications',
+                self.data.get('certifications', []),
+                self._format_certification_item
+            )
         
         # ====== Construir e salvar o PDF ======
         doc.build(elementos_pdf)
