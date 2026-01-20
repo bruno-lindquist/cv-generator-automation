@@ -49,8 +49,8 @@ if errorlevel 1 (
 echo.
 echo ✅ Setup complete!
 echo.
-echo Próximos passos:
-echo   1. Edite cv_data.json com seus dados
-echo   2. Execute: cv.bat
+echo Next steps:
+echo   1. Edit cv_data.json with your data
+echo   2. Execute: start_windows.bat
 echo.
 pause
