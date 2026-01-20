@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
-# ============================================================================
-# 1. IMPORTS - Required libraries
-# ============================================================================
+# CV Generator - Supported formatting tags in text fields:
+# <b>bold text</b> for bold
+# <i>italic text</i> for italic
+# <u>underlined text</u> for underlined
+# Tags can be mixed: <b>Bold and <i>italic</i></b>
 
 import json                           # For reading JSON files
 import os                             # For operating system operations
@@ -22,11 +23,8 @@ from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY   # Text alignment
 from reportlab.pdfbase import pdfmetrics              # For hyperlink support
 from reportlab.lib.styles import getSampleStyleSheet   # For standard styles
 
-
-
-
 # ============================================================================
-# 2. MAIN CLASS - CVGenerator
+# 2. MAIN CLASS - CV Generator
 # ============================================================================
 
 class CVGenerator:
@@ -193,19 +191,19 @@ class CVGenerator:
         if not isinstance(data, dict):
             return default
         
-        # 1️⃣ Try with current language (e.g., 'position_en')
+        # Try with current language (e.g., 'position_en')
         localized_field = f"{field_name}_{self.language}"
         value = data.get(localized_field, '').strip() if isinstance(data.get(localized_field), str) else ''
         
-        # 2️⃣ If empty and not Portuguese, try Portuguese as fallback
+        # If empty and not Portuguese, try Portuguese as fallback
         if not value and self.language != 'pt':
             value = data.get(f"{field_name}_pt", '').strip() if isinstance(data.get(f"{field_name}_pt"), str) else ''
         
-        # 3️⃣ If still empty, try without language suffix
+        # If still empty, try without language suffix
         if not value:
             value = data.get(field_name, '').strip() if isinstance(data.get(field_name), str) else ''
         
-        # 4️⃣ Return found value or default
+        # Return found value or default
         return value if value else default
     
     
@@ -214,7 +212,33 @@ class CVGenerator:
     # ========================================================================
     
     def _escape_text(self, text):
-        return escape(str(text), {"'": "&apos;", '"': "&quot;"})
+        text_str = str(text)
+        # First, protect allowed tags by replacing them temporarily
+        protected_text = text_str
+        protected_text = protected_text.replace('<b>', '___BOLD_START___')
+        protected_text = protected_text.replace('</b>', '___BOLD_END___')
+        protected_text = protected_text.replace('<i>', '___ITALIC_START___')
+        protected_text = protected_text.replace('</i>', '___ITALIC_END___')
+        protected_text = protected_text.replace('<u>', '___UNDERLINE_START___')
+        protected_text = protected_text.replace('</u>', '___UNDERLINE_END___')
+        
+        # Escape the text
+        escaped = escape(protected_text, {"'": "&apos;", '"': "&quot;"})
+        
+        # Restore the protected tags
+        escaped = escaped.replace('___BOLD_START___', '<b>')
+        escaped = escaped.replace('___BOLD_END___', '</b>')
+        escaped = escaped.replace('___ITALIC_START___', '<i>')
+        escaped = escaped.replace('___ITALIC_END___', '</i>')
+        escaped = escaped.replace('___UNDERLINE_START___', '<u>')
+        escaped = escaped.replace('___UNDERLINE_END___', '</u>')
+        
+        return escaped
+    
+    def _process_tags(self, text):
+        safe_text = self._escape_text(text)
+        safe_text = safe_text.replace('\n', '<br/>')
+        return safe_text
     
     def _format_month(self, month_str):
         try:
@@ -257,20 +281,6 @@ class CVGenerator:
     # ========================================================================
     
     def _create_styles(self):
-        # ====== COLOR AND FONT DEFINITIONS (Hardcoded) ======
-        FONT_NAME = 'Helvetica-Bold'
-        FONT_NAME_REGULAR = 'Helvetica'
-        COLOR_NAME = '#000000'           # Name (black)
-        COLOR_TITLE = '#000000'          # Title (black)
-        COLOR_SECTION = '#666666'        # Section titles (dark gray)
-        COLOR_TEXT = '#000000'           # Body text (black)
-        
-        FONT_SIZE_NAME = 24              # Name font size
-        FONT_SIZE_TITLE = 12             # Title font size
-        FONT_SIZE_SECTION = 14           # Section title font size
-        FONT_SIZE_SUBHEADING = 12        # Subheading font size
-        FONT_SIZE_BODY = 10              # Body text font size
-        FONT_SIZE_DATE = 9               # Date font size
         
         # Get basic styles from ReportLab
         styles = getSampleStyleSheet()
@@ -279,56 +289,56 @@ class CVGenerator:
         styles.add(ParagraphStyle(
             name='NameStyle',
             parent=styles['Heading1'],
-            fontSize=FONT_SIZE_NAME,
-            textColor=colors.HexColor(COLOR_NAME),
+            fontSize=24,
+            textColor=colors.HexColor('#000000'),
             spaceAfter=6,
             alignment=TA_CENTER,
-            fontName=FONT_NAME
+            fontName='Helvetica-Bold'
         ))
         
         # Create style for TITLE (desired position)
         styles.add(ParagraphStyle(
             name='TitleStyle',
             parent=styles['Normal'],
-            fontSize=FONT_SIZE_TITLE,
-            textColor=colors.HexColor(COLOR_TITLE),
+            fontSize=12,
+            textColor=colors.HexColor('#000000'),
             spaceAfter=24,
             alignment=TA_CENTER,
-            fontName=FONT_NAME
+            fontName='Helvetica-Bold'
         ))
         
         # Create style for SECTION TITLES (Experience, Education, etc)
         styles.add(ParagraphStyle(
             name='H2',
             parent=styles['Normal'],
-            fontSize=FONT_SIZE_SECTION,
-            textColor=colors.HexColor(COLOR_SECTION),
+            fontSize=14,
+            textColor=colors.HexColor('#888888'),
             spaceBefore=14,
             spaceAfter=6,
-            fontName=FONT_NAME
+            fontName='Helvetica-Bold'
         ))
         
         # Create style for SUBTITLES (Position, Company, Degree, University)
         styles.add(ParagraphStyle(
             name='H3',
             parent=styles['Normal'],
-            fontSize=FONT_SIZE_SUBHEADING,
-            textColor=colors.HexColor(COLOR_SECTION),
+            fontSize=12,
+            textColor=colors.HexColor('#000000'),
             spaceBefore=10,
             spaceAfter=4,
             leftIndent=10,
-            fontName=FONT_NAME,
+            fontName='Helvetica-Bold',
             keepWithNext=1
         ))
 
         styles.add(ParagraphStyle(
             name='H4',
             parent=styles['Normal'],
-            fontSize=FONT_SIZE_SUBHEADING - 1,
-            textColor=colors.HexColor(COLOR_SECTION),
+            fontSize=11,
+            textColor=colors.HexColor('#000000'),
             spaceAfter=2,
             leftIndent=10,
-            fontName=FONT_NAME,
+            fontName='Helvetica-Bold',
             keepWithNext=1
         ))
         
@@ -336,31 +346,31 @@ class CVGenerator:
         styles.add(ParagraphStyle(
             name='BodyStyle',
             parent=styles['Normal'],
-            fontSize=FONT_SIZE_BODY,
-            textColor=colors.HexColor(COLOR_TEXT),
+            fontSize=10,
+            textColor=colors.HexColor('#000000'),
             spaceAfter=2,
             leftIndent=28,
             alignment=TA_JUSTIFY,
-            fontName=FONT_NAME_REGULAR
+            fontName='Helvetica'
         ))
 
         styles.add(ParagraphStyle(
             name='ContactStyle',
-            fontSize=FONT_SIZE_BODY + 1,
+            fontSize=11,
             parent=styles['BodyStyle'],
             alignment=TA_CENTER,
             leftIndent=0,
-            fontName=FONT_NAME_REGULAR
+            fontName='Helvetica'
         ))
 
         styles.add(ParagraphStyle(
             name='Date',
             parent=styles['Normal'],
-            fontSize=FONT_SIZE_DATE,
-            textColor=colors.HexColor(COLOR_TEXT),
+            fontSize=9,
+            textColor=colors.HexColor('#000000'),
             leftIndent=10,
             spaceAfter=2,
-            fontName=FONT_NAME_REGULAR
+            fontName='Helvetica'
         ))
         
         return styles
@@ -437,8 +447,8 @@ class CVGenerator:
         # Add section title
         pdf_elements.append(Paragraph(section_title, styles['H2']))
         
-        # Escape text and convert line breaks to <br/>
-        safe_summary = self._escape_text(summary).replace('\n', '<br/>')
+        # Process text with tag support
+        safe_summary = self._process_tags(summary)
         pdf_elements.append(Paragraph(safe_summary, styles['BodyStyle']))
         
         # Add spacing after section
@@ -601,28 +611,6 @@ class CVGenerator:
         if cert_text:
             pdf_elements.append(Paragraph(cert_text, styles['BodyStyle']))
     
-    def _format_publication_item(self, pdf_elements, styles, publication):
-        # Get data
-        title = self._get_localized_field(publication, 'title')
-        description = self._get_localized_field(publication, 'description')
-        year = publication.get('year', '')
-        
-        # Format according to available data
-        if title and year:
-            # If has title and year: Title (Year)
-            pub_text = f"<b>{self._escape_text(title)}</b> ({self._escape_text(year)})"
-        elif title and description:
-            # If has title and description: Title - Description
-            pub_text = f"<b>{self._escape_text(title)}</b> - {self._escape_text(description)}"
-        else:
-            # If has title only
-            pub_text = self._escape_text(title or description)
-        
-        # Add to PDF (if has text)
-        if pub_text:
-            pdf_elements.append(Paragraph(pub_text, styles['BodyStyle']))
-    
-    
     # ========================================================================
     # 2.9 SECTION MAPPER - Map section types to functions
     # ========================================================================
@@ -636,7 +624,6 @@ class CVGenerator:
             'languages': self._format_language_item,
             'awards': self._format_award_item,
             'certifications': self._format_certification_item,
-            'publications': self._format_publication_item,
         }
         return mapper.get(section_type, None)
     
