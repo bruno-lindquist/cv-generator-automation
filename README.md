@@ -1,4 +1,4 @@
-# 📄 CV Generator - Gerador de Currículo em PDF
+# 📄 CV Generator - PDF Resume Generator
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
@@ -6,36 +6,36 @@
 [![Test Suite](https://github.com/seu-usuario/cv-generator-automation/actions/workflows/test.yml/badge.svg)](https://github.com/seu-usuario/cv-generator-automation/actions/workflows/test.yml)
 [![Code Quality](https://github.com/seu-usuario/cv-generator-automation/actions/workflows/lint.yml/badge.svg)](https://github.com/seu-usuario/cv-generator-automation/actions/workflows/lint.yml)
 
-Ferramenta para gerar currículos em PDF com **suporte multilíngue completo** (Português 🇧🇷 e Inglês 🇬🇧) a partir de dados estruturados em JSON. Mantém separação total entre dados, estilos e lógica de geração, permitindo customização total sem tocar no código.
+Professional-grade tool for generating PDF resumes with **complete multilingual support** (Portuguese 🇧🇷 and English 🇬🇧) from structured JSON data. Maintains complete separation between data, styles, and generation logic, allowing full customization without touching code. **Entire codebase now in English** - variable names, functions, and comments fully internationalized.
 
-## ✨ Características
+## ✨ Features
 
-- 🌍 **Multilíngue automático**: Português e inglês com fallback inteligente (campos vazios em EN usam PT)
-- 📊 **Arquitetura limpa**: Dados em `cv_data.json`, estilos em `styles.json`, traduções em `translations.json`
-- 🎨 **100% customizável**: Cores, fontes, margens, espaçamentos via JSON (zero código)
+- 🌍 **Automatic Multilingual Support**: Portuguese and English with intelligent fallback (empty EN fields use PT)
+- 📊 **Clean Architecture**: Data in `cv_data.json`, styles in `styles.json`, translations in `translations.json`
+- 🎨 **100% Customizable**: Colors, fonts, margins, spacing via JSON (zero code needed)
+- 💻 **English Codebase**: All variable names, functions, and comments in English for international collaboration
+- 📝 **Structured Logging**: Complete error and operation tracking
+- ⚡ **Efficient**: Optimized code, no repetition, reusable methods
+- 📅 **Smart Dates**: Automatic month formatting (Jan, Feb, Mar... based on language)
+- 🚀 **Dual Interface**: Interactive menu (shell/batch) or Python command line
+- 🔧 **CI/CD Ready**: Supports CLI arguments for automation
 
-- �📝 **Logging estruturado**: Rastreamento completo de erros e operações
-- ⚡ **Eficiente**: Código otimizado, sem repetições, métodos reutilizáveis
-- 📅 **Datas inteligentes**: Formatação automática de meses (Jan, Fev, Mar... ou Jan, Feb, Mar...)
-- 🚀 **Duas interfaces**: Menu interativo (shell/batch) ou linha de comando Python
-- 🔧 **Pronto para CI/CD**: Suporta argumentos CLI para automação
-
-## 📁 Estrutura do Projeto
+## 📁 Project Structure
 
 ```
 cv-generator/
-├── 📄 config.json              # Configuração central (caminhos, idioma padrão)
-├── 📄 cv_data.json             # Seus dados do CV (PT + EN)
-├── 📄 styles.json              # Estilos e formatação (cores, fonts, spacing)
-├── 📄 translations.json        # Textos multilíngues (títulos de seções)
-├── 🐍 cv_generator.py          # Script principal de geração
-├── 🔧 start_linux.sh           # Menu interativo (macOS/Linux)
-├── 🔧 start_windows.bat        # Menu interativo (Windows)
-├── 📖 README.md                # Esta documentação
+├── 📄 config.json              # Central configuration (paths, default language)
+├── 📄 cv_data.json             # Your CV data (PT + EN)
+├── 📄 styles.json              # Styles and formatting (colors, fonts, spacing)
+├── 📄 translations.json        # Multilingual texts (section titles)
+├── 🐍 cv_generator.py          # Main generation script
+├── 🔧 start_mac.sh             # Interactive menu (macOS/Linux)
+├── 🔧 start_windows.bat        # Interactive menu (Windows)
+├── 📖 README.md                # This documentation
 ├── 📋 LICENSE                  # MIT License
-├── 📋 requirements.txt         # Dependências Python
-├── 🚫 .gitignore               # Arquivos ignorados no git
-└── 📁 output/                  # PDFs gerados aqui
+├── 📋 requirements.txt         # Python dependencies
+├── 🚫 .gitignore               # Files ignored in git
+└── 📁 output/                  # Generated PDFs here
 ```
 
 ## 🚀 Quick Start

@@ -1,132 +1,132 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Gerador de Currículo em PDF com suporte multilíngue
+Resume/CV Generator in PDF with multilingual support
 =====================================================
 
-Este script lê dados de um arquivo JSON e gera um currículo profissional em formato PDF.
-Suporta múltiplos idiomas (Português e Inglês) em um único arquivo de dados.
+This script reads data from a JSON file and generates a professional resume in PDF format.
+Supports multiple languages (Portuguese and English) in a single data file.
 
-Como usar:
-    python cv_generator.py cv_data.json -l pt -o saida.pdf
+Usage:
+    python cv_generator.py cv_data.json -l pt -o output.pdf
 """
 
 # ============================================================================
-# 1. IMPORTAÇÕES - Bibliotecas necessárias
+# 1. IMPORTS - Required libraries
 # ============================================================================
 
-import json                           # Para ler arquivos JSON
-import os                             # Para operações com o sistema operacional
-import logging                        # Para exibir mensagens de log/erro
-from pathlib import Path              # Para trabalhar com caminhos de arquivo
-from xml.sax.saxutils import escape   # Para escapar caracteres especiais em XML
-import argparse                       # Para processar argumentos de linha de comando
+import json                           # For reading JSON files
+import os                             # For operating system operations
+import logging                        # For displaying log/error messages
+from pathlib import Path              # For working with file paths
+from xml.sax.saxutils import escape   # For escaping special characters in XML
+import argparse                       # For processing command-line arguments
 
-# Importações da biblioteca ReportLab (cria PDFs)
-from reportlab.lib.pagesizes import A4                  # Tamanho de página A4
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle  # Estilos de texto
-from reportlab.lib.units import mm                      # Unidade de medida (milímetros)
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer  # Elementos do PDF
-from reportlab.lib import colors                        # Cores para o PDF
-from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY   # Alinhamento de texto
-from reportlab.pdfbase import pdfmetrics              # Para suporte a hiperlinks
-from reportlab.lib.styles import getSampleStyleSheet   # Para estilos padrão
+# ReportLab library imports (for PDF creation)
+from reportlab.lib.pagesizes import A4                  # A4 page size
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle  # Text styles
+from reportlab.lib.units import mm                      # Unit of measurement (millimeters)
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer  # PDF elements
+from reportlab.lib import colors                        # Colors for PDF
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY   # Text alignment
+from reportlab.pdfbase import pdfmetrics              # For hyperlink support
+from reportlab.lib.styles import getSampleStyleSheet   # For standard styles
 
 
 
 
 # ============================================================================
-# 2. CLASSE PRINCIPAL - CVGenerator
+# 2. MAIN CLASS - CVGenerator
 # ============================================================================
 
 class CVGenerator:
     # ========================================================================
-    # 2.1 CONSTANTES DA CLASSE - Dados fixos que não mudam
+    # 2.1 CLASS CONSTANTS - Fixed data that doesn't change
     # ========================================================================
     
-    # Abreviações dos meses em Português
+    # Month abbreviations in Portuguese
     MONTHS_PT = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
     
-    # Abreviações dos meses em Inglês
+    # Month abbreviations in English
     MONTHS_EN = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
     
     
     # ========================================================================
-    # 2.2 INICIALIZAÇÃO - Construtor da classe
+    # 2.2 INITIALIZATION - Class constructor
     # ========================================================================
     
     def __init__(self, json_file=None, language='pt', output_file=None, config_file='config.json'):
         """
-        Inicializa o gerador de CV.
+        Initializes the CV generator.
         
-        Parâmetros:
-            json_file (str): Caminho do arquivo JSON com os dados do CV
-            language (str): Idioma ('pt' para Português ou 'en' para Inglês)
-            output_file (str): Caminho do arquivo PDF de saída
-            config_file (str): Caminho do arquivo de configuração
+        Parameters:
+            json_file (str): Path to the JSON file with CV data
+            language (str): Language ('pt' for Portuguese or 'en' for English)
+            output_file (str): Path to the output PDF file
+            config_file (str): Path to the configuration file
         """
-        # Resolve e carrega o arquivo de configuracao principal
+        # Resolve and load the main configuration file
         self.config_path = self._resolve_config_path(config_file)
         self.config = self._load_config(self.config_path)
         self.config_dir = self.config_path.parent
         
-        # Configura o sistema de logs (mensagens de erro e info)
+        # Configure the logging system (error and info messages)
         self._setup_logging()
         
-        # Define os arquivos e configurações
+        # Define files and configurations
         self.language = language.lower()
         self.config_file = str(self.config_path)
         self.output_dir = self._resolve_path(self.config['files']['output_dir'])
         self.json_file = self._resolve_path(json_file or self.config['files']['data'])
         
-        # Carrega os dados do CV, estilos e traduções de arquivos JSON
+        # Load CV data, styles, and translations from JSON files
         self.data = self._load_json(self.json_file)
         self.settings = self._load_json(self.config['files']['styles'])
         self.translations = self._load_json(self.config['files']['translations'])
         
-        # Valida se os dados obrigatórios estão presentes
+        # Validate if required data is present
         self._validate_data()
         
-        # Define o nome do arquivo de saída (PDF)
+        # Define the output PDF filename
         if output_file:
             self.output_file = str(self._resolve_path(output_file))
         else:
             self.output_file = self._generate_output_filename()
         
-        # Log de informação
-        self.logger.info(f"CVGenerator inicializado: idioma={language}, arquivo={self.json_file}")
+        # Log information
+        self.logger.info(f"CVGenerator initialized: language={language}, file={self.json_file}")
     
     
     # ========================================================================
-    # 2.3 CARREGAMENTO DE DADOS - Funções para ler arquivos
+    # 2.3 DATA LOADING - Functions for reading files
     # ========================================================================
     
     def _setup_logging(self):
         """
-        Configura o sistema de logs para exibir mensagens de erro e informação.
-        Lê a configuração do arquivo config.json para decidir o nível de log.
+        Configure the logging system to display error and info messages.
+        Reads the configuration file to determine the log level.
         """
         log_config = self.config.get('logging', {})
-        # Define se mostra mais detalhes (INFO) ou apenas erros (WARNING)
+        # Define whether to show more details (INFO) or only errors (WARNING)
         level = logging.INFO if log_config.get('enabled', True) else logging.WARNING
         
-        # Configura como as mensagens de log aparecem
+        # Configure how log messages appear
         logging.basicConfig(
             level=level,
             format='%(levelname)s: %(message)s'
         )
-        # Cria o objeto logger para usar em todo o código
+        # Create the logger object for use throughout the code
         self.logger = logging.getLogger(__name__)
 
     def _resolve_config_path(self, config_file):
         """
-        Resolve o caminho do config.json para um caminho absoluto.
+        Resolve the config.json path to an absolute path.
         """
         return Path(os.path.abspath(os.path.expanduser(str(config_file))))
 
     def _resolve_path(self, filepath):
         """
-        Resolve caminhos relativos a partir do diretorio do config.json.
+        Resolve relative paths from the config.json directory.
         """
         path = Path(os.path.expanduser(str(filepath)))
         if path.is_absolute():
@@ -135,281 +135,281 @@ class CVGenerator:
     
     def _load_config(self, config_file):
         """
-        Carrega o arquivo de configuração (config.json).
+        Load the configuration file (config.json).
         
-        Retorna:
-            dict: Dicionário com as configurações
+        Returns:
+            dict: Dictionary with configurations
             
-        Exceções:
-            Sai do programa se o arquivo não existir ou estiver inválido
+        Exceptions:
+            Exits the program if the file doesn't exist or is invalid
         """
         try:
-            # Abre o arquivo em modo leitura
-            with open(config_file, 'r', encoding='utf-8') as arquivo:
-                # Converte o conteúdo JSON em um dicionário Python
-                return json.load(arquivo)
+            # Open the file in read mode
+            with open(config_file, 'r', encoding='utf-8') as file:
+                # Convert JSON content to a Python dictionary
+                return json.load(file)
         except FileNotFoundError:
-            # Arquivo não foi encontrado
-            print(f"Erro: Arquivo de configuracao '{config_file}' nao encontrado")
-            exit(1)  # Encerra o programa com erro
+            # File was not found
+            print(f"Error: Configuration file '{config_file}' not found")
+            exit(1)  # Exit the program with error
         except json.JSONDecodeError:
-            # O arquivo não é um JSON válido
-            print("Erro: Arquivo de configuracao JSON invalido")
+            # The file is not valid JSON
+            print("Error: Configuration file JSON is invalid")
             exit(1)
     
     def _load_json(self, filepath):
         """
-        Carrega qualquer arquivo JSON (dados do CV, estilos, traduções).
+        Load any JSON file (CV data, styles, translations).
         
-        Parâmetros:
-            filepath (str): Caminho do arquivo JSON
+        Parameters:
+            filepath (str): Path to the JSON file
             
-        Retorna:
-            dict: Dicionário com os dados do JSON
+        Returns:
+            dict: Dictionary with JSON data
             
-        Exceções:
-            Sai do programa se o arquivo não existir ou estiver inválido
+        Exceptions:
+            Exits the program if the file doesn't exist or is invalid
         """
         try:
-            # Obtém a codificação configurada (geralmente 'utf-8')
+            # Get the encoding configured (usually 'utf-8')
             encoding = self.config['defaults']['encoding']
             
-            # Abre e lê o arquivo JSON
+            # Open and read the JSON file
             resolved_path = self._resolve_path(filepath)
-            with open(resolved_path, 'r', encoding=encoding) as arquivo:
-                return json.load(arquivo)
+            with open(resolved_path, 'r', encoding=encoding) as file:
+                return json.load(file)
         except FileNotFoundError:
-            self.logger.error(f"Arquivo '{resolved_path}' nao encontrado")
+            self.logger.error(f"File '{resolved_path}' not found")
             exit(1)
         except json.JSONDecodeError:
-            self.logger.error(f"Arquivo '{resolved_path}' JSON invalido")
+            self.logger.error(f"File '{resolved_path}' JSON is invalid")
             exit(1)
     
     def _validate_data(self):
         """
-        Valida se os dados obrigatórios estão presentes no arquivo JSON.
-        Verifica:
-        - Se existe a seção 'personal_info' com 'name' e 'email'
-        - Se existe a seção 'desired_role'
+        Validate if required data is present in the JSON file.
+        Checks:
+        - If 'personal_info' section exists with 'name' and 'email'
+        - If 'desired_role' section exists
         
-        Se algum dado obrigatório está faltando, exibe os erros e encerra o programa.
+        If required data is missing, displays errors and exits the program.
         """
-        erros = []  # Lista para armazenar mensagens de erro
+        errors = []  # List to store error messages
         
-        # Verifica se existe a seção de informações pessoais
+        # Check if personal information section exists
         if 'personal_info' not in self.data:
-            erros.append("• Falta seção 'personal_info'")
-        # Se existe, verifica se tem nome e email
+            errors.append("• Missing 'personal_info' section")
+        # If it exists, check if it has name and email
         elif 'name' not in self.data['personal_info'] or 'email' not in self.data['personal_info']:
-            erros.append("• Falta 'personal_info.name' ou 'personal_info.email'")
+            errors.append("• Missing 'personal_info.name' or 'personal_info.email'")
         
-        # Verifica se existe a seção do cargo desejado
+        # Check if desired role section exists
         if 'desired_role' not in self.data:
-            erros.append("• Falta seção 'desired_role'")
+            errors.append("• Missing 'desired_role' section")
         
-        # Se encontrou erros, exibe todos e encerra o programa
-        if erros:
-            self.logger.error("Arquivo cv_data.json inválido!")
-            for erro in erros:
-                self.logger.error(erro)
+        # If errors were found, display all and exit the program
+        if errors:
+            self.logger.error("Invalid cv_data.json file!")
+            for error in errors:
+                self.logger.error(error)
             exit(1)
         
-        # Se chegou aqui, todos os dados estão OK
-        self.logger.info("Dados validados com sucesso")
+        # If we got here, all data is OK
+        self.logger.info("Data validated successfully")
     
     def _generate_output_filename(self):
         """
-        Gera o nome do arquivo PDF de saída automaticamente.
-        Nome: Nome_do_Candidato_Cargo_IDIOMA.pdf
-        Exemplo: Bruno_Silva_Desenvolvedor_EN.pdf
+        Generate the output PDF filename automatically.
+        Name: Candidate_Name_Position_LANGUAGE.pdf
+        Example: John_Smith_Developer_EN.pdf
         
-        Retorna:
-            str: Caminho completo do arquivo de saída
+        Returns:
+            str: Full path to the output file
         """
-        # Obtém o diretório de saída da configuração
+        # Get the output directory from configuration
         output_dir = self.output_dir
-        # Cria o diretório se não existir
+        # Create the directory if it doesn't exist
         Path(output_dir).mkdir(exist_ok=True)
         
-        # Remove espaços do nome e substitui por underscore
-        nome_arquivo = self.data['personal_info']['name'].replace(' ', '_')
+        # Remove spaces from name and replace with underscore
+        filename = self.data['personal_info']['name'].replace(' ', '_')
         
-        # Obtém o cargo desejado na língua configurada
-        cargo = self._get_localized_field(self.data['desired_role'], 'desired_role', 'CV')
-        cargo = cargo.replace(' ', '_')
+        # Get the desired position in the configured language
+        position = self._get_localized_field(self.data['desired_role'], 'desired_role', 'CV')
+        position = position.replace(' ', '_')
         
-        # Adiciona sufixo do idioma apenas se não for português
-        sufixo_idioma = f"_{self.language.upper()}" if self.language != 'pt' else ""
+        # Add language suffix only if not Portuguese
+        language_suffix = f"_{self.language.upper()}" if self.language != 'pt' else ""
         
-        # Retorna o caminho completo do arquivo
-        return str(Path(output_dir) / f"{nome_arquivo}_{cargo}{sufixo_idioma}.pdf")
+        # Return the full path to the file
+        return str(Path(output_dir) / f"{filename}_{position}{language_suffix}.pdf")
     
     
     # ========================================================================
-    # 2.4 LOCALIZAÇÃO E TRADUÇÃO - Funções para trabalhar com idiomas
+    # 2.4 LOCALIZATION AND TRANSLATION - Functions for working with languages
     # ========================================================================
     
     def _get_text(self, key, section=None):
-        """Obtém texto de tradução"""
+        """Get translation text"""
         if section:
             return self.translations.get(self.language, {}).get(section, {}).get(key, key)
         return key
     
-    def _get_localized_field(self, dados, nome_campo, padrao=''):
+    def _get_localized_field(self, data, field_name, default=''):
         """
-        Obtém um campo localizado (traduzido) dos dados.
-        Implementa fallback inteligente: idioma atual → português → sem sufixo → padrão.
+        Get a localized (translated) field from data.
+        Implements smart fallback: current language → Portuguese → no suffix → default.
         
-        Exemplo:
-            _get_localized_field(dados, 'position')
-            Procura em ordem:
-            1. position_en (se idioma for 'en')
-            2. position_pt (fallback para português)
-            3. position (sem sufixo de idioma)
-            4. padrao (valor padrão se tudo falhar)
+        Example:
+            _get_localized_field(data, 'position')
+            Searches in order:
+            1. position_en (if language is 'en')
+            2. position_pt (fallback to Portuguese)
+            3. position (without language suffix)
+            4. default (default value if everything fails)
         
-        Parâmetros:
-            dados (dict): Dicionário com os dados
-            nome_campo (str): Nome do campo a procurar
-            padrao (str): Valor padrão se não encontrar
+        Parameters:
+            data (dict): Dictionary with data
+            field_name (str): Field name to search for
+            default (str): Default value if not found
             
-        Retorna:
-            str: Valor do campo ou valor padrão
+        Returns:
+            str: Field value or default value
         """
-        # Verifica se dados é realmente um dicionário
-        if not isinstance(dados, dict):
-            return padrao
+        # Check if data is really a dictionary
+        if not isinstance(data, dict):
+            return default
         
-        # 1️⃣ Tenta com o idioma atual (ex: 'position_en')
-        campo_localizado = f"{nome_campo}_{self.language}"
-        valor = dados.get(campo_localizado, '').strip() if isinstance(dados.get(campo_localizado), str) else ''
+        # 1️⃣ Try with current language (e.g., 'position_en')
+        localized_field = f"{field_name}_{self.language}"
+        value = data.get(localized_field, '').strip() if isinstance(data.get(localized_field), str) else ''
         
-        # 2️⃣ Se vazio e não é português, tenta português como fallback
-        if not valor and self.language != 'pt':
-            valor = dados.get(f"{nome_campo}_pt", '').strip() if isinstance(dados.get(f"{nome_campo}_pt"), str) else ''
+        # 2️⃣ If empty and not Portuguese, try Portuguese as fallback
+        if not value and self.language != 'pt':
+            value = data.get(f"{field_name}_pt", '').strip() if isinstance(data.get(f"{field_name}_pt"), str) else ''
         
-        # 3️⃣ Se ainda vazio, tenta sem sufixo de idioma
-        if not valor:
-            valor = dados.get(nome_campo, '').strip() if isinstance(dados.get(nome_campo), str) else ''
+        # 3️⃣ If still empty, try without language suffix
+        if not value:
+            value = data.get(field_name, '').strip() if isinstance(data.get(field_name), str) else ''
         
-        # 4️⃣ Retorna o valor encontrado ou o padrão
-        return valor if valor else padrao
+        # 4️⃣ Return found value or default
+        return value if value else default
     
     
     # ========================================================================
-    # 2.5 FORMATAÇÃO DE DADOS - Funções para converter dados em texto
+    # 2.5 DATA FORMATTING - Functions to convert data to text
     # ========================================================================
     
-    def _escape_text(self, texto):
+    def _escape_text(self, text):
         """
-        Escapa caracteres especiais para uso seguro em PDF.
-        Converte caracteres que poderiam quebrar o PDF em versões seguras.
+        Escape special characters for safe PDF usage.
+        Converts characters that could break the PDF to safe versions.
         
-        Parâmetros:
-            texto (str): Texto a escapar
+        Parameters:
+            text (str): Text to escape
             
-        Retorna:
-            str: Texto com caracteres escapados
+        Returns:
+            str: Text with escaped characters
         """
-        return escape(str(texto), {"'": "&apos;", '"': "&quot;"})
+        return escape(str(text), {"'": "&apos;", '"': "&quot;"})
     
-    def _format_month(self, mes_str):
+    def _format_month(self, month_str):
         """
-        Converte o número do mês em abreviação (1 -> 'Jan').
-        Suporta português e inglês.
+        Convert month number to abbreviation (1 -> 'Jan').
+        Supports Portuguese and English.
         
-        Parâmetros:
-            mes_str (str): Número do mês (1-12)
+        Parameters:
+            month_str (str): Month number (1-12)
             
-        Retorna:
-            str: Abreviação do mês ou o texto original se inválido
+        Returns:
+            str: Month abbreviation or original text if invalid
         """
         try:
-            # Converte string para número
-            numero_mes = int(mes_str)
+            # Convert string to number
+            month_number = int(month_str)
             
-            # Verifica se o número está entre 1 e 12
-            if 1 <= numero_mes <= 12:
-                # Escolhe a lista de meses conforme o idioma
-                meses = self.MONTHS_PT if self.language == 'pt' else self.MONTHS_EN
-                # Retorna o mês abreviado (número - 1 porque lista começa no 0)
-                return meses[numero_mes - 1]
+            # Check if the number is between 1 and 12
+            if 1 <= month_number <= 12:
+                # Choose the month list according to language
+                months = self.MONTHS_PT if self.language == 'pt' else self.MONTHS_EN
+                # Return the abbreviated month (number - 1 because list starts at 0)
+                return months[month_number - 1]
         except (ValueError, IndexError):
-            # Se não conseguir converter, ignora o erro
+            # If conversion fails, ignore the error
             pass
         
-        # Se não conseguiu converter, retorna o texto original
-        return mes_str
+        # If couldn't convert, return original text
+        return month_str
     
-    def _format_period(self, mes_inicio, ano_inicio, mes_fim, ano_fim):
+    def _format_period(self, start_month, start_year, end_month, end_year):
         """
-        Formata um período de tempo (data início - data fim).
+        Format a time period (start date - end date).
         
-        Exemplos:
+        Examples:
             "Jan 2020 - Mar 2023"
-            "Jan 2020 - Atual"
+            "Jan 2020 - Present"
         
-        Parâmetros:
-            mes_inicio (str): Número do mês de início (1-12)
-            ano_inicio (str): Ano de início (2020)
-            mes_fim (str): Número do mês de fim (pode estar vazio se atual)
-            ano_fim (str): Ano de fim (pode estar vazio se atual)
+        Parameters:
+            start_month (str): Start month number (1-12)
+            start_year (str): Start year (2020)
+            end_month (str): End month number (may be empty if current)
+            end_year (str): End year (may be empty if current)
             
-        Retorna:
-            str: Período formatado
+        Returns:
+            str: Formatted period
         """
-        # Converte o número do mês em abreviação
-        mes_inicio = self._format_month(mes_inicio)
-        # Monta a data de início
-        periodo = f"{mes_inicio} {ano_inicio}"
+        # Convert month number to abbreviation
+        start_month = self._format_month(start_month)
+        # Build the start date
+        period = f"{start_month} {start_year}"
         
-        # Se tem data de fim, adiciona ao período
-        if mes_fim and ano_fim:
-            mes_fim = self._format_month(mes_fim)
-            periodo += f" - {mes_fim} {ano_fim}"
+        # If there's an end date, add it to the period
+        if end_month and end_year:
+            end_month = self._format_month(end_month)
+            period += f" - {end_month} {end_year}"
         else:
-            # Se não tem data de fim, significa que ainda trabalha lá
-            label_atual = self._get_text('current', 'labels')
-            periodo += f" - {label_atual}"
+            # If there's no end date, means still working there
+            current_label = self._get_text('current', 'labels')
+            period += f" - {current_label}"
         
-        return periodo
+        return period
     
     
     # ========================================================================
-    # 2.6 ESTILOS - Funções para definir aparência do PDF
+    # 2.6 STYLES - Functions to define PDF appearance
     # ========================================================================
     
     def _create_styles(self):
         """
-        Cria os estilos personalizados para o PDF.
-        Define tamanho, cor, alinhamento e fonte de cada tipo de texto.
-        Cores e fontes são hardcoded (não dependem de arquivo externo).
+        Create custom PDF styles.
+        Define size, color, alignment, and font for each text type.
+        Colors and fonts are hardcoded (don't depend on external file).
         
-        Retorna:
-            StyleSheet1: Objeto com todos os estilos definidos
+        Returns:
+            StyleSheet1: Object with all defined styles
         """
-        # ====== DEFINIÇÕES DE CORES E FONTES (Hardcoded) ======
+        # ====== COLOR AND FONT DEFINITIONS (Hardcoded) ======
         FONT_NAME = 'Helvetica-Bold'
         FONT_NAME_REGULAR = 'Helvetica'
-        COLOR_NAME = '#000000'           # Nome (preto)
-        COLOR_TITLE = '#000000'          # Título (preto)
-        COLOR_SECTION = '#666666'        # Títulos de seção (cinza escuro)
-        COLOR_TEXT = '#000000'           # Texto do corpo (preto)
+        COLOR_NAME = '#000000'           # Name (black)
+        COLOR_TITLE = '#000000'          # Title (black)
+        COLOR_SECTION = '#666666'        # Section titles (dark gray)
+        COLOR_TEXT = '#000000'           # Body text (black)
         
-        FONT_SIZE_NAME = 24              # Tamanho do nome
-        FONT_SIZE_TITLE = 12             # Tamanho do título
-        FONT_SIZE_SECTION = 14           # Tamanho de títulos de seção
-        FONT_SIZE_SUBHEADING = 12        # Tamanho de subtítulos
-        FONT_SIZE_BODY = 10              # Tamanho do texto do corpo
-        FONT_SIZE_DATE = 9               # Tamanho de datas
+        FONT_SIZE_NAME = 24              # Name font size
+        FONT_SIZE_TITLE = 12             # Title font size
+        FONT_SIZE_SECTION = 14           # Section title font size
+        FONT_SIZE_SUBHEADING = 12        # Subheading font size
+        FONT_SIZE_BODY = 10              # Body text font size
+        FONT_SIZE_DATE = 9               # Date font size
         
-        # Obtém os estilos básicos da ReportLab
-        estilos = getSampleStyleSheet()
+        # Get basic styles from ReportLab
+        styles = getSampleStyleSheet()
         
-        # Cria estilo para o NOME (grande, negrito, centralizado)
-        estilos.add(ParagraphStyle(
+        # Create style for NAME (large, bold, centered)
+        styles.add(ParagraphStyle(
             name='NameStyle',
-            parent=estilos['Heading1'],
+            parent=styles['Heading1'],
             fontSize=FONT_SIZE_NAME,
             textColor=colors.HexColor(COLOR_NAME),
             spaceAfter=6,
@@ -417,10 +417,10 @@ class CVGenerator:
             fontName=FONT_NAME
         ))
         
-        # Cria estilo para o TÍTULO (cargo desejado)
-        estilos.add(ParagraphStyle(
+        # Create style for TITLE (desired position)
+        styles.add(ParagraphStyle(
             name='TitleStyle',
-            parent=estilos['Normal'],
+            parent=styles['Normal'],
             fontSize=FONT_SIZE_TITLE,
             textColor=colors.HexColor(COLOR_TITLE),
             spaceAfter=24,
@@ -428,10 +428,10 @@ class CVGenerator:
             fontName=FONT_NAME
         ))
         
-        # Cria estilo para TÍTULOS DE SEÇÃO (Experiência, Educação, etc)
-        estilos.add(ParagraphStyle(
+        # Create style for SECTION TITLES (Experience, Education, etc)
+        styles.add(ParagraphStyle(
             name='H2',
-            parent=estilos['Normal'],
+            parent=styles['Normal'],
             fontSize=FONT_SIZE_SECTION,
             textColor=colors.HexColor(COLOR_SECTION),
             spaceBefore=14,
@@ -439,10 +439,10 @@ class CVGenerator:
             fontName=FONT_NAME
         ))
         
-        # Cria estilo para SUBTÍTULOS (Cargo, Empresa, Grau, Universidade)
-        estilos.add(ParagraphStyle(
+        # Create style for SUBTITLES (Position, Company, Degree, University)
+        styles.add(ParagraphStyle(
             name='H3',
-            parent=estilos['Normal'],
+            parent=styles['Normal'],
             fontSize=FONT_SIZE_SUBHEADING,
             textColor=colors.HexColor(COLOR_SECTION),
             spaceBefore=10,
@@ -452,9 +452,9 @@ class CVGenerator:
             keepWithNext=1
         ))
 
-        estilos.add(ParagraphStyle(
+        styles.add(ParagraphStyle(
             name='H4',
-            parent=estilos['Normal'],
+            parent=styles['Normal'],
             fontSize=FONT_SIZE_SUBHEADING - 1,
             textColor=colors.HexColor(COLOR_SECTION),
             spaceAfter=2,
@@ -463,10 +463,10 @@ class CVGenerator:
             keepWithNext=1
         ))
         
-        # Cria estilo para TEXTO DO CORPO (conteúdo principal, justificado)
-        estilos.add(ParagraphStyle(
+        # Create style for BODY TEXT (main content, justified)
+        styles.add(ParagraphStyle(
             name='BodyStyle',
-            parent=estilos['Normal'],
+            parent=styles['Normal'],
             fontSize=FONT_SIZE_BODY,
             textColor=colors.HexColor(COLOR_TEXT),
             spaceAfter=2,
@@ -475,18 +475,18 @@ class CVGenerator:
             fontName=FONT_NAME_REGULAR
         ))
 
-        estilos.add(ParagraphStyle(
+        styles.add(ParagraphStyle(
             name='ContactStyle',
             fontSize=FONT_SIZE_BODY + 1,
-            parent=estilos['BodyStyle'],
+            parent=styles['BodyStyle'],
             alignment=TA_CENTER,
             leftIndent=0,
             fontName=FONT_NAME_REGULAR
         ))
 
-        estilos.add(ParagraphStyle(
+        styles.add(ParagraphStyle(
             name='Date',
-            parent=estilos['Normal'],
+            parent=styles['Normal'],
             fontSize=FONT_SIZE_DATE,
             textColor=colors.HexColor(COLOR_TEXT),
             leftIndent=10,
@@ -494,407 +494,407 @@ class CVGenerator:
             fontName=FONT_NAME_REGULAR
         ))
         
-        return estilos
+        return styles
     
     
     # ========================================================================
-    # 2.7 MONTAGEM DO PDF - Funções para adicionar seções
+    # 2.7 PDF ASSEMBLY - Functions to add sections
     # ========================================================================
     
-    def _add_header(self, elementos_pdf, estilos):
+    def _add_header(self, pdf_elements, styles):
         """
-        Adiciona o cabeçalho do CV ao documento.
-        Inclui: Nome, Cargo Desejado, E-mail, Telefone, Localização, Redes Sociais.
+        Add the header to the CV document.
+        Includes: Name, Desired Position, Email, Phone, Location, Social Networks.
         
-        Parâmetros:
-            elementos_pdf (list): Lista de elementos do PDF
-            estilos (StyleSheet1): Estilos de texto
+        Parameters:
+            pdf_elements (list): List of PDF elements
+            styles (StyleSheet1): Text styles
         """
         info = self.data['personal_info']
-        espacamento = self.settings['spacing']
+        spacing = self.settings['spacing']
         
-        # Adiciona o nome
-        elementos_pdf.append(Paragraph(self._escape_text(info['name']), estilos['NameStyle']))
+        # Add the name
+        pdf_elements.append(Paragraph(self._escape_text(info['name']), styles['NameStyle']))
         
-        # Adiciona o cargo desejado (se existir)
-        titulo = self._get_localized_field(self.data['desired_role'], 'desired_role')
-        if titulo:
-            elementos_pdf.append(Paragraph(self._escape_text(titulo), estilos['TitleStyle']))
+        # Add desired position (if exists)
+        title = self._get_localized_field(self.data['desired_role'], 'desired_role')
+        if title:
+            pdf_elements.append(Paragraph(self._escape_text(title), styles['TitleStyle']))
         
-        # Adiciona informacoes de contato em uma unica linha
-        contato_itens = []
+        # Add contact information in one line
+        contact_items = []
         if info.get('phone'):
-            telefone = info['phone']
-            # Se o idioma e ingles, adiciona o prefixo +55 (Brasil)
-            if self.language == 'en' and not telefone.startswith('+55'):
-                telefone = '+55' + telefone
-            contato_itens.append(telefone)
+            phone = info['phone']
+            # If language is English, add +55 prefix (Brazil)
+            if self.language == 'en' and not phone.startswith('+55'):
+                phone = '+55' + phone
+            contact_items.append(phone)
 
         if info.get('email'):
-            contato_itens.append(info['email'])
+            contact_items.append(info['email'])
 
         if info.get('location'):
-            contato_itens.append(info['location'])
+            contact_items.append(info['location'])
 
-        if contato_itens:
-            contato_texto = " | ".join(contato_itens)
-            elementos_pdf.append(Paragraph(self._escape_text(contato_texto), estilos['ContactStyle']))
+        if contact_items:
+            contact_text = " | ".join(contact_items)
+            pdf_elements.append(Paragraph(self._escape_text(contact_text), styles['ContactStyle']))
         
-        # Adiciona redes sociais
-        redes_sociais = info.get('social') or []
-        if redes_sociais:
-            links_sociais = []
-            for item in redes_sociais:
+        # Add social networks
+        social_networks = info.get('social') or []
+        if social_networks:
+            social_links = []
+            for item in social_networks:
                 label = (item.get('label') or '').strip()
                 url = (item.get('url') or '').strip()
                 if url:
-                    # Cria link clicavel usando o label como texto
-                    url_escapada = self._escape_text(url)
-                    label_texto = label or url
-                    label_escapada = self._escape_text(label_texto)
-                    links_sociais.append(
-                        f'<a href="{url_escapada}" color="blue">{label_escapada}</a>'
+                    # Create clickable link using label as text
+                    escaped_url = self._escape_text(url)
+                    label_text = label or url
+                    escaped_label = self._escape_text(label_text)
+                    social_links.append(
+                        f'<a href="{escaped_url}" color="blue">{escaped_label}</a>'
                     )
-            if links_sociais:
-                texto_social = " | ".join(links_sociais)
-                elementos_pdf.append(Paragraph(texto_social, estilos['ContactStyle']))
+            if social_links:
+                social_text = " | ".join(social_links)
+                pdf_elements.append(Paragraph(social_text, styles['ContactStyle']))
         
-        # Adiciona espaçamento após o cabeçalho
-        elementos_pdf.append(Spacer(1, espacamento['header_bottom'] * mm))
+        # Add spacing after header
+        pdf_elements.append(Spacer(1, spacing['header_bottom'] * mm))
     
-    def _add_summary(self, elementos_pdf, estilos):
+    def _add_summary(self, pdf_elements, styles):
         """
-        Adiciona a seção de resumo profissional ao documento.
+        Add the professional summary section to the document.
         
-        Parâmetros:
-            elementos_pdf (list): Lista de elementos do PDF
-            estilos (StyleSheet1): Estilos de texto
+        Parameters:
+            pdf_elements (list): List of PDF elements
+            styles (StyleSheet1): Text styles
         """
-        dados_resumo = self.data.get('summary', {})
-        resumo = self._get_localized_field(dados_resumo, 'description').strip()
+        summary_data = self.data.get('summary', {})
+        summary = self._get_localized_field(summary_data, 'description').strip()
         
-        # Se não tiver resumo, não adiciona nada
-        if not resumo:
+        # If no summary, don't add anything
+        if not summary:
             return
         
-        espacamento = self.settings['spacing']
-        titulo_secao = self._get_text('summary', 'sections')
+        spacing = self.settings['spacing']
+        section_title = self._get_text('summary', 'sections')
         
-        # Adiciona título da seção
-        elementos_pdf.append(Paragraph(titulo_secao, estilos['H2']))
+        # Add section title
+        pdf_elements.append(Paragraph(section_title, styles['H2']))
         
-        # Escapa o texto e converte quebras de linha em <br/>
-        resumo_seguro = self._escape_text(resumo).replace('\n', '<br/>')
-        elementos_pdf.append(Paragraph(resumo_seguro, estilos['BodyStyle']))
+        # Escape text and convert line breaks to <br/>
+        safe_summary = self._escape_text(summary).replace('\n', '<br/>')
+        pdf_elements.append(Paragraph(safe_summary, styles['BodyStyle']))
         
-        # Adiciona espaçamento após a seção
-        elementos_pdf.append(Spacer(1, espacamento['section_bottom'] * mm))
+        # Add spacing after section
+        pdf_elements.append(Spacer(1, spacing['section_bottom'] * mm))
     
-    def _add_section_items(self, elementos_pdf, estilos, chave_secao, itens, formatador_item):
+    def _add_section_items(self, pdf_elements, styles, section_key, items, item_formatter):
         """
-        Função genérica para adicionar seções com múltiplos itens.
-        Reutiliza código para Experiência, Educação, Skills, Idiomas, etc.
+        Generic function to add sections with multiple items.
+        Reuses code for Experience, Education, Skills, Languages, etc.
         
-        Parâmetros:
-            elementos_pdf (list): Lista de elementos do PDF
-            estilos (StyleSheet1): Estilos de texto
-            chave_secao (str): Chave da seção (ex: 'experience', 'education')
-            itens (list): Lista de itens a adicionar
-            formatador_item (function): Função que formata cada item
+        Parameters:
+            pdf_elements (list): List of PDF elements
+            styles (StyleSheet1): Text styles
+            section_key (str): Section key (e.g., 'experience', 'education')
+            items (list): List of items to add
+            item_formatter (function): Function that formats each item
         """
-        # Se não tem itens, não adiciona nada
-        if not itens:
+        # If no items, don't add anything
+        if not items:
             return
         
-        espacamento = self.settings['spacing']
-        # Obtém o título da seção traduzido
-        titulo_secao = self._get_text(chave_secao, 'sections')
+        spacing = self.settings['spacing']
+        # Get translated section title
+        section_title = self._get_text(section_key, 'sections')
         
-        # Adiciona título da seção
-        elementos_pdf.append(Paragraph(titulo_secao, estilos['H2']))
+        # Add section title
+        pdf_elements.append(Paragraph(section_title, styles['H2']))
         
-        # Para cada item da seção, chama a função formatadora
-        for item in itens:
-            formatador_item(elementos_pdf, estilos, item)
+        # For each item in section, call formatter function
+        for item in items:
+            item_formatter(pdf_elements, styles, item)
         
-        # Adiciona espaçamento após a seção
-        elementos_pdf.append(Spacer(1, espacamento['item_bottom'] * mm))
+        # Add spacing after section
+        pdf_elements.append(Spacer(1, spacing['item_bottom'] * mm))
     
     
     # ========================================================================
-    # 2.8 FORMATADORES DE ITENS - Funções para formatar cada tipo de item
+    # 2.8 ITEM FORMATTERS - Functions to format each item type
     # ========================================================================
     
-    def _format_experience_item(self, elementos_pdf, estilos, trabalho):
+    def _format_experience_item(self, pdf_elements, styles, work):
         """
-        Formata um item de experiência profissional.
+        Format a professional experience item.
         
-        Exemplo de saída:
-            [NEGRITO] Desenvolvedor Python
-            Empresa XYZ
-            Jan 2020 - Atual
-            • Desenvolveu aplicações
-            • Trabalhou em equipe
+        Example output:
+            [BOLD] Python Developer
+            Company XYZ
+            Jan 2020 - Present
+            • Developed applications
+            • Worked in team
         
-        Parâmetros:
-            elementos_pdf (list): Lista de elementos do PDF
-            estilos (StyleSheet1): Estilos de texto
-            trabalho (dict): Dicionário com dados do trabalho
+        Parameters:
+            pdf_elements (list): List of PDF elements
+            styles (StyleSheet1): Text styles
+            work (dict): Dictionary with work data
         """
-        espacamento = self.settings['spacing']
+        spacing = self.settings['spacing']
         
-        # Obtém os dados
-        cargo = self._get_localized_field(trabalho, 'position')
-        empresa = self._get_localized_field(trabalho, 'company')
-        periodo = self._format_period(trabalho.get('start_month', ''), trabalho.get('start_year', ''), trabalho.get('end_month', ''), trabalho.get('end_year', ''))
+        # Get data
+        position = self._get_localized_field(work, 'position')
+        company = self._get_localized_field(work, 'company')
+        period = self._format_period(work.get('start_month', ''), work.get('start_year', ''), work.get('end_month', ''), work.get('end_year', ''))
         
-        # Adiciona cargo em negrito
-        elementos_pdf.append(Paragraph(f"<b>{self._escape_text(cargo)}</b>", estilos['H3']))
+        # Add position in bold
+        pdf_elements.append(Paragraph(f"<b>{self._escape_text(position)}</b>", styles['H3']))
         
-        # Adiciona empresa
-        elementos_pdf.append(Paragraph(f"<b>{self._escape_text(empresa)}</b>", estilos['H4']))
+        # Add company
+        pdf_elements.append(Paragraph(f"<b>{self._escape_text(company)}</b>", styles['H4']))
         
-        # Adiciona período
-        elementos_pdf.append(Paragraph(f"<i>{self._escape_text(periodo)}</i>", estilos['Date']))
+        # Add period
+        pdf_elements.append(Paragraph(f"<i>{self._escape_text(period)}</i>", styles['Date']))
         
-        # Adiciona descrições (pontos/bullet points)
-        descricoes = trabalho.get(f'description_{self.language}') or trabalho.get('description_pt', [])
-        for descricao in descricoes:
-            elementos_pdf.append(Paragraph(f"• {self._escape_text(descricao)}", estilos['BodyStyle']))
+        # Add descriptions (bullet points)
+        descriptions = work.get(f'description_{self.language}') or work.get('description_pt', [])
+        for description in descriptions:
+            pdf_elements.append(Paragraph(f"• {self._escape_text(description)}", styles['BodyStyle']))
         
-        # Adiciona pequeno espaçamento entre itens
-        elementos_pdf.append(Spacer(1, espacamento['small_bottom'] * mm))
+        # Add small spacing between items
+        pdf_elements.append(Spacer(1, spacing['small_bottom'] * mm))
     
-    def _format_education_item(self, elementos_pdf, estilos, educacao):
+    def _format_education_item(self, pdf_elements, styles, education):
         """
-        Formata um item de educação (graduação, pós, curso, etc).
+        Format an education item (bachelor's, master's, course, etc).
         
-        Exemplo de saída:
-            [NEGRITO] Bacharelado em Engenharia de Software
-            Universidade Federal do Brasil
-            Jan 2018 - Dez 2022
-            • Média: 8.5
+        Example output:
+            [BOLD] Bachelor's in Software Engineering
+            Federal University of Brazil
+            Jan 2018 - Dec 2022
+            • GPA: 8.5
         
-        Parâmetros:
-            elementos_pdf (list): Lista de elementos do PDF
-            estilos (StyleSheet1): Estilos de texto
-            educacao (dict): Dicionário com dados da educação
+        Parameters:
+            pdf_elements (list): List of PDF elements
+            styles (StyleSheet1): Text styles
+            education (dict): Dictionary with education data
         """
-        espacamento = self.settings['spacing']
+        spacing = self.settings['spacing']
         
-        # Obtém os dados
-        grau = self._get_localized_field(educacao, 'degree')
-        instituicao = self._get_localized_field(educacao, 'institution')
-        periodo = self._format_period(educacao.get('start_month', ''), educacao.get('start_year', ''), educacao.get('end_month', ''), educacao.get('end_year', '') )
+        # Get data
+        degree = self._get_localized_field(education, 'degree')
+        institution = self._get_localized_field(education, 'institution')
+        period = self._format_period(education.get('start_month', ''), education.get('start_year', ''), education.get('end_month', ''), education.get('end_year', '') )
         
-        # Adiciona grau em negrito
-        elementos_pdf.append(Paragraph(f"<b>{self._escape_text(grau)}</b>", estilos['H3']))
+        # Add degree in bold
+        pdf_elements.append(Paragraph(f"<b>{self._escape_text(degree)}</b>", styles['H3']))
         
-        # Adiciona instituição
-        elementos_pdf.append(Paragraph(f"<b>{self._escape_text(instituicao)}</b>", estilos['H4']))
+        # Add institution
+        pdf_elements.append(Paragraph(f"<b>{self._escape_text(institution)}</b>", styles['H4']))
         
-        # Adiciona período (se existir)
-        if periodo.strip():
-            elementos_pdf.append(Paragraph(f"<i>{self._escape_text(periodo)}</i>", estilos['Date']))
+        # Add period (if exists)
+        if period.strip():
+            pdf_elements.append(Paragraph(f"<i>{self._escape_text(period)}</i>", styles['Date']))
         
-        # Adiciona notas adicionais (pontos/bullet points)
-        descricoes = educacao.get(f'description_{self.language}') or educacao.get('description_pt', [])
-        for nota in descricoes:
-            elementos_pdf.append(Paragraph(f"• {self._escape_text(nota)}", estilos['BodyStyle']))
+        # Add additional notes (bullet points)
+        descriptions = education.get(f'description_{self.language}') or education.get('description_pt', [])
+        for note in descriptions:
+            pdf_elements.append(Paragraph(f"• {self._escape_text(note)}", styles['BodyStyle']))
         
-        # Adiciona pequeno espaçamento entre itens
-        elementos_pdf.append(Spacer(1, espacamento['small_bottom'] * mm))
+        # Add small spacing between items
+        pdf_elements.append(Spacer(1, spacing['small_bottom'] * mm))
     
-    def _format_core_skills_item(self, elementos_pdf, estilos, grupo_habilidade):
+    def _format_core_skills_item(self, pdf_elements, styles, skill_group):
         """
-        Formata um item de competências principais.
+        Format a core competencies item.
         
-        Exemplo de saída:
-            [NEGRITO] Liderança
-            • Gestão de equipes
-            • Comunicação
+        Example output:
+            [BOLD] Leadership
+            • Team management
+            • Communication
         
-        Parâmetros:
-            elementos_pdf (list): Lista de elementos do PDF
-            estilos (StyleSheet1): Estilos de texto
-            grupo_habilidade (dict): Dicionário com categoria e habilidades
+        Parameters:
+            pdf_elements (list): List of PDF elements
+            styles (StyleSheet1): Text styles
+            skill_group (dict): Dictionary with category and skills
         """
-        # Obtém a categoria (ex: "Liderança")
-        categoria = self._get_localized_field(grupo_habilidade, 'category')
-        # Obtém a lista de habilidades
-        descricoes = grupo_habilidade.get(f'description_{self.language}') or grupo_habilidade.get('description_pt', [])
+        # Get category (e.g., "Leadership")
+        category = self._get_localized_field(skill_group, 'category')
+        # Get list of skills
+        descriptions = skill_group.get(f'description_{self.language}') or skill_group.get('description_pt', [])
         
-        # Adiciona a categoria em negrito (se existir)
-        if categoria:
-            elementos_pdf.append(Paragraph(self._escape_text(categoria), estilos['H3']))
+        # Add category in bold (if exists)
+        if category:
+            pdf_elements.append(Paragraph(self._escape_text(category), styles['H3']))
         
-        # Adiciona cada habilidade com bullet point
-        for item in descricoes:
-            elementos_pdf.append(Paragraph(f"• {self._escape_text(item)}", estilos['BodyStyle']))
+        # Add each skill with bullet point
+        for item in descriptions:
+            pdf_elements.append(Paragraph(f"• {self._escape_text(item)}", styles['BodyStyle']))
         
-        # Pequeno espaçamento
-        elementos_pdf.append(Spacer(1, self.settings['spacing']['minimal_bottom'] * mm))
+        # Small spacing
+        pdf_elements.append(Spacer(1, self.settings['spacing']['minimal_bottom'] * mm))
     
-    def _format_skills_item(self, elementos_pdf, estilos, grupo_skill):
+    def _format_skills_item(self, pdf_elements, styles, skill_group):
         """
-        Formata um item de habilidades técnicas.
-        Os itens aparecem em uma linha, separados por vírgula.
+        Format a technical skills item.
+        Items appear in one line, separated by commas.
         
-        Exemplo de saída:
-            [NEGRITO] Linguagens de Programação
+        Example output:
+            [BOLD] Programming Languages
             Python, JavaScript, Java, C++
         
-        Parâmetros:
-            elementos_pdf (list): Lista de elementos do PDF
-            estilos (StyleSheet1): Estilos de texto
-            grupo_skill (dict): Dicionário com categoria e itens
+        Parameters:
+            pdf_elements (list): List of PDF elements
+            styles (StyleSheet1): Text styles
+            skill_group (dict): Dictionary with category and items
         """
-        # Obtém a categoria (ex: "Linguagens de Programação")
-        categoria = self._get_localized_field(grupo_skill, 'category')
-        # Obtém a lista de itens
-        itens = grupo_skill.get('item', [])
+        # Get category (e.g., "Programming Languages")
+        category = self._get_localized_field(skill_group, 'category')
+        # Get list of items
+        items = skill_group.get('item', [])
         
-        # Adiciona a categoria em negrito (se existir)
-        if categoria:
-            elementos_pdf.append(Paragraph(self._escape_text(categoria), estilos['H3']))
+        # Add category in bold (if exists)
+        if category:
+            pdf_elements.append(Paragraph(self._escape_text(category), styles['H3']))
         
-        # Se tem itens, junta todos com vírgula e adiciona em uma linha
-        if itens:
-            texto_itens = ', '.join([self._escape_text(item) for item in itens])
-            elementos_pdf.append(Paragraph(texto_itens, estilos['BodyStyle']))
+        # If has items, join all with comma and add in one line
+        if items:
+            item_text = ', '.join([self._escape_text(item) for item in items])
+            pdf_elements.append(Paragraph(item_text, styles['BodyStyle']))
         
-        # Espaçamento após a seção
-        elementos_pdf.append(Spacer(1, self.settings['spacing']['item_bottom'] * mm))
+        # Spacing after section
+        pdf_elements.append(Spacer(1, self.settings['spacing']['item_bottom'] * mm))
     
-    def _format_language_item(self, elementos_pdf, estilos, idioma):
+    def _format_language_item(self, pdf_elements, styles, language):
         """
-        Formata um item de idioma.
+        Format a language item.
         
-        Exemplo de saída:
-            [NEGRITO] Português - Nativo
+        Example output:
+            [BOLD] Portuguese - Native
         
-        Parâmetros:
-            elementos_pdf (list): Lista de elementos do PDF
-            estilos (StyleSheet1): Estilos de texto
-            idioma (dict): Dicionário com língua e proficiência
+        Parameters:
+            pdf_elements (list): List of PDF elements
+            styles (StyleSheet1): Text styles
+            language (dict): Dictionary with language and proficiency
         """
-        # Obtém o idioma
-        nome_idioma = self._get_localized_field(idioma, 'language')
-        # Obtém o nível de proficiência
-        proficiencia = self._get_localized_field(idioma, 'proficiency')
+        # Get language
+        language_name = self._get_localized_field(language, 'language')
+        # Get proficiency level
+        proficiency = self._get_localized_field(language, 'proficiency')
         
-        # Formata: [NEGRITO] Idioma - Proficiência
-        texto_idioma = f"<b>{self._escape_text(nome_idioma)}</b> - {self._escape_text(proficiencia)}"
-        elementos_pdf.append(Paragraph(texto_idioma, estilos['BodyStyle']))
+        # Format: [BOLD] Language - Proficiency
+        language_text = f"<b>{self._escape_text(language_name)}</b> - {self._escape_text(proficiency)}"
+        pdf_elements.append(Paragraph(language_text, styles['BodyStyle']))
     
-    def _format_award_item(self, elementos_pdf, estilos, premio):
+    def _format_award_item(self, pdf_elements, styles, award):
         """
-        Formata um item de prêmio ou reconhecimento.
+        Format an award or recognition item.
         
-        Exemplo de saída:
-            [NEGRITO] Melhor Funcionário - Empresa XYZ
+        Example output:
+            [BOLD] Best Employee - Company XYZ
         
-        Parâmetros:
-            elementos_pdf (list): Lista de elementos do PDF
-            estilos (StyleSheet1): Estilos de texto
-            premio (dict): Dicionário com título e descrição do prêmio
+        Parameters:
+            pdf_elements (list): List of PDF elements
+            styles (StyleSheet1): Text styles
+            award (dict): Dictionary with award title and description
         """
-        # Obtém título e descrição
-        titulo_premio = self._get_localized_field(premio, 'title')
-        descricao = self._get_localized_field(premio, 'description')
+        # Get title and description
+        award_title = self._get_localized_field(award, 'title')
+        description = self._get_localized_field(award, 'description')
         
-        # Formata o texto (título negrito - descrição)
-        if titulo_premio and descricao:
-            texto_premio = f"<b>{self._escape_text(titulo_premio)}</b> - {self._escape_text(descricao)}"
+        # Format text (bold title - description)
+        if award_title and description:
+            award_text = f"<b>{self._escape_text(award_title)}</b> - {self._escape_text(description)}"
         else:
-            # Se não tem os dois, usa o que tiver
-            texto_premio = self._escape_text(titulo_premio or descricao)
+            # If not both, use what we have
+            award_text = self._escape_text(award_title or description)
         
-        # Adiciona ao PDF (se tiver algum texto)
-        if texto_premio:
-            elementos_pdf.append(Paragraph(texto_premio, estilos['BodyStyle']))
+        # Add to PDF (if has text)
+        if award_text:
+            pdf_elements.append(Paragraph(award_text, styles['BodyStyle']))
     
-    def _format_certification_item(self, elementos_pdf, estilos, certificado):
+    def _format_certification_item(self, pdf_elements, styles, certification):
         """
-        Formata um item de certificação ou treinamento.
+        Format a certification or training item.
         
-        Exemplo de saída:
-            [NEGRITO] AWS Solutions Architect - Amazon Web Services (2023)
+        Example output:
+            [BOLD] AWS Solutions Architect - Amazon Web Services (2023)
         
-        Parâmetros:
-            elementos_pdf (list): Lista de elementos do PDF
-            estilos (StyleSheet1): Estilos de texto
-            certificado (dict): Dicionário com nome, emissor e ano
+        Parameters:
+            pdf_elements (list): List of PDF elements
+            styles (StyleSheet1): Text styles
+            certification (dict): Dictionary with name, issuer, and year
         """
-        # Obtém os dados
-        nome = self._get_localized_field(certificado, 'name')
-        emissor = self._get_localized_field(certificado, 'issuer')
-        ano = certificado.get('year', '')
+        # Get data
+        name = self._get_localized_field(certification, 'name')
+        issuer = self._get_localized_field(certification, 'issuer')
+        year = certification.get('year', '')
         
-        # Formata conforme os dados disponíveis
-        if nome and emissor and ano:
-            # Se tem tudo: Nome - Emissor (Ano)
-            texto_cert = f"<b>{self._escape_text(nome)}</b> - {self._escape_text(emissor)} ({self._escape_text(ano)})"
-        elif nome and emissor:
-            # Se não tem ano: Nome - Emissor
-            texto_cert = f"<b>{self._escape_text(nome)}</b> - {self._escape_text(emissor)}"
+        # Format according to available data
+        if name and issuer and year:
+            # If has everything: Name - Issuer (Year)
+            cert_text = f"<b>{self._escape_text(name)}</b> - {self._escape_text(issuer)} ({self._escape_text(year)})"
+        elif name and issuer:
+            # If no year: Name - Issuer
+            cert_text = f"<b>{self._escape_text(name)}</b> - {self._escape_text(issuer)}"
         else:
-            # Se falta emissor: apenas Nome
-            texto_cert = self._escape_text(nome or emissor)
+            # If issuer missing: Name only
+            cert_text = self._escape_text(name or issuer)
         
-        # Adiciona ao PDF (se tiver algum texto)
-        if texto_cert:
-            elementos_pdf.append(Paragraph(texto_cert, estilos['BodyStyle']))
+        # Add to PDF (if has text)
+        if cert_text:
+            pdf_elements.append(Paragraph(cert_text, styles['BodyStyle']))
     
-    def _format_publication_item(self, elementos_pdf, estilos, publicacao):
+    def _format_publication_item(self, pdf_elements, styles, publication):
         """
-        Formata um item de publicação.
+        Format a publication item.
         
-        Exemplo de saída:
-            [NEGRITO] Automação em Python - 2023
+        Example output:
+            [BOLD] Python Automation - 2023
         
-        Parâmetros:
-            elementos_pdf (list): Lista de elementos do PDF
-            estilos (StyleSheet1): Estilos de texto
-            publicacao (dict): Dicionário com título, descrição e ano
+        Parameters:
+            pdf_elements (list): List of PDF elements
+            styles (StyleSheet1): Text styles
+            publication (dict): Dictionary with title, description, and year
         """
-        # Obtém os dados
-        titulo = self._get_localized_field(publicacao, 'title')
-        descricao = self._get_localized_field(publicacao, 'description')
-        ano = publicacao.get('year', '')
+        # Get data
+        title = self._get_localized_field(publication, 'title')
+        description = self._get_localized_field(publication, 'description')
+        year = publication.get('year', '')
         
-        # Formata conforme os dados disponíveis
-        if titulo and ano:
-            # Se tem título e ano: Título (Ano)
-            texto_pub = f"<b>{self._escape_text(titulo)}</b> ({self._escape_text(ano)})"
-        elif titulo and descricao:
-            # Se tem título e descrição: Título - Descrição
-            texto_pub = f"<b>{self._escape_text(titulo)}</b> - {self._escape_text(descricao)}"
+        # Format according to available data
+        if title and year:
+            # If has title and year: Title (Year)
+            pub_text = f"<b>{self._escape_text(title)}</b> ({self._escape_text(year)})"
+        elif title and description:
+            # If has title and description: Title - Description
+            pub_text = f"<b>{self._escape_text(title)}</b> - {self._escape_text(description)}"
         else:
-            # Se tem apenas título
-            texto_pub = self._escape_text(titulo or descricao)
+            # If has title only
+            pub_text = self._escape_text(title or description)
         
-        # Adiciona ao PDF (se tiver algum texto)
-        if texto_pub:
-            elementos_pdf.append(Paragraph(texto_pub, estilos['BodyStyle']))
+        # Add to PDF (if has text)
+        if pub_text:
+            pdf_elements.append(Paragraph(pub_text, styles['BodyStyle']))
     
     
     # ========================================================================
-    # 2.9 MAPEADOR DE SEÇÕES - Mapa tipos de seção para funções
+    # 2.9 SECTION MAPPER - Map section types to functions
     # ========================================================================
     
-    def _get_section_formatador(self, tipo_secao):
+    def _get_section_formatter(self, section_type):
         """
-        Retorna a função formatadora para um tipo de seção.
-        Permite fácil extensão com novos tipos de seção.
+        Return the formatter function for a section type.
+        Allows easy extension with new section types.
         
-        Parâmetros:
-            tipo_secao (str): Tipo da seção (experience, education, skills, etc)
+        Parameters:
+            section_type (str): Section type (experience, education, skills, etc)
             
-        Retorna:
-            function: Função que formata cada item da seção
+        Returns:
+            function: Function that formats each section item
         """
-        mapeador = {
+        mapper = {
             'experience': self._format_experience_item,
             'education': self._format_education_item,
             'core_skills': self._format_core_skills_item,
@@ -904,215 +904,215 @@ class CVGenerator:
             'certifications': self._format_certification_item,
             'publications': self._format_publication_item,
         }
-        return mapeador.get(tipo_secao, None)
+        return mapper.get(section_type, None)
     
     
     # ========================================================================
-    # 2.10 GERAÇÃO DO PDF - Função principal
+    # 2.10 PDF GENERATION - Main function
     # ========================================================================
     
     def generate(self):
         """
-        Função principal que cria o documento PDF.
+        Main function that creates the PDF document.
         
-        Passos:
-        1. Cria o diretório de saída
-        2. Configura o documento PDF (tamanho, margens)
-        3. Cria os estilos
-        4. Adiciona cada seção ao documento
-        5. Salva o arquivo PDF
+        Steps:
+        1. Create output directory
+        2. Configure PDF document (size, margins)
+        3. Create styles
+        4. Add each section to document
+        5. Save PDF file
         
-        Retorna:
-            str: Caminho do arquivo PDF gerado
+        Returns:
+            str: Path to generated PDF file
         """
-        # Cria o diretório de saída se não existir
+        # Create output directory if it doesn't exist
         Path(self.output_dir).mkdir(exist_ok=True)
         
-        # Obtém configurações de margens
-        config_margens = self.settings.get('margins', {})
+        # Get margin configurations
+        margin_config = self.settings.get('margins', {})
         
-        # Cria o objeto do documento PDF
+        # Create PDF document object
         doc = SimpleDocTemplate(
             self.output_file,
-            pagesize=A4,                                           # Tamanho A4
-            rightMargin=config_margens.get('right', 19) * mm,    # Margem direita
-            leftMargin=config_margens.get('left', 19) * mm,      # Margem esquerda
-            topMargin=config_margens.get('top', 19) * mm,        # Margem superior
-            bottomMargin=config_margens.get('bottom', 19) * mm   # Margem inferior
+            pagesize=A4,                                           # A4 size
+            rightMargin=margin_config.get('right', 19) * mm,    # Right margin
+            leftMargin=margin_config.get('left', 19) * mm,      # Left margin
+            topMargin=margin_config.get('top', 19) * mm,        # Top margin
+            bottomMargin=margin_config.get('bottom', 19) * mm   # Bottom margin
         )
         
-        # Lista que armazena todos os elementos do PDF
-        elementos_pdf = []
+        # List that stores all PDF elements
+        pdf_elements = []
         
-        # Cria os estilos personalizados
-        estilos = self._create_styles()
+        # Create custom styles
+        styles = self._create_styles()
         
-        # ====== Adiciona cada seção do CV ======
+        # ====== Add each CV section ======
         
-        # Cabeçalho (nome, cargo, contato)
-        self._add_header(elementos_pdf, estilos)
+        # Header (name, position, contact)
+        self._add_header(pdf_elements, styles)
         
-        # Resumo profissional
-        self._add_summary(elementos_pdf, estilos)
+        # Professional summary
+        self._add_summary(pdf_elements, styles)
         
-        # ====== RENDERIZAR SEÇÕES DINÂMICAS ======
-        # Tenta usar a configuração de seções (se existir)
-        secoes_config = self.data.get('sections', None)
+        # ====== RENDER DYNAMIC SECTIONS ======
+        # Try to use section configuration (if it exists)
+        sections_config = self.data.get('sections', None)
         
-        if secoes_config and isinstance(secoes_config, list):
-            # Se tem configuração de seções, ordena e renderiza dinamicamente
-            secoes_ordenadas = sorted(
-                [s for s in secoes_config if s.get('enabled', True)],
+        if sections_config and isinstance(sections_config, list):
+            # If has section configuration, sort and render dynamically
+            sorted_sections = sorted(
+                [s for s in sections_config if s.get('enabled', True)],
                 key=lambda x: x.get('order', 999)
             )
             
-            for secao in secoes_ordenadas:
-                tipo_secao = secao.get('type')
-                if not tipo_secao:
+            for section in sorted_sections:
+                section_type = section.get('type')
+                if not section_type:
                     continue
                 
-                # Obtém a função formatadora para este tipo
-                formatador = self._get_section_formatador(tipo_secao)
-                if not formatador:
-                    self.logger.warning(f"Tipo de seção desconhecido: {tipo_secao}")
+                # Get formatter function for this type
+                formatter = self._get_section_formatter(section_type)
+                if not formatter:
+                    self.logger.warning(f"Unknown section type: {section_type}")
                     continue
                 
-                # Obtém os dados da seção
-                itens = self.data.get(tipo_secao, [])
+                # Get section data
+                items = self.data.get(section_type, [])
                 
-                # Renderiza a seção
+                # Render section
                 self._add_section_items(
-                    elementos_pdf, estilos, tipo_secao,
-                    itens,
-                    formatador
+                    pdf_elements, styles, section_type,
+                    items,
+                    formatter
                 )
         else:
-            # FALLBACK: Se não tem configuração de seções, usa ordem padrão (compatibilidade)
-            self.logger.info("Usando configuração padrão de seções (sem 'sections' no JSON)")
+            # FALLBACK: If no section configuration, use default order (compatibility)
+            self.logger.info("Using default section configuration (no 'sections' in JSON)")
             
-            # Seção de Experiência
+            # Experience section
             self._add_section_items(
-                elementos_pdf, estilos, 'experience',
+                pdf_elements, styles, 'experience',
                 self.data.get('experience', []),
                 self._format_experience_item
             )
             
-            # Seção de Educação
+            # Education section
             self._add_section_items(
-                elementos_pdf, estilos, 'education',
+                pdf_elements, styles, 'education',
                 self.data.get('education', []),
                 self._format_education_item
             )
             
-            # Seção de Competências Principais
+            # Core skills section
             self._add_section_items(
-                elementos_pdf, estilos, 'core_skills',
+                pdf_elements, styles, 'core_skills',
                 self.data.get('core_skills', []),
                 self._format_core_skills_item
             )
             
-            # Seção de Habilidades Técnicas
+            # Technical skills section
             self._add_section_items(
-                elementos_pdf, estilos, 'skills',
+                pdf_elements, styles, 'skills',
                 self.data.get('skills', []),
                 self._format_skills_item
             )
             
-            # Seção de Idiomas
+            # Languages section
             self._add_section_items(
-                elementos_pdf, estilos, 'languages',
+                pdf_elements, styles, 'languages',
                 self.data.get('languages', []),
                 self._format_language_item
             )
             
-            # Seção de Prêmios e Reconhecimentos
+            # Awards and recognition section
             self._add_section_items(
-                elementos_pdf, estilos, 'awards',
+                pdf_elements, styles, 'awards',
                 self.data.get('awards', []),
                 self._format_award_item
             )
             
-            # Seção de Certificações
+            # Certifications section
             self._add_section_items(
-                elementos_pdf, estilos, 'certifications',
+                pdf_elements, styles, 'certifications',
                 self.data.get('certifications', []),
                 self._format_certification_item
             )
         
-        # ====== Construir e salvar o PDF ======
-        doc.build(elementos_pdf)
+        # ====== Build and save PDF ======
+        doc.build(pdf_elements)
         
-        # Log de sucesso
-        self.logger.info(f"CV gerado com sucesso: {self.output_file}")
+        # Success log
+        self.logger.info(f"CV generated successfully: {self.output_file}")
         print(f"✓ {self._get_text('success_generated', 'labels')}: {self.output_file}")
         
         return self.output_file
 
 
 # ============================================================================
-# 3. FUNÇÃO PRINCIPAL - Entrada do programa
+# 3. MAIN FUNCTION - Program entry
 # ============================================================================
 
 def main():
     """
-    Função que executa quando o script é executado via linha de comando.
-    Processa os argumentos e cria o CVGenerator.
+    Function that executes when the script is run from command line.
+    Processes arguments and creates the CVGenerator.
     """
-    # Cria o parser de argumentos
+    # Create argument parser
     parser = argparse.ArgumentParser(
-        description='Gera CV em PDF a partir de arquivo JSON (suporte multilíngue)'
+        description='Generate CV in PDF from JSON file (with multilingual support)'
     )
     
-    # Argumento: arquivo de entrada JSON
+    # Argument: input JSON file
     parser.add_argument(
         'input',
         nargs='?',
         default=None,
-        help='Arquivo JSON com dados do CV (padrão: cv_data.json)'
+        help='JSON file with CV data (default: cv_data.json)'
     )
     
-    # Argumento: idioma (-l ou --language)
+    # Argument: language (-l or --language)
     parser.add_argument(
         '-l', '--language',
         choices=['pt', 'en'],
         default='pt',
-        help='Idioma do CV: pt (português) ou en (inglês). Padrão: pt'
+        help='CV language: pt (Portuguese) or en (English). Default: pt'
     )
     
-    # Argumento: arquivo de saída (-o ou --output)
+    # Argument: output file (-o or --output)
     parser.add_argument(
         '-o', '--output',
-        help='Arquivo PDF de saída'
+        help='Output PDF file'
     )
     
-    # Argumento: arquivo de configuração (-c ou --config)
+    # Argument: configuration file (-c or --config)
     parser.add_argument(
         '-c', '--config',
         default=str(Path(os.path.abspath(__file__)).with_name('config.json')),
-        help='Arquivo de configuração (padrão: config.json)'
+        help='Configuration file (default: config.json)'
     )
     
-    # Lê os argumentos
+    # Read arguments
     args = parser.parse_args()
     
     try:
-        # Cria o gerador de CV com os argumentos
+        # Create CV generator with arguments
         generator = CVGenerator(args.input, args.language, args.output, args.config)
-        # Gera o PDF
+        # Generate PDF
         generator.generate()
     except Exception as e:
-        # Se tiver erro, exibe e retorna 1 (erro)
-        print(f"Erro fatal: {e}")
+        # If error, display and return 1 (error)
+        print(f"Fatal error: {e}")
         return 1
     
-    # Se tudo correu bem, retorna 0 (sucesso)
+    # If everything went well, return 0 (success)
     return 0
 
 
 # ============================================================================
-# 4. PONTO DE ENTRADA - Verifica se o script está sendo executado direto
+# 4. ENTRY POINT - Check if script is being executed directly
 # ============================================================================
 
 if __name__ == '__main__':
-    # Executa a função main e passa o código de retorno para o sistema
+    # Execute main function and pass return code to system
     exit(main())
