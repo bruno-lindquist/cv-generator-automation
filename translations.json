@@ -1,14 +1,14 @@
 {
   "pt": {
     "sections": {
-      "summary": "RESUMO",
-      "experience": "EXPERIÊNCIA PROFISSIONAL",
-      "education": "FORMAÇÃO ACADÊMICA",
-      "core_skills": "COMPETÊNCIAS PRINCIPAIS",
-      "skills": "HABILIDADES TÉCNICAS",
-      "languages": "IDIOMAS",
-      "awards": "PRÊMIOS E RECONHECIMENTOS",
-      "certifications": "CERTIFICAÇÕES"
+      "summary": "Resumo",
+      "experience": "Experiência Profissional",
+      "education": "Educação",
+      "core_skills": "Competências",
+      "skills": "Habilidades Técnicas",
+      "languages": "Idiomas",
+      "awards": "Prêmios",
+      "certifications": "Certificações"
     },
     "labels": {
       "current": "Atual",
@@ -20,14 +20,14 @@
   },
   "en": {
     "sections": {
-      "summary": "SUMMARY",
-      "experience": "PROFESSIONAL EXPERIENCE",
-      "education": "EDUCATION",
-      "core_skills": "CORE SKILLS",
-      "skills": "TECHNICAL SKILLS",
-      "languages": "LANGUAGES",
-      "awards": "AWARDS & RECOGNITION",
-      "certifications": "CERTIFICATIONS"
+      "summary": "Summary",
+      "experience": "Work Experience",
+      "education": "Education",
+      "core_skills": "Core Competencies",
+      "skills": "Skills",
+      "languages": "Languages",
+      "awards": "Awards",
+      "certifications": "Certifications"
     },
     "labels": {
       "current": "Present",

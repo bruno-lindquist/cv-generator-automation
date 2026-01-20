@@ -1,30 +1,16 @@
 {
   "page_size": "A4",
   "margins": {
-    "top": 19,
-    "bottom": 19,
-    "left": 19,
-    "right": 19
+    "top": 10,
+    "bottom": 8,
+    "left": 12,
+    "right": 12
   },
   "spacing": {
-    "header_bottom": 5,
-    "section_bottom": 4,
-    "item_bottom": 3,
-    "small_bottom": 2,
-    "minimal_bottom": 1
-  },
-  "colors": {
-    "name": "#1a1a1a",
-    "section_title": "#2c3e50",
-    "section_border": "#3498db",
-    "text": "#404040"
-  },
-  "fonts": {
-    "name_size": 24,
-    "title_size": 12,
-    "section_size": 13,
-    "subheading_size": 11,
-    "body_size": 10
+    "header_bottom": 0,
+    "section_bottom": 2,
+    "item_bottom": 1,
+    "small_bottom": 1,
+    "minimal_bottom": 0.1
   }
 }
-

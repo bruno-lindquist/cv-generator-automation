@@ -11,7 +11,8 @@ Ferramenta para gerar currículos em PDF com **suporte multilíngue completo** (
 - 🌍 **Multilíngue automático**: Português e inglês com fallback inteligente (campos vazios em EN usam PT)
 - 📊 **Arquitetura limpa**: Dados em `cv_data.json`, estilos em `styles.json`, traduções em `translations.json`
 - 🎨 **100% customizável**: Cores, fontes, margens, espaçamentos via JSON (zero código)
-- 📝 **Logging estruturado**: Rastreamento completo de erros e operações
+
+- �📝 **Logging estruturado**: Rastreamento completo de erros e operações
 - ⚡ **Eficiente**: Código otimizado, sem repetições, métodos reutilizáveis
 - 📅 **Datas inteligentes**: Formatação automática de meses (Jan, Fev, Mar... ou Jan, Feb, Mar...)
 - 🚀 **Duas interfaces**: Menu interativo (shell/batch) ou linha de comando Python
