@@ -46,15 +46,6 @@ class CVGenerator:
     # ========================================================================
     
     def __init__(self, json_file=None, language='pt', output_file=None, config_file='config.json'):
-        """
-        Initializes the CV generator.
-        
-        Parameters:
-            json_file (str): Path to the JSON file with CV data
-            language (str): Language ('pt' for Portuguese or 'en' for English)
-            output_file (str): Path to the output PDF file
-            config_file (str): Path to the configuration file
-        """
         # Resolve and load the main configuration file
         self.config_path = self._resolve_config_path(config_file)
         self.config = self._load_config(self.config_path)
@@ -92,10 +83,6 @@ class CVGenerator:
     # ========================================================================
     
     def _setup_logging(self):
-        """
-        Configure the logging system to display error and info messages.
-        Reads the configuration file to determine the log level.
-        """
         log_config = self.config.get('logging', {})
         # Define whether to show more details (INFO) or only errors (WARNING)
         level = logging.INFO if log_config.get('enabled', True) else logging.WARNING
@@ -109,30 +96,15 @@ class CVGenerator:
         self.logger = logging.getLogger(__name__)
 
     def _resolve_config_path(self, config_file):
-        """
-        Resolve the config.json path to an absolute path.
-        """
         return Path(os.path.abspath(os.path.expanduser(str(config_file))))
 
     def _resolve_path(self, filepath):
-        """
-        Resolve relative paths from the config.json directory.
-        """
         path = Path(os.path.expanduser(str(filepath)))
         if path.is_absolute():
             return path
         return self.config_dir / path
     
     def _load_config(self, config_file):
-        """
-        Load the configuration file (config.json).
-        
-        Returns:
-            dict: Dictionary with configurations
-            
-        Exceptions:
-            Exits the program if the file doesn't exist or is invalid
-        """
         try:
             # Open the file in read mode
             with open(config_file, 'r', encoding='utf-8') as file:
@@ -148,18 +120,6 @@ class CVGenerator:
             exit(1)
     
     def _load_json(self, filepath):
-        """
-        Load any JSON file (CV data, styles, translations).
-        
-        Parameters:
-            filepath (str): Path to the JSON file
-            
-        Returns:
-            dict: Dictionary with JSON data
-            
-        Exceptions:
-            Exits the program if the file doesn't exist or is invalid
-        """
         try:
             # Get the encoding configured (usually 'utf-8')
             encoding = self.config['defaults']['encoding']
@@ -176,14 +136,6 @@ class CVGenerator:
             exit(1)
     
     def _validate_data(self):
-        """
-        Validate if required data is present in the JSON file.
-        Checks:
-        - If 'personal_info' section exists with 'name' and 'email'
-        - If 'desired_role' section exists
-        
-        If required data is missing, displays errors and exits the program.
-        """
         errors = []  # List to store error messages
         
         # Check if personal information section exists
@@ -208,14 +160,6 @@ class CVGenerator:
         self.logger.info("Data validated successfully")
     
     def _generate_output_filename(self):
-        """
-        Generate the output PDF filename automatically.
-        Name: Candidate_Name_Position_LANGUAGE.pdf
-        Example: John_Smith_Developer_EN.pdf
-        
-        Returns:
-            str: Full path to the output file
-        """
         # Get the output directory from configuration
         output_dir = self.output_dir
         # Create the directory if it doesn't exist
@@ -240,32 +184,11 @@ class CVGenerator:
     # ========================================================================
     
     def _get_text(self, key, section=None):
-        """Get translation text"""
         if section:
             return self.translations.get(self.language, {}).get(section, {}).get(key, key)
         return key
     
     def _get_localized_field(self, data, field_name, default=''):
-        """
-        Get a localized (translated) field from data.
-        Implements smart fallback: current language → Portuguese → no suffix → default.
-        
-        Example:
-            _get_localized_field(data, 'position')
-            Searches in order:
-            1. position_en (if language is 'en')
-            2. position_pt (fallback to Portuguese)
-            3. position (without language suffix)
-            4. default (default value if everything fails)
-        
-        Parameters:
-            data (dict): Dictionary with data
-            field_name (str): Field name to search for
-            default (str): Default value if not found
-            
-        Returns:
-            str: Field value or default value
-        """
         # Check if data is really a dictionary
         if not isinstance(data, dict):
             return default
@@ -291,29 +214,9 @@ class CVGenerator:
     # ========================================================================
     
     def _escape_text(self, text):
-        """
-        Escape special characters for safe PDF usage.
-        Converts characters that could break the PDF to safe versions.
-        
-        Parameters:
-            text (str): Text to escape
-            
-        Returns:
-            str: Text with escaped characters
-        """
         return escape(str(text), {"'": "&apos;", '"': "&quot;"})
     
     def _format_month(self, month_str):
-        """
-        Convert month number to abbreviation (1 -> 'Jan').
-        Supports Portuguese and English.
-        
-        Parameters:
-            month_str (str): Month number (1-12)
-            
-        Returns:
-            str: Month abbreviation or original text if invalid
-        """
         try:
             # Convert string to number
             month_number = int(month_str)
@@ -332,22 +235,6 @@ class CVGenerator:
         return month_str
     
     def _format_period(self, start_month, start_year, end_month, end_year):
-        """
-        Format a time period (start date - end date).
-        
-        Examples:
-            "Jan 2020 - Mar 2023"
-            "Jan 2020 - Present"
-        
-        Parameters:
-            start_month (str): Start month number (1-12)
-            start_year (str): Start year (2020)
-            end_month (str): End month number (may be empty if current)
-            end_year (str): End year (may be empty if current)
-            
-        Returns:
-            str: Formatted period
-        """
         # Convert month number to abbreviation
         start_month = self._format_month(start_month)
         # Build the start date
@@ -370,14 +257,6 @@ class CVGenerator:
     # ========================================================================
     
     def _create_styles(self):
-        """
-        Create custom PDF styles.
-        Define size, color, alignment, and font for each text type.
-        Colors and fonts are hardcoded (don't depend on external file).
-        
-        Returns:
-            StyleSheet1: Object with all defined styles
-        """
         # ====== COLOR AND FONT DEFINITIONS (Hardcoded) ======
         FONT_NAME = 'Helvetica-Bold'
         FONT_NAME_REGULAR = 'Helvetica'
@@ -492,14 +371,6 @@ class CVGenerator:
     # ========================================================================
     
     def _add_header(self, pdf_elements, styles):
-        """
-        Add the header to the CV document.
-        Includes: Name, Desired Position, Email, Phone, Location, Social Networks.
-        
-        Parameters:
-            pdf_elements (list): List of PDF elements
-            styles (StyleSheet1): Text styles
-        """
         info = self.data['personal_info']
         spacing = self.settings['spacing']
         
@@ -553,13 +424,6 @@ class CVGenerator:
         pdf_elements.append(Spacer(1, spacing['header_bottom'] * mm))
     
     def _add_summary(self, pdf_elements, styles):
-        """
-        Add the professional summary section to the document.
-        
-        Parameters:
-            pdf_elements (list): List of PDF elements
-            styles (StyleSheet1): Text styles
-        """
         summary_data = self.data.get('summary', {})
         summary = self._get_localized_field(summary_data, 'description').strip()
         
@@ -581,17 +445,6 @@ class CVGenerator:
         pdf_elements.append(Spacer(1, spacing['section_bottom'] * mm))
     
     def _add_section_items(self, pdf_elements, styles, section_key, items, item_formatter):
-        """
-        Generic function to add sections with multiple items.
-        Reuses code for Experience, Education, Skills, Languages, etc.
-        
-        Parameters:
-            pdf_elements (list): List of PDF elements
-            styles (StyleSheet1): Text styles
-            section_key (str): Section key (e.g., 'experience', 'education')
-            items (list): List of items to add
-            item_formatter (function): Function that formats each item
-        """
         # If no items, don't add anything
         if not items:
             return
@@ -616,21 +469,6 @@ class CVGenerator:
     # ========================================================================
     
     def _format_experience_item(self, pdf_elements, styles, work):
-        """
-        Format a professional experience item.
-        
-        Example output:
-            [BOLD] Python Developer
-            Company XYZ
-            Jan 2020 - Present
-            • Developed applications
-            • Worked in team
-        
-        Parameters:
-            pdf_elements (list): List of PDF elements
-            styles (StyleSheet1): Text styles
-            work (dict): Dictionary with work data
-        """
         spacing = self.settings['spacing']
         
         # Get data
@@ -656,20 +494,6 @@ class CVGenerator:
         pdf_elements.append(Spacer(1, spacing['small_bottom'] * mm))
     
     def _format_education_item(self, pdf_elements, styles, education):
-        """
-        Format an education item (bachelor's, master's, course, etc).
-        
-        Example output:
-            [BOLD] Bachelor's in Software Engineering
-            Federal University of Brazil
-            Jan 2018 - Dec 2022
-            • GPA: 8.5
-        
-        Parameters:
-            pdf_elements (list): List of PDF elements
-            styles (StyleSheet1): Text styles
-            education (dict): Dictionary with education data
-        """
         spacing = self.settings['spacing']
         
         # Get data
@@ -696,19 +520,6 @@ class CVGenerator:
         pdf_elements.append(Spacer(1, spacing['small_bottom'] * mm))
     
     def _format_core_skills_item(self, pdf_elements, styles, skill_group):
-        """
-        Format a core competencies item.
-        
-        Example output:
-            [BOLD] Leadership
-            • Team management
-            • Communication
-        
-        Parameters:
-            pdf_elements (list): List of PDF elements
-            styles (StyleSheet1): Text styles
-            skill_group (dict): Dictionary with category and skills
-        """
         # Get category (e.g., "Leadership")
         category = self._get_localized_field(skill_group, 'category')
         # Get list of skills
@@ -726,19 +537,6 @@ class CVGenerator:
         pdf_elements.append(Spacer(1, self.settings['spacing']['minimal_bottom'] * mm))
     
     def _format_skills_item(self, pdf_elements, styles, skill_group):
-        """
-        Format a technical skills item.
-        Items appear in one line, separated by commas.
-        
-        Example output:
-            [BOLD] Programming Languages
-            Python, JavaScript, Java, C++
-        
-        Parameters:
-            pdf_elements (list): List of PDF elements
-            styles (StyleSheet1): Text styles
-            skill_group (dict): Dictionary with category and items
-        """
         # Get category (e.g., "Programming Languages")
         category = self._get_localized_field(skill_group, 'category')
         # Get list of items
@@ -757,17 +555,6 @@ class CVGenerator:
         pdf_elements.append(Spacer(1, self.settings['spacing']['item_bottom'] * mm))
     
     def _format_language_item(self, pdf_elements, styles, language):
-        """
-        Format a language item.
-        
-        Example output:
-            [BOLD] Portuguese - Native
-        
-        Parameters:
-            pdf_elements (list): List of PDF elements
-            styles (StyleSheet1): Text styles
-            language (dict): Dictionary with language and proficiency
-        """
         # Get language
         language_name = self._get_localized_field(language, 'language')
         # Get proficiency level
@@ -778,17 +565,6 @@ class CVGenerator:
         pdf_elements.append(Paragraph(language_text, styles['BodyStyle']))
     
     def _format_award_item(self, pdf_elements, styles, award):
-        """
-        Format an award or recognition item.
-        
-        Example output:
-            [BOLD] Best Employee - Company XYZ
-        
-        Parameters:
-            pdf_elements (list): List of PDF elements
-            styles (StyleSheet1): Text styles
-            award (dict): Dictionary with award title and description
-        """
         # Get title and description
         award_title = self._get_localized_field(award, 'title')
         description = self._get_localized_field(award, 'description')
@@ -805,17 +581,6 @@ class CVGenerator:
             pdf_elements.append(Paragraph(award_text, styles['BodyStyle']))
     
     def _format_certification_item(self, pdf_elements, styles, certification):
-        """
-        Format a certification or training item.
-        
-        Example output:
-            [BOLD] AWS Solutions Architect - Amazon Web Services (2023)
-        
-        Parameters:
-            pdf_elements (list): List of PDF elements
-            styles (StyleSheet1): Text styles
-            certification (dict): Dictionary with name, issuer, and year
-        """
         # Get data
         name = self._get_localized_field(certification, 'name')
         issuer = self._get_localized_field(certification, 'issuer')
@@ -837,17 +602,6 @@ class CVGenerator:
             pdf_elements.append(Paragraph(cert_text, styles['BodyStyle']))
     
     def _format_publication_item(self, pdf_elements, styles, publication):
-        """
-        Format a publication item.
-        
-        Example output:
-            [BOLD] Python Automation - 2023
-        
-        Parameters:
-            pdf_elements (list): List of PDF elements
-            styles (StyleSheet1): Text styles
-            publication (dict): Dictionary with title, description, and year
-        """
         # Get data
         title = self._get_localized_field(publication, 'title')
         description = self._get_localized_field(publication, 'description')
@@ -874,16 +628,6 @@ class CVGenerator:
     # ========================================================================
     
     def _get_section_formatter(self, section_type):
-        """
-        Return the formatter function for a section type.
-        Allows easy extension with new section types.
-        
-        Parameters:
-            section_type (str): Section type (experience, education, skills, etc)
-            
-        Returns:
-            function: Function that formats each section item
-        """
         mapper = {
             'experience': self._format_experience_item,
             'education': self._format_education_item,
@@ -902,19 +646,6 @@ class CVGenerator:
     # ========================================================================
     
     def generate(self):
-        """
-        Main function that creates the PDF document.
-        
-        Steps:
-        1. Create output directory
-        2. Configure PDF document (size, margins)
-        3. Create styles
-        4. Add each section to document
-        5. Save PDF file
-        
-        Returns:
-            str: Path to generated PDF file
-        """
         # Create output directory if it doesn't exist
         Path(self.output_dir).mkdir(exist_ok=True)
         
@@ -1044,10 +775,6 @@ class CVGenerator:
 # ============================================================================
 
 def main():
-    """
-    Function that executes when the script is run from command line.
-    Processes arguments and creates the CVGenerator.
-    """
     # Create argument parser
     parser = argparse.ArgumentParser(
         description='Generate CV in PDF from JSON file (with multilingual support)'
