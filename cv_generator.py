@@ -380,7 +380,7 @@ class CVGenerator:
             phone = info['phone']
             # If language is English, add +55 prefix (Brazil)
             if self.language == 'en' and not phone.startswith('+55'):
-                phone = '+55' + phone
+                phone = '+55 ' + phone
             contact_items.append(phone)
 
         if info.get('email'):
