@@ -1,65 +1,60 @@
-# 📄 CV Generator - PDF Resume Generator
+# CV Generator - Automated PDF Resume Creation
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.7+](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
 [![ReportLab 4.0.9](https://img.shields.io/badge/ReportLab-4.0.9-green.svg)](https://www.reportlab.com/)
-[![Test Suite](https://github.com/seu-usuario/cv-generator-automation/actions/workflows/test.yml/badge.svg)](https://github.com/seu-usuario/cv-generator-automation/actions/workflows/test.yml)
-[![Code Quality](https://github.com/seu-usuario/cv-generator-automation/actions/workflows/lint.yml/badge.svg)](https://github.com/seu-usuario/cv-generator-automation/actions/workflows/lint.yml)
 
-Professional-grade tool for generating PDF resumes with **complete multilingual support** (Portuguese 🇧🇷 and English 🇬🇧) from structured JSON data. Maintains complete separation between data, styles, and generation logic, allowing full customization without touching code. **Entire codebase now in English** - variable names, functions, and comments fully internationalized.
+Generate professional PDF resumes from structured JSON data with complete bilingual support (Portuguese & English). No code modifications needed—customize everything through JSON configuration files.
 
-## ✨ Features
+## Features
 
-- 🌍 **Automatic Multilingual Support**: Portuguese and English with intelligent fallback (empty EN fields use PT)
-- 📊 **Clean Architecture**: Data in `cv_data.json`, styles in `styles.json`, translations in `translations.json`
-- 🎨 **100% Customizable**: Colors, fonts, margins, spacing via JSON (zero code needed)
-- 💻 **English Codebase**: All variable names, functions, and comments in English for international collaboration
-- 📝 **Structured Logging**: Complete error and operation tracking
-- ⚡ **Efficient**: Optimized code, no repetition, reusable methods
-- 📅 **Smart Dates**: Automatic month formatting (Jan, Feb, Mar... based on language)
-- 🚀 **Dual Interface**: Interactive menu (shell/batch) or Python command line
-- 🔧 **CI/CD Ready**: Supports CLI arguments for automation
+- **Bilingual Support**: Automatically generate PDFs in Portuguese or English from the same data
+- **Separation of Concerns**: Data, styles, and translations in separate JSON files
+- **JSON-Only Customization**: Colors, fonts, spacing—all configurable without touching code
+- **Interactive & CLI Modes**: Choose between guided menu or command-line interface
+- **Structured Data Format**: Validated JSON schema for reliable CV generation
+- **Smart Formatting**: Automatic date formatting and multilingual month names
+- **Cross-Platform**: Works on macOS, Linux, and Windows
 
-## 📁 Project Structure
+## Project Structure
 
 ```
-cv-generator/
-├── 📄 config.json              # Central configuration (paths, default language)
-├── 📄 cv_data.json             # Your CV data (PT + EN)
-├── 📄 styles.json              # Styles and formatting (colors, fonts, spacing)
-├── 📄 translations.json        # Multilingual texts (section titles)
-├── 🐍 cv_generator.py          # Main generation script
-├── 🔧 start_mac.sh             # Interactive menu (macOS/Linux)
-├── 🔧 start_windows.bat        # Interactive menu (Windows)
-├── 📖 README.md                # This documentation
-├── 📋 LICENSE                  # MIT License
-├── 📋 requirements.txt         # Python dependencies
-├── 🚫 .gitignore               # Files ignored in git
-└── 📁 output/                  # Generated PDFs here
+cv-generator-automation/
+├── config.json                 # Central configuration (paths, language defaults)
+├── cv_data.json                # Your CV data (Portuguese + English)
+├── styles.json                 # Visual styling (colors, fonts, spacing)
+├── translations.json           # Multilingual text labels
+├── cv_generator.py             # Main generation script
+├── start_mac.sh                # Quick start for macOS/Linux
+├── start_windows.bat           # Quick start for Windows
+├── requirements.txt            # Python dependencies
+├── README.md                   # Documentation
+├── LICENSE                     # MIT License
+└── output/                     # Generated PDFs
 ```
 
-## 🚀 Quick Start
+## Quick Start
 
-### 1️⃣ Clonar Repositório
+### 1. Clone the Repository
 ```bash
-git clone https://github.com/seu-usuario/cv-generator-automation-.git
-cd cv-generator
+git clone https://github.com/bruno-lindquist/cv-generator-automation.git
+cd cv-generator-automation
 ```
 
-### 2️⃣ Instalar Dependências
+### 2. Install Dependencies
 
-**macOS/Linux com script automático:**
+**macOS/Linux:**
 ```bash
-chmod +x start_linux.sh
-./start_linux.sh
+chmod +x start_mac.sh
+./start_mac.sh
 ```
 
-**Windows com script automático:**
+**Windows:**
 ```cmd
 start_windows.bat
 ```
 
-**Manual (qualquer SO):**
+**Manual Installation (any OS):**
 ```bash
 python3 -m venv venv
 source venv/bin/activate      # macOS/Linux
@@ -67,71 +62,59 @@ source venv/bin/activate      # macOS/Linux
 pip install -r requirements.txt
 ```
 
-### 3️⃣ Editar Seus Dados
-Abra `cv_data.json` e preencha com suas informações pessoais, experiências, educação, etc.
+### 3. Configure Your CV
 
-### 4️⃣ Gerar CV
+Edit `cv_data.json` with your personal information, experience, education, and skills.
 
-**Menu interativo:**
+### 4. Generate PDF
+
+**Interactive Menu:**
 ```bash
-./start_linux.sh        # macOS/Linux
-# ou
+./start_mac.sh          # macOS/Linux
+# or
 start_windows.bat       # Windows
 ```
 
-**Por linha de comando:**
+**Command Line:**
 ```bash
-python cv_generator.py              # CV em português
-python cv_generator.py -l en        # CV em inglês
-python cv_generator.py -l en -o curriculum.pdf  # Output customizado
+python cv_generator.py              # Portuguese
+python cv_generator.py -l en        # English
+python cv_generator.py -l en -o resume.pdf  # Custom output
 ```
 
-## 📝 Estrutura de Dados (`cv_data.json`)
+## Configuration Guide
 
-O arquivo `cv_data.json` contém todas as informações do seu CV. Suporta **seções opcionais** - apenas inclua as que você precisa:
+### cv_data.json
 
-### Informações Pessoais
+The main data file contains all your CV information. Include only the sections you need.
 
+**Personal Information:**
 ```json
 {
   "personal_info": {
     "name": "Bruno",
-    "email": "seu@email.com",
-    "phone": "(11) 97894-0000",
-    "location": "Sao Paulo, SP",
+    "email": "your@email.com",
+    "phone": "+55 11 97894-0000",
+    "location": "São Paulo, SP",
     "social": [
-      { "label": "LinkedIn", "url": "https://linkedin.com/in/seu-perfil" },
-      { "label": "GitHub", "url": "https://github.com/seu-usuario" },
-      { "label": "Behance", "url": "https://behance.net/seu-portfolio" }
+      { "label": "LinkedIn", "url": "https://linkedin.com/in/your-profile" },
+      { "label": "GitHub", "url": "https://github.com/your-username" }
     ]
   }
 }
 ```
 
-### Cargo Desejado
-
-```json
-{
-  "desired_role": {
-    "desired_role_pt": "Python Developer",
-    "desired_role_en": "Python Developer"
-  }
-}
-```
-
-### Resumo Profissional
-
+**Professional Summary:**
 ```json
 {
   "summary": {
-    "description_pt": "Texto em português sobre sua experiência...",
-    "description_en": "Text in English about your experience..."
+    "description_pt": "Experiência em Python e desenvolvimento web...",
+    "description_en": "Experience in Python and web development..."
   }
 }
 ```
 
-### Experiência Profissional
-
+**Work Experience:**
 ```json
 {
   "experience": [
@@ -146,21 +129,18 @@ O arquivo `cv_data.json` contém todas as informações do seu CV. Suporta **se�
       "end_year": "2023",
       "description_pt": [
         "Desenvolveu sistema X com Python",
-        "Liderou equipe de 5 desenvolvedores",
-        "Implementou pipeline de CI/CD"
+        "Liderou equipe de 5 desenvolvedores"
       ],
       "description_en": [
         "Developed X system with Python",
-        "Led team of 5 developers",
-        "Implemented CI/CD pipeline"
+        "Led team of 5 developers"
       ]
     }
   ]
 }
 ```
 
-### Educação
-
+**Education:**
 ```json
 {
   "education": [
@@ -178,14 +158,9 @@ O arquivo `cv_data.json` contém todas as informações do seu CV. Suporta **se�
 }
 ```
 
-### Competências
-
+**Skills:**
 ```json
 {
-  "core_skills": [
-    "Python", "Web Scraping", "API REST", "SQL", "Git", "CI/CD"
-  ],
-  
   "skills": [
     {
       "category_pt": "Backend",
@@ -195,14 +170,13 @@ O arquivo `cv_data.json` contém todas as informações do seu CV. Suporta **se�
     {
       "category_pt": "Frontend",
       "category_en": "Frontend",
-      "items": ["React", "TypeScript", "CSS3", "HTML5"]
+      "items": ["React", "TypeScript", "CSS3"]
     }
   ]
 }
 ```
 
-### Idiomas
-
+**Languages:**
 ```json
 {
   "languages": [
@@ -212,7 +186,7 @@ O arquivo `cv_data.json` contém todas as informações do seu CV. Suporta **se�
       "level_en": "Native"
     },
     {
-      "language": "Inglês",
+      "language": "English",
       "level_pt": "Fluente",
       "level_en": "Fluent"
     }
@@ -220,87 +194,94 @@ O arquivo `cv_data.json` contém todas as informações do seu CV. Suporta **se�
 }
 ```
 
-### Prêmios e Certificações
+### styles.json
 
-```json
-{
-  "awards": [
-    {
-      "title_pt": "Melhor Projeto",
-      "title_en": "Best Project",
-      "issuer_pt": "Hackathon XYZ",
-      "issuer_en": "XYZ Hackathon",
-      "year": "2021"
-    }
-  ],
-  
-  "certifications": [
-    {
-      "title_pt": "AWS Certified Developer",
-      "title_en": "AWS Certified Developer",
-      "issuer": "Amazon",
-      "year": "2023"
-    }
-  ]
-}
+Customize visual appearance:
+- Colors and fonts
+- Margins and spacing
+- Text sizes and weights
+
+### translations.json
+
+Multilingual section titles and labels automatically applied based on selected language.
+
+## Requirements
+
+- **Python**: 3.7+
+- **reportlab**: 4.0.9 (PDF generation)
+- **python-dateutil**: 2.8.0+ (date handling)
+
+All dependencies are listed in `requirements.txt` and installed automatically.
+
+## Usage Examples
+
+**Generate Portuguese CV:**
+```bash
+python cv_generator.py
 ```
 
-
-Os scripts realizam automaticamente:
-1. ✅ Criação de ambiente virtual (se não existir)
-2. ✅ Instalação de dependências
-3. ✅ Geração do(s) CV(s) no idioma escolhido
-
-
-## � CI/CD - Automação com GitHub Actions
-
-Este projeto utiliza **GitHub Actions** para validação automática. A cada commit/push:
-
-### ✅ Testes Automáticos (`.github/workflows/test.yml`)
-
-- ✓ Valida sintaxe Python em múltiplas versões (3.9, 3.10, 3.11)
-- ✓ Valida JSON de todos os arquivos de configuração
-- ✓ Gera CV em Português
-- ✓ Gera CV em Inglês
-- ✓ Verifica se PDFs foram criados com sucesso
-- ✓ Valida tamanho dos PDFs gerados
-
-### 📊 Validação de Código (`.github/workflows/lint.yml`)
-
-- ✓ Verifica imports Python
-- ✓ Linting com flake8
-- ✓ Validação de encoding UTF-8
-- ✓ Detecção de problemas comuns
-
-**Status atual:** 
-- [![Test Suite](https://github.com/seu-usuario/cv-generator-automation/actions/workflows/test.yml/badge.svg)](https://github.com/seu-usuario/cv-generator-automation/actions/workflows/test.yml)
-- [![Code Quality](https://github.com/seu-usuario/cv-generator-automation/actions/workflows/lint.yml/badge.svg)](https://github.com/seu-usuario/cv-generator-automation/actions/workflows/lint.yml)
-
-
-## �📦 Dependências
-
-- **Python**: 3.7 ou superior
-- **reportlab**: 4.0.9 (para geração de PDF)
-
+**Generate English CV:**
 ```bash
+python cv_generator.py -l en
+```
+
+**Custom Output File:**
+```bash
+python cv_generator.py -l en -o my_resume.pdf
+```
+
+## Development
+
+### Project Structure
+
+The codebase follows clean architecture principles:
+- Data layer: JSON configuration files
+- Logic layer: `cv_generator.py` with modular functions
+- Presentation layer: ReportLab PDF generation
+
+### Extending the Project
+
+To add new sections or customize styling:
+
+1. **Add data** to `cv_data.json`
+2. **Update styles** in `styles.json`
+3. **Add translations** to `translations.json`
+4. Regenerate PDF
+
+No Python code changes needed.
+
+## Troubleshooting
+
+**"Module not found" error:**
+Ensure you've activated the virtual environment and installed dependencies:
+```bash
+source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## 🤝 Contribuindo
+**PDF generation fails:**
+Check that `cv_data.json` is valid JSON and all required fields are present.
 
-Contribuições são bem-vindas!
+**Wrong language output:**
+Verify the language code in your command (`-l pt` or `-l en`).
 
-## 👨‍💻 Autor
+## Contributing
+
+Contributions welcome! Please:
+1. Fork the repository
+2. Create a feature branch
+3. Submit a pull request
+
+## License
+
+MIT License - see [LICENSE](LICENSE) for details
+
+## Author
 
 **Bruno Lindquist**
 - [LinkedIn](https://www.linkedin.com/in/bruno-lindquist/)
 - [GitHub](https://github.com/bruno-lindquist)
 
-## ⭐ Curte o Projeto?
-
-Deixe uma estrela ⭐ no GitHub!
-
 ---
 
-**Status:** ✅ Ativo | **Última atualização:** Janeiro 2026
-
+**Status:** Active | **Last Updated:** January 2026
