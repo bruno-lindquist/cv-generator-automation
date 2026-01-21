@@ -1,50 +1,60 @@
 {
+  "sections": [
+    {"type": "experience", "enabled": true, "order": 1},
+    {"type": "education", "enabled": true, "order": 2},
+    {"type": "core_skills", "enabled": true, "order": 3},
+    {"type": "skills", "enabled": true, "order": 4},
+    {"type": "languages", "enabled": true, "order": 5},
+    {"type": "awards", "enabled": false, "order": 6},
+    {"type": "certifications", "enabled": false, "order": 7}
+  ],
+
   "personal_info": {
-    "name": "Your Name",
+    "name": "Your Full Name",
     "email": "your.email@example.com",
-    "phone": "+XX (XX) XXXXX-XXXX",
-    "location": "City, State - Available for relocation",
+    "phone": "(XX) XXXXX-XXXX",
+    "location": "City, State",
     "social": [
       {
-        "label": "LinkedIn",
-        "url": "https://www.linkedin.com/in/your-profile/"
+        "label": "linkedin.com/in/yourprofile",
+        "url": "https://www.linkedin.com/in/yourprofile"
       },
       {
-        "label": "GitHub",
+        "label": "github.com/yourprofile",
         "url": "https://github.com/yourprofile"
       }
     ]
   },
 
   "desired_role": {
-    "desired_role_pt": "Sua Posição Desejada",
-    "desired_role_en": "Your Desired Position"
+    "desired_role_pt": "Seu Cargo Desejado",
+    "desired_role_en": "Your Desired Role"
   },
 
   "summary": {
-    "description_pt": "Breve resumo profissional em português destacando suas principais competências, áreas de experiência e proposta de valor.",
-    "description_en": "Brief professional summary in English highlighting your key competencies, experience areas, and value proposition."
+    "description_pt": "Descreva seu histórico profissional, principais competências e do que você é apaixonado. Escreva 2-3 parágrafos destacando suas principais experiências e abordagem para o trabalho.",
+    "description_en": "Describe your professional background, key skills, and what you're passionate about. Write 2-3 paragraphs highlighting your main experiences and approach to work."
   },
 
   "experience": [
     {
       "company_pt": "Nome da Empresa",
       "company_en": "Company Name",
-      "position_pt": "Título do Cargo em Português",
-      "position_en": "Position Title in English",
+      "position_pt": "Cargo/Posição",
+      "position_en": "Job Position",
       "start_month": "1",
       "start_year": "2020",
       "end_month": "12",
       "end_year": "2023",
       "description_pt": [
-        "Realização ou responsabilidade em português",
-        "Outra conquista importante",
-        "Impacto ou resultado alcançado"
+        "Realização ou responsabilidade 1",
+        "Realização ou responsabilidade 2",
+        "Realização ou responsabilidade 3"
       ],
       "description_en": [
-        "Achievement or responsibility in English",
-        "Another key accomplishment",
-        "Impact or result achieved"
+        "Achievement or responsibility 1",
+        "Achievement or responsibility 2",
+        "Achievement or responsibility 3"
       ]
     }
   ],
@@ -53,65 +63,102 @@
     {
       "institution_pt": "Nome da Universidade",
       "institution_en": "University Name",
-      "degree_pt": "Diploma ou Curso em Português",
-      "degree_en": "Degree in English",
-      "start_month": "2",
-      "start_year": "2015",
+      "degree_pt": "Nome do Diploma/Curso",
+      "degree_en": "Degree Name",
+      "start_month": "3",
+      "start_year": "2018",
       "end_month": "12",
-      "end_year": "2019",
+      "end_year": "2022",
       "description_pt": [
-        "Realização relevante ou certificação"
+        "Realização ou detalhe notável"
       ],
       "description_en": [
-        "Relevant achievement or certification"
+        "Notable achievement or detail"
       ]
     }
   ],
 
   "core_skills": [
     {
-      "category_pt": "Categoria de Habilidade em Português",
-      "category_en": "Skill Category in English",
+      "category_pt": "Categoria de Competência Principal 1:",
+      "category_en": "Core Skill Category 1:",
       "description_pt": [
-        "Habilidade específica ou expertise",
-        "Competência técnica",
-        "Conhecimento de domínio"
+        "Competência ou habilidade principal 1",
+        "Competência ou habilidade principal 2",
+        "Competência ou habilidade principal 3"
       ],
       "description_en": [
-        "Specific skill or expertise",
-        "Technical competency",
-        "Domain knowledge"
+        "Key skill or competency 1",
+        "Key skill or competency 2",
+        "Key skill or competency 3"
+      ]
+    },
+    {
+      "category_pt": "Categoria de Competência Principal 2:",
+      "category_en": "Core Skill Category 2:",
+      "description_pt": [
+        "Competência ou habilidade principal 1",
+        "Competência ou habilidade principal 2"
+      ],
+      "description_en": [
+        "Key skill or competency 1",
+        "Key skill or competency 2"
       ]
     }
   ],
 
   "skills": [
     {
-      "category_pt": "Categoria em Português",
-      "category_en": "Category in English",
+      "category_pt": "Categoria de Tecnologia 1:",
+      "category_en": "Technology Category 1:",
       "item": [
-        "Habilidade 1",
-        "Habilidade 2",
-        "Habilidade 3"
+        "Ferramenta/Tecnologia 1",
+        "Ferramenta/Tecnologia 2",
+        "Ferramenta/Tecnologia 3"
+      ]
+    },
+    {
+      "category_pt": "Categoria de Tecnologia 2:",
+      "category_en": "Technology Category 2:",
+      "item": [
+        "Ferramenta/Tecnologia 1",
+        "Ferramenta/Tecnologia 2",
+        "Ferramenta/Tecnologia 3"
       ]
     }
   ],
 
   "languages": [
     {
-      "language_pt": "Nome do Idioma em Português",
-      "language_en": "Language Name in English",
-      "proficiency_pt": "Nível de Proficiência em Português",
-      "proficiency_en": "Proficiency Level in English"
+      "language_pt": "Português",
+      "language_en": "Portuguese",
+      "proficiency_pt": "Nativo",
+      "proficiency_en": "Native"
+    },
+    {
+      "language_pt": "Inglês",
+      "language_en": "English",
+      "proficiency_pt": "Fluente",
+      "proficiency_en": "Fluent"
     }
   ],
 
   "awards": [
     {
-      "title_pt": "Título do Prêmio em Português",
-      "title_en": "Award Title in English",
-      "description_pt": "Descrição do prêmio e contexto em português",
-      "description_en": "Award description and context in English"
+      "title_pt": "Título do Prêmio/Reconhecimento",
+      "title_en": "Award Title",
+      "description_pt": "Descrição do prêmio e conquistas",
+      "description_en": "Award description and achievements"
+    }
+  ],
+
+  "certifications": [
+    {
+      "title_pt": "Nome da Certificação",
+      "title_en": "Certification Name",
+      "issuer_pt": "Organização Responsável",
+      "issuer_en": "Issuing Organization",
+      "year": "2023"
     }
   ]
 }
