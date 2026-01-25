@@ -39,3 +39,4 @@ htmlcov/
 *.cache
 cv_data.json
 cv_data_example.json
+cv_data-bkp.json
