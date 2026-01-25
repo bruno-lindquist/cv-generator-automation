@@ -297,7 +297,8 @@ class CVGenerator:
             textColor=colors.HexColor('#888888'),
             spaceBefore=14,
             spaceAfter=6,
-            fontName='Helvetica-Bold'
+            fontName='Helvetica-Bold',
+            keepWithNext=1
         ))
         
         # Create style for SUBTITLES (Position, Company, Degree, University)
