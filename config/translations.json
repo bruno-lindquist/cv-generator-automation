@@ -1,0 +1,19 @@
+{
+  "sections": {
+    "summary": "Resumo",
+    "experience": "Experiência Profissional",
+    "education": "Educação",
+    "core_skills": "Competências",
+    "skills": "Habilidades Técnicas",
+    "languages": "Idiomas",
+    "awards": "Prêmios",
+    "certifications": "Certificações"
+  },
+  "labels": {
+    "current": "Atual",
+    "error_invalid_json": "Erro: Arquivo JSON inválido",
+    "error_file_not_found": "Erro: Arquivo não encontrado",
+    "error_invalid_data": "Erro: Arquivo inválido",
+    "success_generated": "✓ CV gerado com sucesso"
+  }
+}

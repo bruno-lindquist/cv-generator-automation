@@ -1,90 +1,33 @@
-name: Lint & Code Quality
+name: Lint & Static Checks
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   lint:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
-      
+        uses: actions/checkout@v4
+
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
-      
+          python-version: '3.11'
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install flake8 pylint
-      
-      - name: Check Python imports
+          pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Run flake8
         run: |
-          echo "🔍 Verificando imports Python..."
-          python -c "import cv_generator; print('✅ Módulo importável')" || exit 1
-      
-      - name: Lint with flake8
+          flake8 src tests cv_generator.py
+
+      - name: Check Python syntax
         run: |
-          echo "🔍 Executando flake8..."
-          # Para configuração suave, ignoramos algumas verificações
-          flake8 cv_generator.py --count --select=E9,F63,F7,F82 --show-source --statistics || true
-          echo "✅ Flake8 concluído"
-        continue-on-error: true
-      
-      - name: Check file encoding
-        run: |
-          echo "🔍 Verificando encoding de arquivos..."
-          file cv_generator.py | grep -q "UTF-8" && echo "✅ UTF-8 válido" || echo "⚠️  Encoding diferente"
-      
-      - name: Validate configuration files
-        run: |
-          echo "🔍 Validando configurações..."
-          
-          # Verificar se config.json tem as chaves obrigatórias
-          python << EOF
-          import json
-          
-          configs = ['config.json', 'cv_data.json', 'styles.json', 'translations.json']
-          for config_file in configs:
-              try:
-                  with open(config_file, 'r', encoding='utf-8') as f:
-                      data = json.load(f)
-                  print(f"✅ {config_file} - OK ({len(str(data))} bytes)")
-              except Exception as e:
-                  print(f"❌ {config_file} - ERRO: {e}")
-                  exit(1)
-          EOF
-      
-      - name: Check for common issues
-        run: |
-          echo "🔍 Verificando problemas comuns..."
-          
-          # Verificar se não tem TODO não resolvido
-          if grep -r "TODO.*URGENT" cv_generator.py; then
-            echo "⚠️  Encontrado TODO urgente"
-          fi
-          
-          # Verificar se não tem print() em produção
-          if grep -n "print(" cv_generator.py | grep -v "logger" | grep -v "#"; then
-            echo "⚠️  Encontrado print() sem logger"
-          fi
-          
-          echo "✅ Verificação concluída"
-        continue-on-error: true
-      
-      - name: Summary
-        run: |
-          echo "✅ Verificações de qualidade concluídas!"
-          echo ""
-          echo "Validações realizadas:"
-          echo "  ✓ Python imports"
-          echo "  ✓ Flake8 linting"
-          echo "  ✓ Encoding UTF-8"
-          echo "  ✓ JSON válido"
-          echo "  ✓ Problemas comuns"
+          python -m compileall -q src tests cv_generator.py
