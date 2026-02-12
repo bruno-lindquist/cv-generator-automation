@@ -7,8 +7,8 @@ from pathlib import Path
 
 from loguru import logger
 
-from cv_generator_app.application.cv_service import run_generation
-from cv_generator_app.shared.exceptions import CvGeneratorError
+from application.cv_service import run_generation
+from shared.exceptions import CvGeneratorError
 
 
 def build_argument_parser() -> argparse.ArgumentParser:
@@ -37,7 +37,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "-c",
         "--config",
-        default=str(Path(__file__).resolve().parents[2] / "config" / "config.json"),
+        default=str(Path(__file__).resolve().parents[1] / "config" / "config.json"),
         help="Configuration file (default: config/config.json in project root)",
     )
     return parser

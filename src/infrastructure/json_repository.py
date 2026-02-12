@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from cv_generator_app.shared.exceptions import JsonFileNotFoundError, JsonParsingError
+from shared.exceptions import JsonFileNotFoundError, JsonParsingError
 
 
 class JsonRepository:

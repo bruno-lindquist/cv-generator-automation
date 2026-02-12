@@ -16,12 +16,11 @@ O projeto foi reorganizado em camadas para manter responsabilidades claras:
 ```text
 cv-generator-automation/
   src/
-    cv_generator_app/
-      application/
-      domain/
-      infrastructure/
-      shared/
-      cli.py
+    application/
+    domain/
+    infrastructure/
+    shared/
+    cli.py
   tests/
     unit/
     integration/
@@ -108,7 +107,7 @@ Níveis aplicados:
 Executar testes com cobertura:
 
 ```bash
-pytest --cov=src/cv_generator_app --cov-report=term-missing --cov-fail-under=70
+pytest --cov=src --cov-report=term-missing --cov-fail-under=70
 ```
 
 ## CI

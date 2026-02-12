@@ -14,7 +14,7 @@ from reportlab.lib.styles import ParagraphStyle, StyleSheet1, getSampleStyleShee
 from reportlab.lib.units import mm
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
 
-from cv_generator_app.domain.localization import (
+from domain.localization import (
     escape_text_preserving_tags,
     format_period,
     get_localized_field,
@@ -22,7 +22,7 @@ from cv_generator_app.domain.localization import (
     get_translation,
     process_rich_text,
 )
-from cv_generator_app.shared.exceptions import PdfRenderError
+from shared.exceptions import PdfRenderError
 
 
 class CvPdfRenderer:

@@ -12,7 +12,7 @@ SOURCE_DIRECTORY = PROJECT_ROOT / "src"
 if str(SOURCE_DIRECTORY) not in sys.path:
     sys.path.insert(0, str(SOURCE_DIRECTORY))
 
-from cv_generator_app.cli import main
+from cli import main
 
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from cv_generator_app.application.cv_service import CvGenerationService
+from application.cv_service import CvGenerationService
 from tests.helpers.file_helpers import write_json
 
 

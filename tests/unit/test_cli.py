@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from cv_generator_app.cli import main
+from cli import main
 from tests.helpers.file_helpers import write_json
 
 

@@ -9,13 +9,13 @@ from typing import Any
 
 from loguru import logger
 
-from cv_generator_app.domain.localization import get_localized_field, sanitize_filename_component
-from cv_generator_app.domain.validators import validate_cv_data
-from cv_generator_app.infrastructure.config_loader import AppConfig, load_app_config
-from cv_generator_app.infrastructure.json_repository import JsonRepository
-from cv_generator_app.infrastructure.pdf_renderer import CvPdfRenderer
-from cv_generator_app.shared.exceptions import OutputPathError
-from cv_generator_app.shared.logging_config import bind_logger_context, configure_logging
+from domain.localization import get_localized_field, sanitize_filename_component
+from domain.validators import validate_cv_data
+from infrastructure.config_loader import AppConfig, load_app_config
+from infrastructure.json_repository import JsonRepository
+from infrastructure.pdf_renderer import CvPdfRenderer
+from shared.exceptions import OutputPathError
+from shared.logging_config import bind_logger_context, configure_logging
 
 
 class CvGenerationService:

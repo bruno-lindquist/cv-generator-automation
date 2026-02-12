@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from cv_generator_app.shared.exceptions import DataValidationError
+from shared.exceptions import DataValidationError
 
 
 REQUIRED_TOP_LEVEL_FIELDS = ["personal_info", "desired_role"]

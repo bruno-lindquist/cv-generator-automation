@@ -18,6 +18,7 @@ remove_dir_if_exists() {
 
 # Diretórios de artefatos comuns na raiz.
 remove_dir_if_exists "./output"
+remove_dir_if_exists "./logs"
 remove_dir_if_exists "./build"
 remove_dir_if_exists "./dist"
 remove_dir_if_exists "./htmlcov"

@@ -1,4 +1,4 @@
-from cv_generator_app.domain.localization import (
+from domain.localization import (
     escape_text_preserving_tags,
     format_period,
     get_localized_field,

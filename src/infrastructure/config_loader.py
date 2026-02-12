@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from cv_generator_app.shared.exceptions import ConfigurationError
+from shared.exceptions import ConfigurationError
 
 
 @dataclass(frozen=True)
