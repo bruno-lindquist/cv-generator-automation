@@ -11,5 +11,78 @@
     "item_bottom": 1,
     "small_bottom": 1,
     "minimal_bottom": 0.1
+  },
+  "links": {
+    "social_link_color": "#1f4e79"
+  },
+  "paragraph_styles": {
+    "NameStyle": {
+      "parent": "Heading1",
+      "font_name": "Helvetica-Bold",
+      "font_size": 24,
+      "text_color": "#000000",
+      "space_after": 6,
+      "alignment": "center"
+    },
+    "TitleStyle": {
+      "parent": "Normal",
+      "font_name": "Helvetica-Bold",
+      "font_size": 12,
+      "text_color": "#000000",
+      "space_after": 24,
+      "alignment": "center"
+    },
+    "SectionTitleStyle": {
+      "parent": "Normal",
+      "font_name": "Helvetica-Bold",
+      "font_size": 14,
+      "text_color": "#888888",
+      "space_before": 14,
+      "space_after": 6,
+      "keep_with_next": 1
+    },
+    "ItemTitleStyle": {
+      "parent": "Normal",
+      "font_name": "Helvetica-Bold",
+      "font_size": 12,
+      "text_color": "#000000",
+      "space_before": 10,
+      "space_after": 4,
+      "left_indent": 10,
+      "keep_with_next": 1
+    },
+    "ItemSubtitleStyle": {
+      "parent": "Normal",
+      "font_name": "Helvetica-Bold",
+      "font_size": 11,
+      "text_color": "#000000",
+      "space_after": 2,
+      "left_indent": 10,
+      "keep_with_next": 1
+    },
+    "BodyStyle": {
+      "parent": "Normal",
+      "font_name": "Helvetica",
+      "font_size": 10,
+      "text_color": "#000000",
+      "space_after": 2,
+      "left_indent": 28,
+      "alignment": "justify"
+    },
+    "ContactStyle": {
+      "parent": "BodyStyle",
+      "font_name": "Helvetica",
+      "font_size": 11,
+      "left_indent": 0,
+      "alignment": "center"
+    },
+    "DateStyle": {
+      "parent": "Normal",
+      "font_name": "Helvetica",
+      "font_size": 9,
+      "text_color": "#000000",
+      "space_after": 2,
+      "left_indent": 10
+    }
   }
 }

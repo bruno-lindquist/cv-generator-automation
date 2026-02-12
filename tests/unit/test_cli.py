@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from cli import main
-from tests.helpers.file_helpers import write_json
+from tests.helpers.file_helpers import write_json, write_project_styles
 
 
 def _create_valid_project_files(base_directory: Path) -> Path:
@@ -40,7 +40,7 @@ def _create_valid_project_files(base_directory: Path) -> Path:
             "desired_role": {"desired_role_pt": "Desenvolvedor"},
         },
     )
-    write_json(config_directory / "styles.json", {"margins": {}, "spacing": {}})
+    write_project_styles(config_directory / "styles.json")
     write_json(
         config_directory / "translations.json",
         {

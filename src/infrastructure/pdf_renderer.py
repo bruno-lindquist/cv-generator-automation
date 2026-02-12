@@ -8,7 +8,7 @@ from typing import Any
 from xml.sax.saxutils import escape
 
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
+from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT, TA_RIGHT
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, StyleSheet1, getSampleStyleSheet
 from reportlab.lib.units import mm
@@ -37,6 +37,32 @@ class CvPdfRenderer:
         "awards",
         "certifications",
     ]
+    REQUIRED_PARAGRAPH_STYLE_NAMES = [
+        "NameStyle",
+        "TitleStyle",
+        "SectionTitleStyle",
+        "ItemTitleStyle",
+        "ItemSubtitleStyle",
+        "BodyStyle",
+        "ContactStyle",
+        "DateStyle",
+    ]
+    STYLE_FIELD_MAPPING = {
+        "font_name": "fontName",
+        "font_size": "fontSize",
+        "text_color": "textColor",
+        "space_before": "spaceBefore",
+        "space_after": "spaceAfter",
+        "left_indent": "leftIndent",
+        "alignment": "alignment",
+        "keep_with_next": "keepWithNext",
+    }
+    ALIGNMENT_BY_NAME = {
+        "left": TA_LEFT,
+        "center": TA_CENTER,
+        "right": TA_RIGHT,
+        "justify": TA_JUSTIFY,
+    }
 
     def __init__(
         self,
@@ -47,7 +73,7 @@ class CvPdfRenderer:
     ) -> None:
         self.language = language
         self.translations = translations
-        self.visual_settings = visual_settings
+        self.visual_settings = visual_settings if isinstance(visual_settings, dict) else {}
         self.section_formatter_by_type = {
             "experience": self._format_experience_item,
             "education": self._format_education_item,
@@ -71,10 +97,10 @@ class CvPdfRenderer:
         document = SimpleDocTemplate(
             str(output_file_path),
             pagesize=A4,
-            rightMargin=self._margin("right", 19) * mm,
-            leftMargin=self._margin("left", 19) * mm,
-            topMargin=self._margin("top", 19) * mm,
-            bottomMargin=self._margin("bottom", 19) * mm,
+            rightMargin=self._margin("right") * mm,
+            leftMargin=self._margin("left") * mm,
+            topMargin=self._margin("top") * mm,
+            bottomMargin=self._margin("bottom") * mm,
         )
 
         app_logger.bind(event="pdf_build_started", step="pdf_renderer").info(
@@ -132,7 +158,7 @@ class CvPdfRenderer:
             self._add_section_title(elements, styles, section_type)
             for item in section_items:
                 formatter(elements, styles, item)
-            elements.append(Spacer(1, self._spacing("item_bottom", 1) * mm))
+            elements.append(Spacer(1, self._spacing("item_bottom") * mm))
 
             elapsed_ms = int((time.perf_counter() - section_start) * 1000)
             app_logger.bind(
@@ -163,101 +189,81 @@ class CvPdfRenderer:
 
     def _create_styles(self) -> StyleSheet1:
         styles = getSampleStyleSheet()
+        paragraph_styles = self.visual_settings.get("paragraph_styles", {})
+        if not isinstance(paragraph_styles, dict):
+            raise PdfRenderError(
+                "Style configuration missing 'paragraph_styles' dictionary in styles.json"
+            )
 
-        styles.add(
-            ParagraphStyle(
-                name="NameStyle",
-                parent=styles["Heading1"],
-                fontSize=24,
-                textColor=colors.HexColor("#000000"),
-                spaceAfter=6,
-                alignment=TA_CENTER,
-                fontName="Helvetica-Bold",
+        for style_name, style_definition in paragraph_styles.items():
+            if not isinstance(style_name, str) or not isinstance(style_definition, dict):
+                continue
+            if style_name in styles.byName:
+                continue
+
+            parent_name = str(style_definition.get("parent", "Normal"))
+            parent_style = styles[parent_name] if parent_name in styles else styles["Normal"]
+            style_kwargs = self._build_paragraph_style_kwargs(style_definition)
+            styles.add(ParagraphStyle(name=style_name, parent=parent_style, **style_kwargs))
+
+        missing_required_styles = [
+            style_name
+            for style_name in self.REQUIRED_PARAGRAPH_STYLE_NAMES
+            if style_name not in styles.byName
+        ]
+        if missing_required_styles:
+            missing_styles = ", ".join(missing_required_styles)
+            raise PdfRenderError(
+                f"Style configuration missing required paragraph styles: {missing_styles}"
             )
-        )
-        styles.add(
-            ParagraphStyle(
-                name="TitleStyle",
-                parent=styles["Normal"],
-                fontSize=12,
-                textColor=colors.HexColor("#000000"),
-                spaceAfter=24,
-                alignment=TA_CENTER,
-                fontName="Helvetica-Bold",
-            )
-        )
-        styles.add(
-            ParagraphStyle(
-                name="SectionTitleStyle",
-                parent=styles["Normal"],
-                fontSize=14,
-                textColor=colors.HexColor("#888888"),
-                spaceBefore=14,
-                spaceAfter=6,
-                fontName="Helvetica-Bold",
-                keepWithNext=1,
-            )
-        )
-        styles.add(
-            ParagraphStyle(
-                name="ItemTitleStyle",
-                parent=styles["Normal"],
-                fontSize=12,
-                textColor=colors.HexColor("#000000"),
-                spaceBefore=10,
-                spaceAfter=4,
-                leftIndent=10,
-                fontName="Helvetica-Bold",
-                keepWithNext=1,
-            )
-        )
-        styles.add(
-            ParagraphStyle(
-                name="ItemSubtitleStyle",
-                parent=styles["Normal"],
-                fontSize=11,
-                textColor=colors.HexColor("#000000"),
-                spaceAfter=2,
-                leftIndent=10,
-                fontName="Helvetica-Bold",
-                keepWithNext=1,
-            )
-        )
-        styles.add(
-            ParagraphStyle(
-                name="BodyStyle",
-                parent=styles["Normal"],
-                fontSize=10,
-                textColor=colors.HexColor("#000000"),
-                spaceAfter=2,
-                leftIndent=28,
-                alignment=TA_JUSTIFY,
-                fontName="Helvetica",
-            )
-        )
-        styles.add(
-            ParagraphStyle(
-                name="ContactStyle",
-                parent=styles["BodyStyle"],
-                fontSize=11,
-                alignment=TA_CENTER,
-                leftIndent=0,
-                fontName="Helvetica",
-            )
-        )
-        styles.add(
-            ParagraphStyle(
-                name="DateStyle",
-                parent=styles["Normal"],
-                fontSize=9,
-                textColor=colors.HexColor("#000000"),
-                leftIndent=10,
-                spaceAfter=2,
-                fontName="Helvetica",
-            )
-        )
 
         return styles
+
+    def _build_paragraph_style_kwargs(self, style_definition: dict[str, Any]) -> dict[str, Any]:
+        style_kwargs: dict[str, Any] = {}
+        for setting_key, reportlab_key in self.STYLE_FIELD_MAPPING.items():
+            if setting_key not in style_definition:
+                continue
+
+            setting_value = style_definition[setting_key]
+            if setting_key == "alignment":
+                style_kwargs[reportlab_key] = self._resolve_alignment(setting_value)
+                continue
+            if setting_key == "text_color":
+                style_kwargs[reportlab_key] = self._resolve_color(setting_value)
+                continue
+
+            style_kwargs[reportlab_key] = setting_value
+
+        return style_kwargs
+
+    def _resolve_alignment(self, alignment_value: Any) -> int:
+        if isinstance(alignment_value, int):
+            return alignment_value
+        if not isinstance(alignment_value, str):
+            return TA_LEFT
+        return self.ALIGNMENT_BY_NAME.get(alignment_value.lower(), TA_LEFT)
+
+    def _resolve_color(self, color_value: Any) -> colors.Color:
+        if not isinstance(color_value, str) or not color_value.strip():
+            raise PdfRenderError("Paragraph style 'text_color' must be a non-empty string")
+        try:
+            return colors.toColor(color_value)
+        except ValueError:
+            raise PdfRenderError(f"Invalid paragraph style color: {color_value}")
+
+    def _link_color(self) -> str:
+        links_settings = self.visual_settings.get("links", {})
+        if not isinstance(links_settings, dict):
+            raise PdfRenderError(
+                "Style configuration missing 'links' dictionary in styles.json"
+            )
+        link_color = links_settings.get("social_link_color")
+        if not isinstance(link_color, str) or not link_color.strip():
+            raise PdfRenderError(
+                "Style configuration missing 'links.social_link_color' in styles.json"
+            )
+        return link_color
 
     def _add_header(self, elements: list[Any], styles: StyleSheet1, cv_data: dict[str, Any]) -> None:
         personal_info = cv_data.get("personal_info", {})
@@ -297,6 +303,7 @@ class CvPdfRenderer:
         social_items = personal_info.get("social") or []
         if isinstance(social_items, list) and social_items:
             social_links: list[str] = []
+            escaped_link_color = escape(self._link_color(), {"'": "&apos;", '"': "&quot;"})
             for social_item in social_items:
                 if not isinstance(social_item, dict):
                     continue
@@ -308,12 +315,14 @@ class CvPdfRenderer:
                 escaped_url = escape(url, {"'": "&apos;", '"': "&quot;"})
                 label_text = label or url
                 escaped_label = escape_text_preserving_tags(label_text)
-                social_links.append(f'<a href="{escaped_url}" color="blue">{escaped_label}</a>')
+                social_links.append(
+                    f'<a href="{escaped_url}" color="{escaped_link_color}">{escaped_label}</a>'
+                )
 
             if social_links:
                 elements.append(Paragraph(" | ".join(social_links), styles["ContactStyle"]))
 
-        elements.append(Spacer(1, self._spacing("header_bottom", 0) * mm))
+        elements.append(Spacer(1, self._spacing("header_bottom") * mm))
 
     def _add_summary(self, elements: list[Any], styles: StyleSheet1, cv_data: dict[str, Any]) -> None:
         summary = get_localized_field(cv_data.get("summary", {}), "description", self.language, "")
@@ -329,7 +338,7 @@ class CvPdfRenderer:
         )
         elements.append(Paragraph(escape_text_preserving_tags(section_title), styles["SectionTitleStyle"]))
         elements.append(Paragraph(process_rich_text(summary), styles["BodyStyle"]))
-        elements.append(Spacer(1, self._spacing("section_bottom", 2) * mm))
+        elements.append(Spacer(1, self._spacing("section_bottom") * mm))
 
     def _add_section_title(self, elements: list[Any], styles: StyleSheet1, section_type: str) -> None:
         section_title = get_translation(
@@ -377,7 +386,7 @@ class CvPdfRenderer:
         for description in descriptions:
             elements.append(Paragraph(f"• {process_rich_text(description)}", styles["BodyStyle"]))
 
-        elements.append(Spacer(1, self._spacing("small_bottom", 1) * mm))
+        elements.append(Spacer(1, self._spacing("small_bottom") * mm))
 
     def _format_education_item(
         self,
@@ -416,7 +425,7 @@ class CvPdfRenderer:
         for description in descriptions:
             elements.append(Paragraph(f"• {process_rich_text(description)}", styles["BodyStyle"]))
 
-        elements.append(Spacer(1, self._spacing("small_bottom", 1) * mm))
+        elements.append(Spacer(1, self._spacing("small_bottom") * mm))
 
     def _format_core_skills_item(
         self,
@@ -432,7 +441,7 @@ class CvPdfRenderer:
         for description in descriptions:
             elements.append(Paragraph(f"• {process_rich_text(description)}", styles["BodyStyle"]))
 
-        elements.append(Spacer(1, self._spacing("minimal_bottom", 0.1) * mm))
+        elements.append(Spacer(1, self._spacing("minimal_bottom") * mm))
 
     def _format_skills_item(
         self,
@@ -449,7 +458,7 @@ class CvPdfRenderer:
             safe_skills = ", ".join(escape_text_preserving_tags(skill) for skill in skills)
             elements.append(Paragraph(safe_skills, styles["BodyStyle"]))
 
-        elements.append(Spacer(1, self._spacing("item_bottom", 1) * mm))
+        elements.append(Spacer(1, self._spacing("item_bottom") * mm))
 
     def _format_language_item(
         self,
@@ -516,16 +525,24 @@ class CvPdfRenderer:
     def _localized_list(self, entry: dict[str, Any], field_name: str) -> list[str]:
         return get_localized_list(entry, field_name, self.language)
 
-    def _margin(self, margin_key: str, default_value: float) -> float:
+    def _margin(self, margin_key: str) -> float:
         margin_settings = self.visual_settings.get("margins", {})
         if not isinstance(margin_settings, dict):
-            return default_value
-        margin_value = margin_settings.get(margin_key, default_value)
+            raise PdfRenderError("Style configuration missing 'margins' dictionary in styles.json")
+        margin_value = margin_settings.get(margin_key)
+        if margin_value is None:
+            raise PdfRenderError(
+                f"Style configuration missing 'margins.{margin_key}' in styles.json"
+            )
         return float(margin_value)
 
-    def _spacing(self, spacing_key: str, default_value: float) -> float:
+    def _spacing(self, spacing_key: str) -> float:
         spacing_settings = self.visual_settings.get("spacing", {})
         if not isinstance(spacing_settings, dict):
-            return default_value
-        spacing_value = spacing_settings.get(spacing_key, default_value)
+            raise PdfRenderError("Style configuration missing 'spacing' dictionary in styles.json")
+        spacing_value = spacing_settings.get(spacing_key)
+        if spacing_value is None:
+            raise PdfRenderError(
+                f"Style configuration missing 'spacing.{spacing_key}' in styles.json"
+            )
         return float(spacing_value)

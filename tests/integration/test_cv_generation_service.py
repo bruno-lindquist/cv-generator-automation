@@ -5,7 +5,7 @@ from pathlib import Path
 import pytest
 
 from application.cv_service import CvGenerationService
-from tests.helpers.file_helpers import write_json
+from tests.helpers.file_helpers import write_json, write_project_styles
 
 
 @pytest.fixture()
@@ -86,24 +86,7 @@ def isolated_project_files(tmp_path: Path) -> Path:
         },
     )
 
-    write_json(
-        styles_path,
-        {
-            "margins": {
-                "top": 10,
-                "bottom": 8,
-                "left": 12,
-                "right": 12,
-            },
-            "spacing": {
-                "header_bottom": 0,
-                "section_bottom": 2,
-                "item_bottom": 1,
-                "small_bottom": 1,
-                "minimal_bottom": 0.1,
-            },
-        },
-    )
+    write_project_styles(styles_path)
 
     write_json(
         translations_path,
