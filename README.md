@@ -102,6 +102,18 @@ Níveis aplicados:
 - `ERROR`: falhas da operação atual.
 - `CRITICAL`: falhas fatais e inesperadas.
 
+## Arquitetura do pipeline PDF
+
+O fluxo de geração de PDF está separado por responsabilidade:
+
+- `CvPdfRenderer` (`src/infrastructure/pdf_renderer.py`): orquestra o fluxo de renderização.
+- `PdfStyleEngine` (`src/infrastructure/pdf_styles/pdf_style_engine.py`): valida e resolve estilos a partir de `config/styles.json`.
+- `SectionFormatterRegistry` (`src/infrastructure/pdf_sections/section_formatter_registry.py`): mapeia cada `section_type` para um formatter.
+- `BaseSectionFormatter` + formatters específicos (`src/infrastructure/pdf_sections/*.py`): formatam o conteúdo de cada seção.
+
+Guia operacional completo:
+- `docs/GUIA_MANUTENCAO_PDF.md`
+
 ## Testes
 
 Executar testes com cobertura:

@@ -7,20 +7,22 @@ from pathlib import Path
 from typing import Any
 from xml.sax.saxutils import escape
 
-from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY, TA_LEFT, TA_RIGHT
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import ParagraphStyle, StyleSheet1, getSampleStyleSheet
+from reportlab.lib.styles import StyleSheet1
 from reportlab.lib.units import mm
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
 
 from domain.localization import (
     escape_text_preserving_tags,
-    format_period,
     get_localized_field,
-    get_localized_list,
     get_translation,
     process_rich_text,
+)
+from infrastructure.pdf_sections import (
+    build_default_section_formatter_registry,
+)
+from infrastructure.pdf_styles import (
+    PdfStyleEngine,
 )
 from shared.exceptions import PdfRenderError
 
@@ -37,32 +39,6 @@ class CvPdfRenderer:
         "awards",
         "certifications",
     ]
-    REQUIRED_PARAGRAPH_STYLE_NAMES = [
-        "NameStyle",
-        "TitleStyle",
-        "SectionTitleStyle",
-        "ItemTitleStyle",
-        "ItemSubtitleStyle",
-        "BodyStyle",
-        "ContactStyle",
-        "DateStyle",
-    ]
-    STYLE_FIELD_MAPPING = {
-        "font_name": "fontName",
-        "font_size": "fontSize",
-        "text_color": "textColor",
-        "space_before": "spaceBefore",
-        "space_after": "spaceAfter",
-        "left_indent": "leftIndent",
-        "alignment": "alignment",
-        "keep_with_next": "keepWithNext",
-    }
-    ALIGNMENT_BY_NAME = {
-        "left": TA_LEFT,
-        "center": TA_CENTER,
-        "right": TA_RIGHT,
-        "justify": TA_JUSTIFY,
-    }
 
     def __init__(
         self,
@@ -73,16 +49,12 @@ class CvPdfRenderer:
     ) -> None:
         self.language = language
         self.translations = translations
-        self.visual_settings = visual_settings if isinstance(visual_settings, dict) else {}
-        self.section_formatter_by_type = {
-            "experience": self._format_experience_item,
-            "education": self._format_education_item,
-            "core_skills": self._format_core_skills_item,
-            "skills": self._format_skills_item,
-            "languages": self._format_language_item,
-            "awards": self._format_award_item,
-            "certifications": self._format_certification_item,
-        }
+        self.pdf_style_engine = PdfStyleEngine(visual_settings)
+        self.section_formatter_registry = build_default_section_formatter_registry(
+            language=language,
+            translations=translations,
+            pdf_style_engine=self.pdf_style_engine,
+        )
 
     def render_cv(
         self,
@@ -97,10 +69,10 @@ class CvPdfRenderer:
         document = SimpleDocTemplate(
             str(output_file_path),
             pagesize=A4,
-            rightMargin=self._margin("right") * mm,
-            leftMargin=self._margin("left") * mm,
-            topMargin=self._margin("top") * mm,
-            bottomMargin=self._margin("bottom") * mm,
+            rightMargin=self.pdf_style_engine.margin("right") * mm,
+            leftMargin=self.pdf_style_engine.margin("left") * mm,
+            topMargin=self.pdf_style_engine.margin("top") * mm,
+            bottomMargin=self.pdf_style_engine.margin("bottom") * mm,
         )
 
         app_logger.bind(event="pdf_build_started", step="pdf_renderer").info(
@@ -108,7 +80,7 @@ class CvPdfRenderer:
         )
 
         elements: list[Any] = []
-        styles = self._create_styles()
+        styles = self.pdf_style_engine.build_stylesheet()
 
         self._add_header(elements, styles, cv_data)
         self._add_summary(elements, styles, cv_data)
@@ -143,7 +115,7 @@ class CvPdfRenderer:
                 ).warning("Section data is not a list; skipping section")
                 continue
 
-            formatter = self.section_formatter_by_type.get(section_type)
+            formatter = self.section_formatter_registry.get_formatter(section_type)
             if not formatter:
                 app_logger.bind(event="section_render_skipped", step=section_type).warning(
                     "Unknown section type; skipping section"
@@ -157,8 +129,8 @@ class CvPdfRenderer:
 
             self._add_section_title(elements, styles, section_type)
             for item in section_items:
-                formatter(elements, styles, item)
-            elements.append(Spacer(1, self._spacing("item_bottom") * mm))
+                formatter.format_section_item(elements, styles, item)
+            elements.append(Spacer(1, self.pdf_style_engine.spacing("item_bottom") * mm))
 
             elapsed_ms = int((time.perf_counter() - section_start) * 1000)
             app_logger.bind(
@@ -186,84 +158,6 @@ class CvPdfRenderer:
                 section_types.append(section_type)
 
         return section_types
-
-    def _create_styles(self) -> StyleSheet1:
-        styles = getSampleStyleSheet()
-        paragraph_styles = self.visual_settings.get("paragraph_styles", {})
-        if not isinstance(paragraph_styles, dict):
-            raise PdfRenderError(
-                "Style configuration missing 'paragraph_styles' dictionary in styles.json"
-            )
-
-        for style_name, style_definition in paragraph_styles.items():
-            if not isinstance(style_name, str) or not isinstance(style_definition, dict):
-                continue
-            if style_name in styles.byName:
-                continue
-
-            parent_name = str(style_definition.get("parent", "Normal"))
-            parent_style = styles[parent_name] if parent_name in styles else styles["Normal"]
-            style_kwargs = self._build_paragraph_style_kwargs(style_definition)
-            styles.add(ParagraphStyle(name=style_name, parent=parent_style, **style_kwargs))
-
-        missing_required_styles = [
-            style_name
-            for style_name in self.REQUIRED_PARAGRAPH_STYLE_NAMES
-            if style_name not in styles.byName
-        ]
-        if missing_required_styles:
-            missing_styles = ", ".join(missing_required_styles)
-            raise PdfRenderError(
-                f"Style configuration missing required paragraph styles: {missing_styles}"
-            )
-
-        return styles
-
-    def _build_paragraph_style_kwargs(self, style_definition: dict[str, Any]) -> dict[str, Any]:
-        style_kwargs: dict[str, Any] = {}
-        for setting_key, reportlab_key in self.STYLE_FIELD_MAPPING.items():
-            if setting_key not in style_definition:
-                continue
-
-            setting_value = style_definition[setting_key]
-            if setting_key == "alignment":
-                style_kwargs[reportlab_key] = self._resolve_alignment(setting_value)
-                continue
-            if setting_key == "text_color":
-                style_kwargs[reportlab_key] = self._resolve_color(setting_value)
-                continue
-
-            style_kwargs[reportlab_key] = setting_value
-
-        return style_kwargs
-
-    def _resolve_alignment(self, alignment_value: Any) -> int:
-        if isinstance(alignment_value, int):
-            return alignment_value
-        if not isinstance(alignment_value, str):
-            return TA_LEFT
-        return self.ALIGNMENT_BY_NAME.get(alignment_value.lower(), TA_LEFT)
-
-    def _resolve_color(self, color_value: Any) -> colors.Color:
-        if not isinstance(color_value, str) or not color_value.strip():
-            raise PdfRenderError("Paragraph style 'text_color' must be a non-empty string")
-        try:
-            return colors.toColor(color_value)
-        except ValueError:
-            raise PdfRenderError(f"Invalid paragraph style color: {color_value}")
-
-    def _link_color(self) -> str:
-        links_settings = self.visual_settings.get("links", {})
-        if not isinstance(links_settings, dict):
-            raise PdfRenderError(
-                "Style configuration missing 'links' dictionary in styles.json"
-            )
-        link_color = links_settings.get("social_link_color")
-        if not isinstance(link_color, str) or not link_color.strip():
-            raise PdfRenderError(
-                "Style configuration missing 'links.social_link_color' in styles.json"
-            )
-        return link_color
 
     def _add_header(self, elements: list[Any], styles: StyleSheet1, cv_data: dict[str, Any]) -> None:
         personal_info = cv_data.get("personal_info", {})
@@ -303,7 +197,10 @@ class CvPdfRenderer:
         social_items = personal_info.get("social") or []
         if isinstance(social_items, list) and social_items:
             social_links: list[str] = []
-            escaped_link_color = escape(self._link_color(), {"'": "&apos;", '"': "&quot;"})
+            escaped_link_color = escape(
+                self.pdf_style_engine.social_link_color(),
+                {"'": "&apos;", '"': "&quot;"},
+            )
             for social_item in social_items:
                 if not isinstance(social_item, dict):
                     continue
@@ -322,7 +219,7 @@ class CvPdfRenderer:
             if social_links:
                 elements.append(Paragraph(" | ".join(social_links), styles["ContactStyle"]))
 
-        elements.append(Spacer(1, self._spacing("header_bottom") * mm))
+        elements.append(Spacer(1, self.pdf_style_engine.spacing("header_bottom") * mm))
 
     def _add_summary(self, elements: list[Any], styles: StyleSheet1, cv_data: dict[str, Any]) -> None:
         summary = get_localized_field(cv_data.get("summary", {}), "description", self.language, "")
@@ -338,7 +235,7 @@ class CvPdfRenderer:
         )
         elements.append(Paragraph(escape_text_preserving_tags(section_title), styles["SectionTitleStyle"]))
         elements.append(Paragraph(process_rich_text(summary), styles["BodyStyle"]))
-        elements.append(Spacer(1, self._spacing("section_bottom") * mm))
+        elements.append(Spacer(1, self.pdf_style_engine.spacing("section_bottom") * mm))
 
     def _add_section_title(self, elements: list[Any], styles: StyleSheet1, section_type: str) -> None:
         section_title = get_translation(
@@ -351,198 +248,3 @@ class CvPdfRenderer:
         elements.append(
             Paragraph(escape_text_preserving_tags(section_title), styles["SectionTitleStyle"])
         )
-
-    def _format_experience_item(
-        self,
-        elements: list[Any],
-        styles: StyleSheet1,
-        experience_item: dict[str, Any],
-    ) -> None:
-        position = get_localized_field(experience_item, "position", self.language, "")
-        company = get_localized_field(experience_item, "company", self.language, "")
-        period_text = format_period(
-            start_month=experience_item.get("start_month", ""),
-            start_year=experience_item.get("start_year", ""),
-            end_month=experience_item.get("end_month", ""),
-            end_year=experience_item.get("end_year", ""),
-            translations=self.translations,
-            language=self.language,
-        )
-
-        if position:
-            elements.append(
-                Paragraph(f"<b>{escape_text_preserving_tags(position)}</b>", styles["ItemTitleStyle"])
-            )
-        if company:
-            elements.append(
-                Paragraph(f"<b>{escape_text_preserving_tags(company)}</b>", styles["ItemSubtitleStyle"])
-            )
-        if period_text:
-            elements.append(
-                Paragraph(f"<i>{escape_text_preserving_tags(period_text)}</i>", styles["DateStyle"])
-            )
-
-        descriptions = self._localized_list(experience_item, "description")
-        for description in descriptions:
-            elements.append(Paragraph(f"• {process_rich_text(description)}", styles["BodyStyle"]))
-
-        elements.append(Spacer(1, self._spacing("small_bottom") * mm))
-
-    def _format_education_item(
-        self,
-        elements: list[Any],
-        styles: StyleSheet1,
-        education_item: dict[str, Any],
-    ) -> None:
-        degree = get_localized_field(education_item, "degree", self.language, "")
-        institution = get_localized_field(education_item, "institution", self.language, "")
-        period_text = format_period(
-            start_month=education_item.get("start_month", ""),
-            start_year=education_item.get("start_year", ""),
-            end_month=education_item.get("end_month", ""),
-            end_year=education_item.get("end_year", ""),
-            translations=self.translations,
-            language=self.language,
-        )
-
-        if degree:
-            elements.append(
-                Paragraph(f"<b>{escape_text_preserving_tags(degree)}</b>", styles["ItemTitleStyle"])
-            )
-        if institution:
-            elements.append(
-                Paragraph(
-                    f"<b>{escape_text_preserving_tags(institution)}</b>",
-                    styles["ItemSubtitleStyle"],
-                )
-            )
-        if period_text:
-            elements.append(
-                Paragraph(f"<i>{escape_text_preserving_tags(period_text)}</i>", styles["DateStyle"])
-            )
-
-        descriptions = self._localized_list(education_item, "description")
-        for description in descriptions:
-            elements.append(Paragraph(f"• {process_rich_text(description)}", styles["BodyStyle"]))
-
-        elements.append(Spacer(1, self._spacing("small_bottom") * mm))
-
-    def _format_core_skills_item(
-        self,
-        elements: list[Any],
-        styles: StyleSheet1,
-        core_skill_item: dict[str, Any],
-    ) -> None:
-        category = get_localized_field(core_skill_item, "category", self.language, "")
-        if category:
-            elements.append(Paragraph(escape_text_preserving_tags(category), styles["ItemTitleStyle"]))
-
-        descriptions = self._localized_list(core_skill_item, "description")
-        for description in descriptions:
-            elements.append(Paragraph(f"• {process_rich_text(description)}", styles["BodyStyle"]))
-
-        elements.append(Spacer(1, self._spacing("minimal_bottom") * mm))
-
-    def _format_skills_item(
-        self,
-        elements: list[Any],
-        styles: StyleSheet1,
-        skill_group_item: dict[str, Any],
-    ) -> None:
-        category = get_localized_field(skill_group_item, "category", self.language, "")
-        if category:
-            elements.append(Paragraph(escape_text_preserving_tags(category), styles["ItemTitleStyle"]))
-
-        skills = skill_group_item.get("item", [])
-        if isinstance(skills, list) and skills:
-            safe_skills = ", ".join(escape_text_preserving_tags(skill) for skill in skills)
-            elements.append(Paragraph(safe_skills, styles["BodyStyle"]))
-
-        elements.append(Spacer(1, self._spacing("item_bottom") * mm))
-
-    def _format_language_item(
-        self,
-        elements: list[Any],
-        styles: StyleSheet1,
-        language_item: dict[str, Any],
-    ) -> None:
-        language_name = get_localized_field(language_item, "language", self.language, "")
-        proficiency = get_localized_field(language_item, "proficiency", self.language, "")
-        if language_name or proficiency:
-            body_text = (
-                f"<b>{escape_text_preserving_tags(language_name)}</b> - "
-                f"{escape_text_preserving_tags(proficiency)}"
-            )
-            elements.append(Paragraph(body_text, styles["BodyStyle"]))
-
-    def _format_award_item(
-        self,
-        elements: list[Any],
-        styles: StyleSheet1,
-        award_item: dict[str, Any],
-    ) -> None:
-        title = get_localized_field(award_item, "title", self.language, "")
-        description = get_localized_field(award_item, "description", self.language, "")
-
-        if title and description:
-            award_text = (
-                f"<b>{escape_text_preserving_tags(title)}</b> - "
-                f"{escape_text_preserving_tags(description)}"
-            )
-        else:
-            award_text = escape_text_preserving_tags(title or description)
-
-        if award_text:
-            elements.append(Paragraph(award_text, styles["BodyStyle"]))
-
-    def _format_certification_item(
-        self,
-        elements: list[Any],
-        styles: StyleSheet1,
-        certification_item: dict[str, Any],
-    ) -> None:
-        certification_name = get_localized_field(certification_item, "name", self.language, "")
-        issuer_name = get_localized_field(certification_item, "issuer", self.language, "")
-        year = str(certification_item.get("year", "")).strip()
-
-        if certification_name and issuer_name and year:
-            certification_text = (
-                f"<b>{escape_text_preserving_tags(certification_name)}</b> - "
-                f"{escape_text_preserving_tags(issuer_name)} "
-                f"({escape_text_preserving_tags(year)})"
-            )
-        elif certification_name and issuer_name:
-            certification_text = (
-                f"<b>{escape_text_preserving_tags(certification_name)}</b> - "
-                f"{escape_text_preserving_tags(issuer_name)}"
-            )
-        else:
-            certification_text = escape_text_preserving_tags(certification_name or issuer_name)
-
-        if certification_text:
-            elements.append(Paragraph(certification_text, styles["BodyStyle"]))
-
-    def _localized_list(self, entry: dict[str, Any], field_name: str) -> list[str]:
-        return get_localized_list(entry, field_name, self.language)
-
-    def _margin(self, margin_key: str) -> float:
-        margin_settings = self.visual_settings.get("margins", {})
-        if not isinstance(margin_settings, dict):
-            raise PdfRenderError("Style configuration missing 'margins' dictionary in styles.json")
-        margin_value = margin_settings.get(margin_key)
-        if margin_value is None:
-            raise PdfRenderError(
-                f"Style configuration missing 'margins.{margin_key}' in styles.json"
-            )
-        return float(margin_value)
-
-    def _spacing(self, spacing_key: str) -> float:
-        spacing_settings = self.visual_settings.get("spacing", {})
-        if not isinstance(spacing_settings, dict):
-            raise PdfRenderError("Style configuration missing 'spacing' dictionary in styles.json")
-        spacing_value = spacing_settings.get(spacing_key)
-        if spacing_value is None:
-            raise PdfRenderError(
-                f"Style configuration missing 'spacing.{spacing_key}' in styles.json"
-            )
-        return float(spacing_value)
