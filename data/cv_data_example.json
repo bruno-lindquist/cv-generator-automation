@@ -1,0 +1,413 @@
+{
+  "sections": [
+    {"type": "experience",      "enabled": true,  "order": 1},
+    {"type": "education",       "enabled": true,  "order": 2},
+    {"type": "core_skills",     "enabled": false, "order": 3},
+    {"type": "skills",          "enabled": true,  "order": 4},
+    {"type": "languages",       "enabled": true,  "order": 5},
+    {"type": "certifications",  "enabled": false, "order": 6},
+    {"type": "awards",          "enabled": false, "order": 7}
+  ],
+  "personal_info": {
+    "email": "bruno-lindquist@hotmail.com",
+    "location": "Guarulhos, SP",
+    "name": "Bruno Lindquist",
+    "phone": "(11) 97894-3590",
+    "social": [
+      {
+        "label": "github.com/bruno-lindquist",
+        "url": "https://www.github.com/bruno-lindquist"
+      },
+      {
+        "label": "linkedin.com/in/bruno-lindquist",
+        "url": "https://www.linkedin.com/in/bruno-lindquist"
+      }
+    ]
+  },
+  "desired_role": {
+    "desired_role": {
+      "pt": "Desenvolvedor Fullstack",
+      "en": "Fullstack Developer"
+    }
+  },
+  "summary": {
+    "description": {
+      "pt": "<b>Desenvolvedor Fullstack</b> com foco em arquitetura de sistemas escaláveis e <b>APIs</b> usando <b>Python, JavaScript e tecnologias complementares</b>. Expertise em <b>bancos de dados SQL (MySQL, PostgreSQL, SQL Server)</b>, <b>integração contínua (CI/CD)</b> e práticas de <b>código limpo.</b> \n\nPossui forte conhecimento em <b>Docker, DevOps, GitHub Actions</b>, desenvolvimento de <b>pipelines robustos</b>, <b>versionamento com Git/GitHub</b> e <b>testes automatizados</b>. Experiência com <b>integração de sistemas e automações</b>. Profissional proativo, com foco em <b>comunicação clara</b>, colaboração e <b>resolução de problemas.</b>",
+      "en": "<b>Fullstack Developer</b> focused on scalable system architecture and <b>API</b> development using <b>Python, JavaScript, and complementary technologies</b>. Expertise in <b>SQL databases (MySQL, PostgreSQL, SQL Server)</b>, <b>continuous integration (CI/CD)</b>, and <b>clean code</b> practices.\n\nStrong knowledge of <b>Docker, DevOps, and GitHub Actions</b>, development of <b>robust pipelines</b>, <b>version control with Git/GitHub</b>, and <b>automated testing</b>. Experience with <b>system integration and automations</b>. Proactive professional with a focus on <b>clear communication</b>, collaboration, and <b>problem solving</b>."
+    }
+  },
+  "experience": [
+    {
+      "company": "Lindquist Design",
+      "description": {
+        "pt": [
+          "Desenvolvimento de <b>bibliotecas internas em Python</b> para automação, web scraping e <b>processamento de dados</b>, <b>otimizando a performance</b> de uma aplicação <b>em 90%.</b>",
+          "Implementei funções encapsuladas para autenticação, navegação, integração de sistemas e deduplicação, tornando a base de código mais fácil de reutilizar e manter.",
+          "Desenvolvi <b>pipelines robustos com validação, logs, tratamento de erros</b> e integração entre sistemas, melhorando a confiabilidade e rastreabilidade dos dados.",
+          "Trabalhei com integração de dados em múltiplos formatos e desenvolvi <b>módulos reutilizáveis e escaláveis</b>, aumentando a velocidade e consistência no processamento de dados entre projetos.",
+          "Desenvolvimento de <b>APIs e plataformas web com arquitetura escalável</b> <b>(JS, PHP, HTML, CSS, MySQL, PostgreSQL)</b> com alta disponibilidade e performance, incluindo plataforma de aprendizado com +10 mil usuários ativos.",
+          "Padronizei o fluxo de <b>versionamento com Git</b> e implementei automações de <b>CI/CD via GitHub Actions</b> para builds, testes e <b>deploys</b> consistentes e confiáveis."
+        ],
+        "en": [
+          "Developed <b>internal Python libraries</b> for automation, web scraping, and <b>data processing</b>, improving an application's performance by <b>90%.</b>",
+          "Implemented encapsulated functions for authentication, navigation, system integration, and deduplication, making the codebase easier to reuse and maintain.",
+          "Built end-to-end <b>robust pipelines with logging, validation, exception handling</b> and system integration, increasing reliability and traceability of data workflows.",
+          "Handled multi-format data integration and created <b>reusable, scalable modules</b>, improving data handling speed and consistency across projects.",
+          "Development of <b>APIs and web platforms with scalable architecture</b> <b>(JS, PHP, HTML, CSS, MySQL, PostgreSQL)</b> with high availability and performance, including learning platform with 10k+ active users.",
+          "Managed <b>version control with Git</b> and automated <b>CI/CD</b> workflows using <b>GitHub Actions</b> for consistent and reliable builds, tests, and deployments."
+        ]
+      },
+      "end_month": "",
+      "end_year": "",
+      "position": {
+        "pt": "Desenvolvedor Backend (autônomo)",
+        "en": "Backend Developer (freelance)"
+      },
+      "start_month": "1",
+      "start_year": "2018"
+    },
+    {
+      "company": {
+        "pt": "Orakolo Tecnologia",
+        "en": "Orakolo Technology"
+      },
+      "description": {
+        "pt": [
+          "Desenvolvi protótipos funcionais, automações e experimentos envolvendo sensores.",
+          "Conduzi <b>pesquisas avançadas sobre tecnologias emergentes, IA e tendências de mercado</b>, convertendo insights em soluções escaláveis e aplicáveis.",
+          "Estruturei arquitetura de sistemas, documentação técnica, requisitos e coordenei equipes multidisciplinares em projetos complexos.",
+          "Criei ferramentas e pipelines para otimização de fluxos de trabalho, <b>combinando integração de sistemas, IA e melhorias contínuas.</b>"
+        ],
+        "en": [
+          "Developed functional prototypes, automations, and experiments involving sensors and other hardwares.",
+          "Led advanced <b>research on emerging technologies, AI, and market trends,</b> turning insights into scalable and applicable solutions.",
+          "Structured system architecture, technical documentation, requirements, and coordinated multidisciplinary teams on complex projects.",
+          "Built tools and pipelines to optimize workflows, <b>combining system integration, AI, and continuous improvement.</b>"
+        ]
+      },
+      "end_month": "7",
+      "end_year": "2023",
+      "position": {
+        "pt": "Designer Industrial e P&D",
+        "en": "Industrial Designer and R&D"
+      },
+      "start_month": "9",
+      "start_year": "2020"
+    },
+    {
+      "company": {
+        "pt": "Laboratório de Ergonomia e Interfaces",
+        "en": "Ergonomics and Interfaces Laboratory"
+      },
+      "description": {
+        "pt": [
+          "Liderança de projetos tecnológicos envolvendo dispositivos eletrônicos, testes, validação e documentação.",
+          "Desenvolvimento de sistemas de prototipagem rápida com impressão 3D, modelagem paramétrica e métricas de eficiência.",
+          "Gestão completa de produtos de hardware com foco em funcionalidade, confiabilidade e escalabilidade."
+        ],
+        "en": [
+          "Led technology projects involving electronic devices, testing, validation, and documentation.",
+          "Developed rapid prototyping systems with 3D printing, parametric modeling, and efficiency metrics.",
+          "Managed hardware products end-to-end with a focus on functionality, reliability, and scalability."
+        ]
+      },
+      "end_month": "8",
+      "end_year": "2020",
+      "position": {
+        "pt": "Desenvolvedor & P&D",
+        "en": "Developer & R&D"
+      },
+      "start_month": "3",
+      "start_year": "2018"
+    },
+    {
+      "company": {
+        "pt": "Kesseböhmer - Alemanha",
+        "en": "Kesseböhmer - Germany"
+      },
+      "description": {
+        "pt": [
+          "Criação de soluções funcionais, testes e documentação de produtos industriais."
+        ],
+        "en": [
+          "Created functional solutions, testing, and documentation for industrial products."
+        ]
+      },
+      "end_month": "8",
+      "end_year": "2016",
+      "position": {
+        "pt": "Estágio",
+        "en": "Internship"
+      },
+      "start_month": "3",
+      "start_year": "2016"
+    }
+  ],
+  "education": [
+    {
+      "degree": {
+        "pt": "Mestrado em Design com foco em Ergonomia",
+        "en": "Master's in Design focused on Ergonomics"
+      },
+      "description": {
+        "pt": [
+          "Conclusão com distinção e louvor"
+        ],
+        "en": [
+          "Graduated with distinction and honors"
+        ]
+      },
+      "end_month": "8",
+      "end_year": "2020",
+      "institution": {
+        "pt": "Unesp - Universidade Estadual Paulista",
+        "en": "Unesp - São Paulo State University"
+      },
+      "start_month": "2",
+      "start_year": "2018"
+    },
+    {
+      "degree": {
+        "pt": "Bacharelado em Design Industrial",
+        "en": "Bachelor's in Industrial Design"
+      },
+      "description": {
+        "pt": [
+          "2 anos de intercâmbio na Hochschule Osnabrück, Alemanha",
+          "Conclusão com distinção e louvor"
+        ],
+        "en": [
+          "2-year exchange at Hochschule Osnabrück, Germany",
+          "Graduated with distinction and honors"
+        ]
+      },
+      "end_month": "12",
+      "end_year": "2017",
+      "institution": {
+        "pt": "Unesp - Universidade Estadual Paulista",
+        "en": "Unesp - São Paulo State University"
+      },
+      "start_month": "3",
+      "start_year": "2012"
+    }
+  ],
+  "core_skills": [
+    {
+      "category": {
+        "pt": "Python & Automação:",
+        "en": "Python & Automation:"
+      },
+      "description": {
+        "pt": [
+          "Desenvolvimento de bibliotecas e módulos internos em Python.",
+          "Web scraping e automação com Selenium, Requests, BeautifulSoup.",
+          "Automação de fluxos complexos e integração entre sistemas.",
+          "Processamento e armazenamento de dados estruturados (CSV, JSON, MySQL, PostgreSQL).",
+          "Criação de pipelines robustos com logs, deduplicação, validação e rastreamento.",
+          "Escrita de funções encapsuladas, ferramentas reutilizáveis, abstrações e padrões de design."
+        ],
+        "en": [
+          "Development of internal Python libraries and modules.",
+          "Web scraping and automation with Selenium, Requests, BeautifulSoup.",
+          "Automation of complex workflows and system integration.",
+          "Structured data processing and storage (CSV, JSON, MySQL, PostgreSQL).",
+          "Creation of robust pipelines with logging, deduplication, validation, and tracking.",
+          "Writing encapsulated functions, reusable tools, abstractions, and design patterns."
+        ]
+      }
+    },
+    {
+      "category": {
+        "pt": "APIs, Arquitetura & Banco de Dados:",
+        "en": "APIs, Architecture & Databases:"
+      },
+      "description": {
+        "pt": [
+          "Desenvolvimento e integração robusta de APIs (consumo e criação).",
+          "Arquitetura de sistemas e design de APIs escaláveis.",
+          "Design de bancos de dados relacionais (MySQL, PostgreSQL, SQL Server).",
+          "Otimização de queries, performance de banco de dados e integração entre sistemas.",
+          "Modelagem de dados e arquitetura de schemas escaláveis com foco em integridade e performance."
+        ],
+        "en": [
+          "Robust API development and integration (consumption and creation).",
+          "System architecture and scalable API design.",
+          "Relational database design (MySQL, PostgreSQL, SQL Server).",
+          "Query optimization, database performance tuning, and system integration.",
+          "Data modeling and scalable schema architecture with focus on integrity and performance."
+        ]
+      }
+    },
+    {
+      "category": {
+        "pt": "DevOps, CI/CD & Qualidade:",
+        "en": "DevOps, CI/CD & Quality:"
+      },
+      "description": {
+        "pt": [
+          "Containerização com Docker e orquestração em ambientes containerizados.",
+          "Automação de CI/CD com GitHub Actions, testes automatizados e deployment.",
+          "Controle de versionamento com Git/GitHub, integração contínua e práticas DevOps.",
+          "Testes unitários, automação de testes e frameworks (Pytest).",
+          "Pipelines robustos com validação, logging e rastreamento end-to-end.",
+          "Documentação técnica clara, estruturada e arquitetura de sistemas escaláveis.",
+          "Monitoramento, logging e rastreamento de aplicações em produção."
+        ],
+        "en": [
+          "Containerization with Docker and orchestration in containerized environments.",
+          "CI/CD automation with GitHub Actions, automated testing, and deployment.",
+          "Version control with Git/GitHub, continuous integration, and DevOps practices.",
+          "Unit testing, test automation, and testing frameworks (Pytest).",
+          "Robust pipelines with validation, logging, and end-to-end tracing.",
+          "Clear technical documentation and scalable system architecture.",
+          "Monitoring, logging, and tracking of applications in production."
+        ]
+      }
+    },
+    {
+      "category": {
+        "pt": "IA, Otimização & Resolução de Problemas:",
+        "en": "AI, Optimization & Problem-solving:"
+      },
+      "description": {
+        "pt": [
+          "Uso prático de LLMs para otimização de processos e ideação.",
+          "Otimização de performance, scalability e eficiência de código.",
+          "Resolução de problemas complexos e análise de viabilidade técnica.",
+          "Aprendizado contínuo e adaptabilidade a novas tecnologias.",
+          "Proatividade e autonomia em projetos multidisciplinares."
+        ],
+        "en": [
+          "Practical use of LLMs for process optimization and ideation.",
+          "Performance optimization, scalability, and code efficiency.",
+          "Complex problem-solving and technical feasibility analysis.",
+          "Continuous Learning and adaptability to new technologies.",
+          "Proactivity and autonomy in multidisciplinary projects."
+        ]
+      }
+    }
+  ],
+  "skills": [
+    {
+      "category": {
+        "pt": "Linguagens & Tecnologias:",
+        "en": "Languages & Technologies:"
+      },
+      "item": [
+        "Python",
+        "JavaScript",
+        "PHP",
+        "SQL",
+        "API Design",
+        "Git/GitHub"
+      ]
+    },
+    {
+      "category": {
+        "pt": "Bancos de Dados:",
+        "en": "Databases:"
+      },
+      "item": [
+        "MySQL",
+        "PostgreSQL",
+        "SQL Server",
+        "SQL",
+        "query optimization",
+        "database architecture"
+      ]
+    },
+    {
+      "category": {
+        "pt": "DevOps & Infraestrutura:",
+        "en": "DevOps & Infrastructure:"
+      },
+      "item": [
+        "Docker",
+        "CI/CD",
+        "GitHub actions",
+        "deployment"
+      ]
+    },
+    {
+      "category": {
+        "pt": "Testes & Qualidade:",
+        "en": "Testing & Quality:"
+      },
+      "item": [
+        "Pytest",
+        "clean code",
+        "version control"
+      ]
+    },
+    {
+      "category": {
+        "pt": "APIs, Arquitetura & Integração:",
+        "en": "APIs, Architecture & Integration:"
+      },
+      "item": [
+        "API design",
+        "system architecture",
+        "system integration",
+        "automation",
+        "data integration"
+      ]
+    },
+    {
+      "category": {
+        "pt": "Front-end (Complementar):",
+        "en": "Front-end (Complementary):"
+      },
+      "item": [
+        "HTML",
+        "CSS",
+        "JS",
+        "UI/UX"
+      ]
+    }
+  ],
+  "languages": [
+    {
+      "language": {
+        "pt": "Português",
+        "en": "Portuguese"
+      },
+      "proficiency": {
+        "pt": "Nativo",
+        "en": "Native"
+      }
+    },
+    {
+      "language": {
+        "pt": "Inglês",
+        "en": "English"
+      },
+      "proficiency": {
+        "pt": "Fluente",
+        "en": "Fluent"
+      }
+    },
+    {
+      "language": {
+        "pt": "Alemão",
+        "en": "German"
+      },
+      "proficiency": {
+        "pt": "Intermediário",
+        "en": "Intermediate"
+      }
+    }
+  ],
+  "certifications": [],
+  "awards": [
+    {
+      "description": {
+        "pt": "Produto exibido no Museu da Casa Brasileira, na Bienal Brasileira de Design e no Salone Satellite, em Milão.",
+        "en": "Product exhibited at Museu da Casa Brasileira, the Brazilian Design Biennial, and Salone Satellite in Milan."
+      },
+      "title": {
+        "pt": "Vencedor do concurso \"Jovens Designers\"",
+        "en": "Winner of the \"Jovens Designers\" competition"
+      }
+    }
+  ]
+}

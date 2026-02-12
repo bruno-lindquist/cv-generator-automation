@@ -7,8 +7,8 @@ from pathlib import Path
 
 from loguru import logger
 
-from application.cv_service import run_generation
-from shared.exceptions import CvGeneratorError
+from cv_service import run_generation
+from exceptions import CvGeneratorError
 
 
 def build_argument_parser() -> argparse.ArgumentParser:

@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from application.cv_service import CvGenerationService
+from cv_service import CvGenerationService
 from tests.helpers.project_builders import create_test_project_files
 
 

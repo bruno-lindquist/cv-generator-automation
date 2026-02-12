@@ -27,13 +27,22 @@ generate_cv() {
     local lang=$1
     local lang_name=$2
     activate_venv
-    
-    PYTHON_CMD="./.venv/bin/python"
-    [ ! -f "$PYTHON_CMD" ] && PYTHON_CMD="python3"
-    
+
     echo ""
     echo "$lang_name Generating CV in $lang_name..."
-    "$PYTHON_CMD" cv_generator.py -l "$lang"
+    if [ -x "./.venv/bin/cv-generator" ]; then
+        "./.venv/bin/cv-generator" -l "$lang"
+        return
+    fi
+
+    if command -v "cv-generator" >/dev/null 2>&1; then
+        cv-generator -l "$lang"
+        return
+    fi
+
+    PYTHON_CMD="./.venv/bin/python"
+    [ ! -f "$PYTHON_CMD" ] && PYTHON_CMD="python3"
+    PYTHONPATH="src${PYTHONPATH:+:$PYTHONPATH}" "$PYTHON_CMD" -m cli -l "$lang"
 }
 
 # Automatically generate both versions

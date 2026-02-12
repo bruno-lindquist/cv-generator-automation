@@ -6,13 +6,13 @@ import pytest
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_RIGHT
 
-from infrastructure.pdf_styles import PdfStyleEngine
-from infrastructure.pdf_styles.paragraph_style_factory import build_pdf_stylesheet
-from infrastructure.pdf_styles.style_config_validator import (
+from infrastructure.pdf_styles import (
+    PdfStyleEngine,
+    build_pdf_stylesheet,
+    resolve_social_link_color,
     validate_pdf_style_configuration,
 )
-from infrastructure.pdf_styles.style_values_resolver import resolve_social_link_color
-from shared.exceptions import PdfRenderError
+from exceptions import PdfRenderError
 from tests.helpers.style_helpers import load_project_style_configuration
 
 

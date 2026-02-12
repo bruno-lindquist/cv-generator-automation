@@ -21,7 +21,7 @@ from reportlab.lib.styles import StyleSheet1
 from reportlab.lib.units import mm
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
 
-from domain.localization import (
+from localization import (
     escape_xml_attribute,
     escape_text_preserving_tags,
     get_localized_field,
@@ -34,7 +34,7 @@ from infrastructure.pdf_sections import (
 from infrastructure.pdf_styles import (
     PdfStyleEngine,
 )
-from shared.exceptions import PdfRenderError
+from exceptions import PdfRenderError
 
 
 class CvPdfRenderer:
@@ -165,7 +165,6 @@ class CvPdfRenderer:
 
             # Mede duração de renderização da seção para observabilidade.
             section_start = time.perf_counter()
-            #app_logger.bind(event="section_render_started", step=section_type).info("Rendering section")
 
             self._add_section_title(elements, styles, section_type)
             for item in section_items:

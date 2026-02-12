@@ -9,13 +9,30 @@ from reportlab.lib.styles import StyleSheet1
 from reportlab.lib.units import mm
 from reportlab.platypus import Paragraph, Spacer
 
-from domain.localization import (
+from localization import (
     escape_text_preserving_tags,
+    format_period,
     get_localized_field,
     get_localized_list,
     process_rich_text,
 )
 from infrastructure.pdf_styles import PdfStyleEngine
+
+
+def build_period_text(
+    section_item: dict[str, Any],
+    translations: dict[str, Any],
+    language: str,
+) -> str:
+    """Build localized start/end period text for timeline-like sections."""
+    return format_period(
+        start_month=section_item.get("start_month", ""),
+        start_year=section_item.get("start_year", ""),
+        end_month=section_item.get("end_month", ""),
+        end_year=section_item.get("end_year", ""),
+        translations=translations,
+        language=language,
+    )
 
 
 class BaseSectionFormatter(ABC):

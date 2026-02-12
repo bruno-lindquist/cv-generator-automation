@@ -4,8 +4,8 @@ from pathlib import Path
 
 import pytest
 
-from application.cv_service import CvGenerationService
-from shared.exceptions import OutputPathError
+from cv_service import CvGenerationService
+from exceptions import OutputPathError
 from tests.helpers.file_helpers import write_json
 
 

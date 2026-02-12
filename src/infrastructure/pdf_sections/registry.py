@@ -4,24 +4,18 @@ from __future__ import annotations
 
 from typing import Any
 
-from infrastructure.pdf_sections.awards_section_formatter import AwardsSectionFormatter
-from infrastructure.pdf_sections.base_section_formatter import BaseSectionFormatter
-from infrastructure.pdf_sections.certifications_section_formatter import (
+from infrastructure.pdf_sections.base import BaseSectionFormatter
+from infrastructure.pdf_sections.simple import (
+    AwardsSectionFormatter,
     CertificationsSectionFormatter,
-)
-from infrastructure.pdf_sections.core_skills_section_formatter import (
     CoreSkillsSectionFormatter,
+    LanguagesSectionFormatter,
+    SkillsSectionFormatter,
 )
-from infrastructure.pdf_sections.education_section_formatter import (
+from infrastructure.pdf_sections.timeline import (
     EducationSectionFormatter,
-)
-from infrastructure.pdf_sections.experience_section_formatter import (
     ExperienceSectionFormatter,
 )
-from infrastructure.pdf_sections.languages_section_formatter import (
-    LanguagesSectionFormatter,
-)
-from infrastructure.pdf_sections.skills_section_formatter import SkillsSectionFormatter
 from infrastructure.pdf_styles import PdfStyleEngine
 
 

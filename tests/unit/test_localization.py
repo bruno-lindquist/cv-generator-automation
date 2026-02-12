@@ -1,4 +1,4 @@
-from domain.localization import (
+from localization import (
     escape_xml_attribute,
     escape_text_preserving_tags,
     format_period,

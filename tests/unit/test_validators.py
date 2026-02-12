@@ -1,7 +1,7 @@
 import pytest
 
-from domain.validators import validate_cv_data
-from shared.exceptions import DataValidationError
+from validators import validate_cv_data
+from exceptions import DataValidationError
 
 
 def test_validate_cv_data_accepts_minimal_valid_payload() -> None:

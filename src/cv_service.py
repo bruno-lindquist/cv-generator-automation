@@ -9,13 +9,13 @@ from typing import Any
 
 from loguru import logger
 
-from domain.localization import get_localized_field, sanitize_filename_component
-from domain.validators import validate_cv_data
+from localization import get_localized_field, sanitize_filename_component
+from validators import validate_cv_data
 from infrastructure.config_loader import AppConfig, load_app_config
-from infrastructure.json_repository import JsonRepository
+from infrastructure.json_repository import load_json
 from infrastructure.pdf_renderer import CvPdfRenderer
-from shared.exceptions import OutputPathError
-from shared.logging_config import bind_logger_context, configure_logging
+from exceptions import OutputPathError
+from logging_config import bind_logger_context, configure_logging
 
 
 class CvGenerationService:
@@ -60,11 +60,11 @@ class CvGenerationService:
         )
 
         started_at = time.perf_counter()
-        repository = JsonRepository(encoding=self.config.defaults.encoding)
+        file_encoding = self.config.defaults.encoding
 
-        cv_data = repository.load_json(data_file_path)
-        visual_settings = repository.load_json(visual_settings_path)
-        translations = repository.load_json(translations_path)
+        cv_data = load_json(data_file_path, encoding=file_encoding)
+        visual_settings = load_json(visual_settings_path, encoding=file_encoding)
+        translations = load_json(translations_path, encoding=file_encoding)
 
         if output_file_path:
             output_path = self._resolve_runtime_path(output_file_path)
@@ -103,7 +103,11 @@ class CvGenerationService:
         )
 
         elapsed_ms = int((time.perf_counter() - started_at) * 1000)
-        contextual_logger.bind(event="app_finished", step="cv_service", duration_ms=str(elapsed_ms), ).info("CV generation finished")
+        contextual_logger.bind(
+            event="app_finished",
+            step="cv_service",
+            duration_ms=str(elapsed_ms),
+        ).info("CV generation finished")
 
         return generated_pdf_path
 
@@ -185,6 +189,12 @@ def run_generation(
 ) -> Path:
     """Convenience function used by CLI and tests."""
     service = CvGenerationService(config_file_path=config_file_path)
-    generated_path = service.generate(language=language, input_file_path=input_file_path, output_file_path=output_file_path)
-    logger.bind(event="app_finished", step="entrypoint").info(f"Generated file: {output_file_path}")
+    generated_path = service.generate(
+        language=language,
+        input_file_path=input_file_path,
+        output_file_path=output_file_path,
+    )
+    logger.bind(event="app_finished", step="entrypoint").info(
+        f"Generated file: {generated_path}"
+    )
     return generated_path

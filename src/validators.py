@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from shared.exceptions import DataValidationError
+from exceptions import DataValidationError
 
 
 REQUIRED_TOP_LEVEL_FIELDS = ["personal_info", "desired_role"]

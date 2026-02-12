@@ -22,13 +22,12 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt -r requirements-dev.txt
-          pip install -e .
+          pip install -e ".[dev]"
 
       - name: Run flake8
         run: |
-          flake8 src tests cv_generator.py
+          flake8 src tests
 
       - name: Check Python syntax
         run: |
-          python -m compileall -q src tests cv_generator.py
+          python -m compileall -q src tests

@@ -8,14 +8,32 @@ version = "0.1.0"
 description = "Generate multilingual CV PDFs from JSON input."
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+  "loguru==0.7.2",
+  "reportlab==4.0.9",
+]
+
+[project.optional-dependencies]
+dev = [
+  "flake8==7.1.1",
+  "pip-audit==2.7.3",
+  "pytest==8.3.4",
+  "pytest-cov==6.0.0",
+]
 
 [project.scripts]
 cv-generator = "cli:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
-py-modules = ["cli"]
+py-modules = [
+  "cli",
+  "cv_service",
+  "exceptions",
+  "localization",
+  "logging_config",
+  "validators",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]

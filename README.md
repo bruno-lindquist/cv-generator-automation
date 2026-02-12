@@ -4,23 +4,36 @@ Gera currículos profissionais em PDF a partir de JSON, com suporte a português
 
 ## Visão geral
 
-O projeto foi reorganizado em camadas para manter responsabilidades claras:
+O projeto está organizado com fluxo direto:
 
-- `application`: orquestração do caso de uso de geração.
-- `domain`: regras de validação, localização e formatação.
-- `infrastructure`: leitura de arquivos, carregamento de config e renderização de PDF.
-- `shared`: exceções e configuração de logging.
+- `src/cli.py`: entrypoint de linha de comando.
+- `src/cv_service.py`: orquestração do caso de uso de geração.
+- `src/localization.py` e `src/validators.py`: regras de domínio.
+- `src/infrastructure/`: I/O, configuração e renderização de PDF.
+- `src/exceptions.py` e `src/logging_config.py`: base compartilhada da aplicação.
 
 ## Estrutura atual
 
 ```text
 cv-generator-automation/
   src/
-    application/
-    domain/
-    infrastructure/
-    shared/
     cli.py
+    cv_service.py
+    localization.py
+    validators.py
+    exceptions.py
+    logging_config.py
+    infrastructure/
+      config_loader.py
+      json_repository.py
+      pdf_renderer.py
+      pdf_styles/
+        pdf_style_engine.py
+      pdf_sections/
+        base.py
+        timeline.py
+        simple.py
+        registry.py
   tests/
     unit/
     integration/
@@ -32,9 +45,7 @@ cv-generator-automation/
     styles.json
     translations.json
   .github/workflows/
-  cv_generator.py
-  requirements.txt
-  requirements-dev.txt
+  pyproject.toml
   start_mac.sh
 ```
 
@@ -47,22 +58,16 @@ cv-generator-automation/
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt -r requirements-dev.txt
-pip install -e .
+pip install -e ".[dev]"
 ```
 
 Padrão do projeto:
 - use `.venv/` como ambiente virtual local.
+- fonte única de dependências: `pyproject.toml`.
 
 ## Como executar
 
-### Comando principal (compatível com versões anteriores)
-
-```bash
-python cv_generator.py
-```
-
-### Entry point instalado
+### Entry point oficial
 
 ```bash
 cv-generator
@@ -71,15 +76,15 @@ cv-generator
 ### Opções
 
 ```bash
-python cv_generator.py -l en
-python cv_generator.py -o output/meu_cv.pdf
-python cv_generator.py -c config/config.json
-python cv_generator.py data/cv_data.json -l pt
+cv-generator -l en
+cv-generator -o output/meu_cv.pdf
+cv-generator -c config/config.json
+cv-generator data/cv_data.json -l pt
 ```
 
 Argumentos:
 
-- `input`: arquivo JSON de entrada (opcional).
+- `input`: arquivo JSON de entrada (opcional). Padrão: `data/cv_data.json` (definido em `config/config.json`).
 - `-l, --language`: idioma (`pt` ou `en`).
 - `-o, --output`: caminho do PDF de saída.
 - `-c, --config`: arquivo de configuração.
@@ -118,15 +123,21 @@ O fluxo de geração de PDF está separado por responsabilidade:
 
 - `CvPdfRenderer` (`src/infrastructure/pdf_renderer.py`): orquestra o fluxo de renderização.
 - `PdfStyleEngine` (`src/infrastructure/pdf_styles/pdf_style_engine.py`): valida e resolve estilos a partir de `config/styles.json`.
-- `SectionFormatterRegistry` (`src/infrastructure/pdf_sections/section_formatter_registry.py`): mapeia cada `section_type` para um formatter.
-- `BaseSectionFormatter` + formatters específicos (`src/infrastructure/pdf_sections/*.py`): formatam o conteúdo de cada seção.
+- `SectionFormatterRegistry` (`src/infrastructure/pdf_sections/registry.py`): mapeia cada `section_type` para um formatter.
+- `BaseSectionFormatter` e especializações (`src/infrastructure/pdf_sections/base.py`, `src/infrastructure/pdf_sections/timeline.py`, `src/infrastructure/pdf_sections/simple.py`).
 
-Guia operacional completo:
-- `docs/GUIA_MANUTENCAO_PDF.md`
+Referência operacional:
+- esta seção do `README.md` é a fonte de verdade para manutenção do pipeline PDF.
 
 ## Testes
 
-Executar testes com cobertura:
+Fluxo de teste único:
+
+```bash
+pytest -q
+```
+
+Cobertura:
 
 ```bash
 pytest --cov=src --cov-report=term-missing --cov-fail-under=70

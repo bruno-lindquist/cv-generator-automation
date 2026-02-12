@@ -39,4 +39,5 @@ htmlcov/
 *~
 
 *.cache
-data/cv_data*.json
+# Arquivos locais opcionais de dados (o padrão versionado é data/cv_data.json)
+data/cv_data.local*.json
