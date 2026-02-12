@@ -1,4 +1,5 @@
 from domain.localization import (
+    escape_xml_attribute,
     escape_text_preserving_tags,
     format_period,
     get_localized_field,
@@ -55,6 +56,14 @@ def test_escape_text_preserves_supported_tags() -> None:
     assert "<b>Hello</b>" in escaped_text
     assert "<i>world</i>" in escaped_text
     assert "&amp;" in escaped_text
+
+
+def test_escape_xml_attribute_escapes_quotes() -> None:
+    escaped_attribute = escape_xml_attribute('https://example.com?q="x"&tag=\'y\'')
+
+    assert "&quot;" in escaped_attribute
+    assert "&apos;" in escaped_attribute
+    assert "&amp;" in escaped_attribute
 
 
 def test_format_period_uses_present_label_when_missing_end_date() -> None:

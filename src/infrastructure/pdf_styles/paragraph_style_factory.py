@@ -10,8 +10,6 @@ from reportlab.lib.styles import ParagraphStyle, StyleSheet1, getSampleStyleShee
 
 from shared.exceptions import PdfRenderError
 
-from infrastructure.pdf_styles.style_config_validator import validate_pdf_style_configuration
-
 STYLE_FIELD_MAPPING = {
     "font_name": "fontName",
     "font_size": "fontSize",
@@ -31,8 +29,7 @@ ALIGNMENT_BY_NAME = {
 
 
 def build_pdf_stylesheet(style_configuration: dict[str, Any]) -> StyleSheet1:
-    """Build a StyleSheet1 from paragraph style definitions in the config."""
-    validate_pdf_style_configuration(style_configuration)
+    """Build a StyleSheet1 from already-validated paragraph style definitions."""
     paragraph_styles = style_configuration["paragraph_styles"]
     stylesheet = getSampleStyleSheet()
 

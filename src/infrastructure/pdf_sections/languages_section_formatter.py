@@ -21,8 +21,9 @@ class LanguagesSectionFormatter(BaseSectionFormatter):
         language_name = self.localized_field(section_item, "language")
         proficiency = self.localized_field(section_item, "proficiency")
 
-        body_text = self.compose_bold_with_detail_text(
-            language_name,
-            proficiency,
+        self.add_composite_body_paragraph(
+            elements,
+            styles,
+            main_text=language_name,
+            detail_text=proficiency,
         )
-        self.add_body_rich_paragraph(elements, styles, body_text)

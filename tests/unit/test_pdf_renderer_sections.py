@@ -1,10 +1,9 @@
 from __future__ import annotations
 
-import json
-from pathlib import Path
 from typing import Any
 
 from infrastructure.pdf_renderer import CvPdfRenderer
+from tests.helpers.style_helpers import load_project_style_configuration
 
 
 class FakeBoundLogger:
@@ -26,16 +25,11 @@ class FakeBoundLogger:
         self.info_events.append((dict(self.bound_context), message))
 
 
-def _load_project_style_configuration() -> dict[str, Any]:
-    styles_file_path = Path(__file__).resolve().parents[2] / "config" / "styles.json"
-    return json.loads(styles_file_path.read_text(encoding="utf-8"))
-
-
 def test_renderer_warns_for_unknown_section_type() -> None:
     renderer = CvPdfRenderer(
         language="pt",
         translations={},
-        visual_settings=_load_project_style_configuration(),
+        visual_settings=load_project_style_configuration(),
     )
     styles = renderer.pdf_style_engine.build_stylesheet()
     elements: list[Any] = []
@@ -59,7 +53,7 @@ def test_renderer_resolves_section_order_from_configuration() -> None:
     renderer = CvPdfRenderer(
         language="pt",
         translations={},
-        visual_settings=_load_project_style_configuration(),
+        visual_settings=load_project_style_configuration(),
     )
     cv_data = {
         "sections": [

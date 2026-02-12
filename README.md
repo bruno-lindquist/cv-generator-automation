@@ -48,6 +48,7 @@ cv-generator-automation/
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt -r requirements-dev.txt
+pip install -e .
 ```
 
 Padrão do projeto:
@@ -59,6 +60,12 @@ Padrão do projeto:
 
 ```bash
 python cv_generator.py
+```
+
+### Entry point instalado
+
+```bash
+cv-generator
 ```
 
 ### Opções

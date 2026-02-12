@@ -22,18 +22,13 @@ class CertificationsSectionFormatter(BaseSectionFormatter):
         issuer_name = self.localized_field(section_item, "issuer")
         year = str(section_item.get("year", "")).strip()
 
-        if certification_name and issuer_name:
-            detail_text = issuer_name
-            if year:
-                detail_text = f"{issuer_name} ({year})"
-            certification_text = self.compose_bold_with_detail_text(
-                certification_name,
-                detail_text,
-            )
-        else:
-            certification_text = self.compose_bold_with_detail_text(
-                certification_name,
-                issuer_name,
-            )
+        detail_text = issuer_name
+        if certification_name and issuer_name and year:
+            detail_text = f"{issuer_name} ({year})"
 
-        self.add_body_rich_paragraph(elements, styles, certification_text)
+        self.add_composite_body_paragraph(
+            elements,
+            styles,
+            main_text=certification_name,
+            detail_text=detail_text,
+        )

@@ -21,5 +21,9 @@ class AwardsSectionFormatter(BaseSectionFormatter):
         title = self.localized_field(section_item, "title")
         description = self.localized_field(section_item, "description")
 
-        award_text = self.compose_bold_with_detail_text(title, description)
-        self.add_body_rich_paragraph(elements, styles, award_text)
+        self.add_composite_body_paragraph(
+            elements,
+            styles,
+            main_text=title,
+            detail_text=description,
+        )

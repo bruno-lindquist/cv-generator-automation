@@ -5,45 +5,14 @@ from pathlib import Path
 import pytest
 
 from application.cv_service import CvGenerationService
-from tests.helpers.file_helpers import write_json, write_project_styles
+from tests.helpers.project_builders import create_test_project_files
 
 
 @pytest.fixture()
 def isolated_project_files(tmp_path: Path) -> Path:
-    config_directory = tmp_path / "config"
-    data_directory = tmp_path / "data"
-    config_directory.mkdir()
-    data_directory.mkdir()
-
-    config_path = config_directory / "config.json"
-    data_path = data_directory / "cv_data.json"
-    styles_path = config_directory / "styles.json"
-    translations_path = config_directory / "translations.json"
-
-    write_json(
-        config_path,
-        {
-            "files": {
-                "data": "../data/cv_data.json",
-                "styles": "styles.json",
-                "translations": "translations.json",
-                "output_dir": "../output",
-            },
-            "defaults": {
-                "language": "pt",
-                "encoding": "utf-8",
-            },
-            "logging": {
-                "enabled": True,
-                "level": "INFO",
-                "directory": "../logs",
-            },
-        },
-    )
-
-    write_json(
-        data_path,
-        {
+    return create_test_project_files(
+        tmp_path,
+        cv_data={
             "personal_info": {
                 "name": "Maria Testadora",
                 "email": "maria@example.com",
@@ -84,13 +53,7 @@ def isolated_project_files(tmp_path: Path) -> Path:
                 }
             ],
         },
-    )
-
-    write_project_styles(styles_path)
-
-    write_json(
-        translations_path,
-        {
+        translations={
             "pt": {
                 "sections": {
                     "summary": "Resumo",
@@ -111,8 +74,6 @@ def isolated_project_files(tmp_path: Path) -> Path:
             },
         },
     )
-
-    return config_path
 
 
 @pytest.mark.parametrize(

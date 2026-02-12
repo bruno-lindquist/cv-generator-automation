@@ -18,9 +18,7 @@ class CoreSkillsSectionFormatter(BaseSectionFormatter):
         styles: StyleSheet1,
         section_item: dict[str, Any],
     ) -> None:
-        category = self.localized_field(section_item, "category")
-        if category:
-            self.add_plain_paragraph(elements, styles, category, "ItemTitleStyle")
+        self.add_category_title(elements, styles, section_item)
 
         descriptions = self.localized_list(section_item, "description")
         self.add_bullet_descriptions(elements, styles, descriptions)

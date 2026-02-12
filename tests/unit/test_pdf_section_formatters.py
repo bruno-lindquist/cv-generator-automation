@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import json
-from pathlib import Path
 from typing import Any
 
 import pytest
@@ -18,16 +16,12 @@ from infrastructure.pdf_sections import (
     SkillsSectionFormatter,
 )
 from infrastructure.pdf_styles import PdfStyleEngine
-
-
-def _load_project_style_configuration() -> dict[str, Any]:
-    styles_file_path = Path(__file__).resolve().parents[2] / "config" / "styles.json"
-    return json.loads(styles_file_path.read_text(encoding="utf-8"))
+from tests.helpers.style_helpers import load_project_style_configuration
 
 
 @pytest.fixture()
 def formatter_context() -> tuple[PdfStyleEngine, StyleSheet1, dict[str, Any]]:
-    style_engine = PdfStyleEngine(_load_project_style_configuration())
+    style_engine = PdfStyleEngine(load_project_style_configuration())
     styles = style_engine.build_stylesheet()
     translations = {
         "labels": {
@@ -215,3 +209,30 @@ def test_certifications_section_formatter_renders_item(
 
     assert len(elements) == 1
     assert isinstance(elements[0], Paragraph)
+
+
+def test_certifications_section_formatter_ignores_year_when_name_is_missing(
+    formatter_context: tuple[PdfStyleEngine, StyleSheet1, dict[str, Any]],
+) -> None:
+    style_engine, styles, translations = formatter_context
+    formatter = CertificationsSectionFormatter(
+        language="pt",
+        translations=translations,
+        pdf_style_engine=style_engine,
+    )
+    elements: list[Any] = []
+
+    formatter.format_section_item(
+        elements,
+        styles,
+        {
+            "name": {"pt": ""},
+            "issuer": {"pt": "Amazon"},
+            "year": "2024",
+        },
+    )
+
+    assert len(elements) == 1
+    rendered_paragraph = elements[0]
+    assert isinstance(rendered_paragraph, Paragraph)
+    assert "(2024)" not in rendered_paragraph.text

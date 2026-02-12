@@ -106,6 +106,22 @@ class BaseSectionFormatter(ABC):
         if rich_text:
             elements.append(Paragraph(rich_text, styles["BodyStyle"]))
 
+    def add_composite_body_paragraph(
+        self,
+        elements: list[Any],
+        styles: StyleSheet1,
+        *,
+        main_text: str,
+        detail_text: str,
+        separator: str = " - ",
+    ) -> None:
+        composite_text = self.compose_bold_with_detail_text(
+            main_text,
+            detail_text,
+            separator=separator,
+        )
+        self.add_body_rich_paragraph(elements, styles, composite_text)
+
     def add_bullet_descriptions(
         self,
         elements: list[Any],
@@ -118,3 +134,28 @@ class BaseSectionFormatter(ABC):
     def add_spacing(self, elements: list[Any], spacing_key: str) -> None:
         spacing_value = self.pdf_style_engine.spacing(spacing_key)
         elements.append(Spacer(1, spacing_value * mm))
+
+    def add_category_title(
+        self,
+        elements: list[Any],
+        styles: StyleSheet1,
+        section_item: dict[str, Any],
+        *,
+        field_name: str = "category",
+        style_name: str = "ItemTitleStyle",
+    ) -> None:
+        category = self.localized_field(section_item, field_name)
+        if category:
+            self.add_plain_paragraph(elements, styles, category, style_name)
+
+    def add_comma_separated_values(
+        self,
+        elements: list[Any],
+        styles: StyleSheet1,
+        values: list[Any],
+        *,
+        style_name: str = "BodyStyle",
+    ) -> None:
+        if values:
+            text = ", ".join(str(value) for value in values)
+            self.add_plain_paragraph(elements, styles, text, style_name)

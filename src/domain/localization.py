@@ -21,6 +21,7 @@ TAG_MARKERS = {
 }
 
 FILENAME_SANITIZATION_PATTERN = re.compile(r"[^A-Za-z0-9._-]+")
+XML_ESCAPE_ENTITIES = {"'": "&apos;", '"': "&quot;"}
 
 
 def get_translation(
@@ -96,12 +97,17 @@ def escape_text_preserving_tags(raw_text: Any) -> str:
     for tag, marker in TAG_MARKERS.items():
         protected_text = protected_text.replace(tag, marker)
 
-    escaped_text = escape(protected_text, {"'": "&apos;", '"': "&quot;"})
+    escaped_text = escape(protected_text, XML_ESCAPE_ENTITIES)
 
     for tag, marker in TAG_MARKERS.items():
         escaped_text = escaped_text.replace(marker, tag)
 
     return escaped_text
+
+
+def escape_xml_attribute(raw_value: Any) -> str:
+    """Escape XML attribute content (including single and double quotes)."""
+    return escape(str(raw_value), XML_ESCAPE_ENTITIES)
 
 
 def process_rich_text(raw_text: Any) -> str:

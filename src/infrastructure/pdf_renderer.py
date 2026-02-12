@@ -15,7 +15,6 @@ from __future__ import annotations
 import time
 from pathlib import Path
 from typing import Any
-from xml.sax.saxutils import escape
 
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import StyleSheet1
@@ -23,6 +22,7 @@ from reportlab.lib.units import mm
 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
 
 from domain.localization import (
+    escape_xml_attribute,
     escape_text_preserving_tags,
     get_localized_field,
     get_translation,
@@ -126,7 +126,7 @@ class CvPdfRenderer:
             raise PdfRenderError(f"Failed to build PDF: {output_file_path}") from exc
 
         app_logger.bind(event="pdf_build_finished", step="pdf_renderer").info(
-            "PDF document built successfully"
+            "PDF built successfully"
         )
         return output_file_path
 
@@ -165,9 +165,7 @@ class CvPdfRenderer:
 
             # Mede duração de renderização da seção para observabilidade.
             section_start = time.perf_counter()
-            app_logger.bind(event="section_render_started", step=section_type).info(
-                "Rendering section"
-            )
+            #app_logger.bind(event="section_render_started", step=section_type).info("Rendering section")
 
             self._add_section_title(elements, styles, section_type)
             for item in section_items:
@@ -180,7 +178,7 @@ class CvPdfRenderer:
                 event="section_render_finished",
                 step=section_type,
                 duration_ms=str(elapsed_ms),
-            ).info("Finished rendering section")
+            ).info("Finished section")
 
     # Propósito:
     # - decidir quais seções serão renderizadas e em qual ordem.
@@ -255,9 +253,8 @@ class CvPdfRenderer:
         if isinstance(social_items, list) and social_items:
             social_links: list[str] = []
             # Escapa atributos de cor para não quebrar a marcação XML interna do ReportLab.
-            escaped_link_color = escape(
-                self.pdf_style_engine.social_link_color(),
-                {"'": "&apos;", '"': "&quot;"},
+            escaped_link_color = escape_xml_attribute(
+                self.pdf_style_engine.social_link_color()
             )
             for social_item in social_items:
                 if not isinstance(social_item, dict):
@@ -268,7 +265,7 @@ class CvPdfRenderer:
                     continue
 
                 # Escapa URL/label para evitar caracteres inválidos no elemento `<a>`.
-                escaped_url = escape(url, {"'": "&apos;", '"': "&quot;"})
+                escaped_url = escape_xml_attribute(url)
                 label_text = label or url
                 escaped_label = escape_text_preserving_tags(label_text)
                 social_links.append(

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from infrastructure.pdf_styles.style_values_resolver import resolve_social_link_color
 from infrastructure.pdf_styles.style_validation_helpers import require_dictionary_section
 from shared.exceptions import PdfRenderError
 
@@ -42,7 +43,7 @@ def validate_pdf_style_configuration(style_configuration: dict[str, Any]) -> Non
     _require_paragraph_style_names(paragraph_styles)
     _require_section_keys(style_configuration, "margins", REQUIRED_MARGIN_KEYS)
     _require_section_keys(style_configuration, "spacing", REQUIRED_SPACING_KEYS)
-    _require_social_link_color(style_configuration)
+    resolve_social_link_color(style_configuration)
 
 
 def _require_paragraph_style_names(paragraph_styles: dict[str, Any]) -> None:
@@ -73,16 +74,3 @@ def _require_section_keys(
             raise PdfRenderError(
                 f"Style configuration missing '{section_key}.{required_key}' in styles.json"
             )
-
-
-def _require_social_link_color(style_configuration: dict[str, Any]) -> None:
-    links_section = require_dictionary_section(
-        style_configuration,
-        "links",
-        "Style configuration missing 'links' dictionary in styles.json",
-    )
-    link_color = links_section.get("social_link_color")
-    if not isinstance(link_color, str) or not link_color.strip():
-        raise PdfRenderError(
-            "Style configuration missing 'links.social_link_color' in styles.json"
-        )

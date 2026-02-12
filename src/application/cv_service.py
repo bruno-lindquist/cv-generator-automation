@@ -103,11 +103,7 @@ class CvGenerationService:
         )
 
         elapsed_ms = int((time.perf_counter() - started_at) * 1000)
-        contextual_logger.bind(
-            event="app_finished",
-            step="cv_service",
-            duration_ms=str(elapsed_ms),
-        ).info("CV generation workflow finished")
+        contextual_logger.bind(event="app_finished", step="cv_service", duration_ms=str(elapsed_ms), ).info("CV generation finished")
 
         return generated_pdf_path
 
@@ -136,31 +132,19 @@ class CvGenerationService:
         return resolved_output_path
 
     def _resolve_language_aware_data_path(self, language: str) -> Path:
-        if self.config.files.data:
-            return self._resolve_config_relative_path(self.config.files.data)
-
-        data_mapping = self.config.files.data_by_language or {}
-        mapped_path = data_mapping.get(language)
-        if mapped_path:
-            return self._resolve_config_relative_path(mapped_path)
-
-        raise OutputPathError(
-            f"No data file configured for language '{language}'"
+        return self._resolve_language_aware_path(
+            direct_path=self.config.files.data,
+            path_by_language=self.config.files.data_by_language,
+            language=language,
+            path_label="data",
         )
 
     def _resolve_language_aware_translations_path(self, language: str) -> Path:
-        if self.config.files.translations:
-            return self._resolve_config_relative_path(
-                self.config.files.translations
-            )
-
-        translations_mapping = self.config.files.translations_by_language or {}
-        mapped_path = translations_mapping.get(language)
-        if mapped_path:
-            return self._resolve_config_relative_path(mapped_path)
-
-        raise OutputPathError(
-            f"No translations file configured for language '{language}'"
+        return self._resolve_language_aware_path(
+            direct_path=self.config.files.translations,
+            path_by_language=self.config.files.translations_by_language,
+            language=language,
+            path_label="translations",
         )
 
     def _resolve_runtime_path(self, raw_path: str | Path) -> Path:
@@ -172,6 +156,25 @@ class CvGenerationService:
             return candidate_path.resolve()
         return (self.config_directory / candidate_path).resolve()
 
+    def _resolve_language_aware_path(
+        self,
+        *,
+        direct_path: str,
+        path_by_language: dict[str, str] | None,
+        language: str,
+        path_label: str,
+    ) -> Path:
+        if direct_path:
+            return self._resolve_config_relative_path(direct_path)
+
+        mapped_path = (path_by_language or {}).get(language)
+        if mapped_path:
+            return self._resolve_config_relative_path(mapped_path)
+
+        raise OutputPathError(
+            f"No {path_label} file configured for language '{language}'"
+        )
+
 
 def run_generation(
     *,
@@ -182,12 +185,6 @@ def run_generation(
 ) -> Path:
     """Convenience function used by CLI and tests."""
     service = CvGenerationService(config_file_path=config_file_path)
-    generated_path = service.generate(
-        language=language,
-        input_file_path=input_file_path,
-        output_file_path=output_file_path,
-    )
-    logger.bind(event="app_finished", step="entrypoint").info(
-        f"Generated file: {generated_path}"
-    )
+    generated_path = service.generate(language=language, input_file_path=input_file_path, output_file_path=output_file_path)
+    logger.bind(event="app_finished", step="entrypoint").info(f"Generated file: {output_file_path}")
     return generated_path

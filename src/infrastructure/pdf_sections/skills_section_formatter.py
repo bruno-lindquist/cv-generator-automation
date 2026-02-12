@@ -18,13 +18,10 @@ class SkillsSectionFormatter(BaseSectionFormatter):
         styles: StyleSheet1,
         section_item: dict[str, Any],
     ) -> None:
-        category = self.localized_field(section_item, "category")
-        if category:
-            self.add_plain_paragraph(elements, styles, category, "ItemTitleStyle")
+        self.add_category_title(elements, styles, section_item)
 
         skills = section_item.get("item", [])
-        if isinstance(skills, list) and skills:
-            skills_text = ", ".join(str(skill) for skill in skills)
-            self.add_plain_paragraph(elements, styles, skills_text, "BodyStyle")
+        if isinstance(skills, list):
+            self.add_comma_separated_values(elements, styles, skills)
 
         self.add_spacing(elements, "item_bottom")
