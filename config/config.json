@@ -1,16 +1,8 @@
 {
   "files": {
     "data": "../data/cv_data.json",
-    "data_by_language": {
-      "pt": "../data/cv_data.json",
-      "en": "../data/cv_data_en.json"
-    },
     "styles": "styles.json",
     "translations": "translations.json",
-    "translations_by_language": {
-      "pt": "translations.json",
-      "en": "translations_en.json"
-    },
     "output_dir": "../output"
   },
   "defaults": {

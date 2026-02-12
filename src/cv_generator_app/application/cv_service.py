@@ -136,28 +136,28 @@ class CvGenerationService:
         return resolved_output_path
 
     def _resolve_language_aware_data_path(self, language: str) -> Path:
+        if self.config.files.data:
+            return self._resolve_config_relative_path(self.config.files.data)
+
         data_mapping = self.config.files.data_by_language or {}
         mapped_path = data_mapping.get(language)
         if mapped_path:
             return self._resolve_config_relative_path(mapped_path)
-
-        if self.config.files.data:
-            return self._resolve_config_relative_path(self.config.files.data)
 
         raise OutputPathError(
             f"No data file configured for language '{language}'"
         )
 
     def _resolve_language_aware_translations_path(self, language: str) -> Path:
-        translations_mapping = self.config.files.translations_by_language or {}
-        mapped_path = translations_mapping.get(language)
-        if mapped_path:
-            return self._resolve_config_relative_path(mapped_path)
-
         if self.config.files.translations:
             return self._resolve_config_relative_path(
                 self.config.files.translations
             )
+
+        translations_mapping = self.config.files.translations_by_language or {}
+        mapped_path = translations_mapping.get(language)
+        if mapped_path:
+            return self._resolve_config_relative_path(mapped_path)
 
         raise OutputPathError(
             f"No translations file configured for language '{language}'"

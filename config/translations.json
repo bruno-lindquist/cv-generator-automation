@@ -1,19 +1,58 @@
 {
-  "sections": {
-    "summary": "Resumo",
-    "experience": "Experiência Profissional",
-    "education": "Educação",
-    "core_skills": "Competências",
-    "skills": "Habilidades Técnicas",
-    "languages": "Idiomas",
-    "awards": "Prêmios",
-    "certifications": "Certificações"
-  },
   "labels": {
-    "current": "Atual",
-    "error_invalid_json": "Erro: Arquivo JSON inválido",
-    "error_file_not_found": "Erro: Arquivo não encontrado",
-    "error_invalid_data": "Erro: Arquivo inválido",
-    "success_generated": "✓ CV gerado com sucesso"
+    "current": {
+      "pt": "Atual",
+      "en": "Present"
+    },
+    "error_file_not_found": {
+      "pt": "Erro: Arquivo não encontrado",
+      "en": "Error: File not found"
+    },
+    "error_invalid_data": {
+      "pt": "Erro: Arquivo inválido",
+      "en": "Error: Invalid file"
+    },
+    "error_invalid_json": {
+      "pt": "Erro: Arquivo JSON inválido",
+      "en": "Error: Invalid JSON file"
+    },
+    "success_generated": {
+      "pt": "✓ CV gerado com sucesso",
+      "en": "✓ CV generated successfully"
+    }
+  },
+  "sections": {
+    "awards": {
+      "pt": "Prêmios",
+      "en": "Awards"
+    },
+    "certifications": {
+      "pt": "Certificações",
+      "en": "Certifications"
+    },
+    "core_skills": {
+      "pt": "Competências",
+      "en": "Core Competencies"
+    },
+    "education": {
+      "pt": "Educação",
+      "en": "Education"
+    },
+    "experience": {
+      "pt": "Experiência Profissional",
+      "en": "Work Experience"
+    },
+    "languages": {
+      "pt": "Idiomas",
+      "en": "Languages"
+    },
+    "skills": {
+      "pt": "Habilidades Técnicas",
+      "en": "Skills"
+    },
+    "summary": {
+      "pt": "Resumo",
+      "en": "Summary"
+    }
   }
 }

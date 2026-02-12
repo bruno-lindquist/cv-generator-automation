@@ -2,6 +2,8 @@ from cv_generator_app.domain.localization import (
     escape_text_preserving_tags,
     format_period,
     get_localized_field,
+    get_localized_list,
+    get_translation,
     sanitize_filename_component,
 )
 
@@ -24,6 +26,28 @@ def test_get_localized_field_falls_back_to_portuguese() -> None:
     assert get_localized_field(field_data, "position", "en") == "Desenvolvedor"
 
 
+def test_get_localized_field_supports_unified_language_map() -> None:
+    field_data = {
+        "position": {
+            "pt": "Desenvolvedor",
+            "en": "Developer",
+        }
+    }
+
+    assert get_localized_field(field_data, "position", "en") == "Developer"
+
+
+def test_get_localized_list_supports_unified_language_map() -> None:
+    field_data = {
+        "description": {
+            "pt": ["Texto em português"],
+            "en": ["English text"],
+        }
+    }
+
+    assert get_localized_list(field_data, "description", "en") == ["English text"]
+
+
 def test_escape_text_preserves_supported_tags() -> None:
     raw_text = "<b>Hello</b> & <i>world</i>"
     escaped_text = escape_text_preserving_tags(raw_text)
@@ -35,10 +59,11 @@ def test_escape_text_preserves_supported_tags() -> None:
 
 def test_format_period_uses_present_label_when_missing_end_date() -> None:
     translations = {
-        "en": {
-            "labels": {
-                "current": "Present",
-            }
+        "labels": {
+            "current": {
+                "pt": "Atual",
+                "en": "Present",
+            },
         }
     }
 
@@ -52,6 +77,20 @@ def test_format_period_uses_present_label_when_missing_end_date() -> None:
     )
 
     assert period_text == "Jan 2022 - Present"
+
+
+def test_get_translation_supports_unified_language_map() -> None:
+    translations = {
+        "sections": {
+            "summary": {
+                "pt": "Resumo",
+                "en": "Summary",
+            }
+        }
+    }
+
+    assert get_translation(translations, "pt", "sections", "summary", "summary") == "Resumo"
+    assert get_translation(translations, "en", "sections", "summary", "summary") == "Summary"
 
 
 def test_sanitize_filename_component_removes_unsafe_characters() -> None:

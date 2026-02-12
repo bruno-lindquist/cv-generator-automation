@@ -18,6 +18,7 @@ from cv_generator_app.domain.localization import (
     escape_text_preserving_tags,
     format_period,
     get_localized_field,
+    get_localized_list,
     get_translation,
     process_rich_text,
 )
@@ -513,19 +514,7 @@ class CvPdfRenderer:
             elements.append(Paragraph(certification_text, styles["BodyStyle"]))
 
     def _localized_list(self, entry: dict[str, Any], field_name: str) -> list[str]:
-        localized_key = f"{field_name}_{self.language}"
-        portuguese_key = f"{field_name}_pt"
-
-        values = (
-            entry.get(localized_key)
-            or entry.get(portuguese_key)
-            or entry.get(field_name)
-            or []
-        )
-        if not isinstance(values, list):
-            return []
-
-        return [str(value) for value in values]
+        return get_localized_list(entry, field_name, self.language)
 
     def _margin(self, margin_key: str, default_value: float) -> float:
         margin_settings = self.visual_settings.get("margins", {})

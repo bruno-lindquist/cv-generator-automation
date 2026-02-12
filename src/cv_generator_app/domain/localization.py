@@ -35,7 +35,16 @@ def get_translation(
     if isinstance(language_scope, dict):
         return language_scope.get(section, {}).get(key, default)
 
-    return translations.get(section, {}).get(key, default)
+    section_scope = translations.get(section, {})
+    if not isinstance(section_scope, dict):
+        return default
+
+    translated_value = section_scope.get(key)
+    if isinstance(translated_value, dict) and _contains_language_variants(translated_value):
+        selected_value = _select_language_variant(translated_value, language)
+        return _normalize_string(selected_value, default)
+
+    return _normalize_string(translated_value, default)
 
 
 def get_localized_field(data: Any, field_name: str, language: str, default: str = "") -> str:
@@ -43,14 +52,40 @@ def get_localized_field(data: Any, field_name: str, language: str, default: str 
     if not isinstance(data, dict):
         return default
 
+    field_value = data.get(field_name)
+    if isinstance(field_value, dict) and _contains_language_variants(field_value):
+        resolved_value = _select_language_variant(field_value, language)
+        return _normalize_string(resolved_value, default)
+
     localized_value = data.get(f"{field_name}_{language}")
     portuguese_fallback = data.get(f"{field_name}_pt") if language != "pt" else None
-    neutral_fallback = data.get(field_name)
+    neutral_fallback = field_value
 
     resolved_value = localized_value or portuguese_fallback or neutral_fallback or ""
-    if isinstance(resolved_value, str):
-        return resolved_value.strip() or default
-    return str(resolved_value).strip() or default
+    return _normalize_string(resolved_value, default)
+
+
+def get_localized_list(data: Any, field_name: str, language: str) -> list[str]:
+    """Resolve localized list fields in both unified and legacy formats."""
+    if not isinstance(data, dict):
+        return []
+
+    field_value = data.get(field_name)
+    if isinstance(field_value, dict) and _contains_language_variants(field_value):
+        selected_list = _select_language_variant(field_value, language)
+        if isinstance(selected_list, list):
+            return [str(item) for item in selected_list]
+
+    legacy_values = (
+        data.get(f"{field_name}_{language}")
+        or (data.get(f"{field_name}_pt") if language != "pt" else None)
+        or data.get(field_name)
+        or []
+    )
+    if not isinstance(legacy_values, list):
+        return []
+
+    return [str(item) for item in legacy_values]
 
 
 def escape_text_preserving_tags(raw_text: Any) -> str:
@@ -114,3 +149,49 @@ def sanitize_filename_component(raw_value: Any, fallback: str = "CV") -> str:
     escaped_value = FILENAME_SANITIZATION_PATTERN.sub("_", str(raw_value).strip())
     normalized_value = escaped_value.strip("._-")
     return normalized_value or fallback
+
+
+def _contains_language_variants(value: dict[str, Any]) -> bool:
+    language_keys = {"pt", "en", "default"}
+    return bool(language_keys.intersection(value.keys()))
+
+
+def _is_non_empty(value: Any) -> bool:
+    if value is None:
+        return False
+    if isinstance(value, str):
+        return value.strip() != ""
+    if isinstance(value, (list, dict)):
+        return len(value) > 0
+    return True
+
+
+def _select_language_variant(variants: dict[str, Any], language: str) -> Any:
+    lookup_order = [language]
+    if language != "pt":
+        lookup_order.append("pt")
+    if language != "en":
+        lookup_order.append("en")
+    lookup_order.append("default")
+
+    for language_key in lookup_order:
+        value = variants.get(language_key)
+        if _is_non_empty(value):
+            return value
+
+    for language_key in lookup_order:
+        if language_key in variants:
+            return variants[language_key]
+
+    for fallback_value in variants.values():
+        return fallback_value
+
+    return None
+
+
+def _normalize_string(value: Any, default: str) -> str:
+    if value is None:
+        return default
+    if isinstance(value, str):
+        return value.strip() or default
+    return str(value).strip() or default

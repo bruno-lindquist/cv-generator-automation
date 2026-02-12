@@ -27,14 +27,11 @@ cv-generator-automation/
     integration/
   data/
     cv_data.json
-    cv_data_en.json
     cv_data_example.json
-    cv_data_example_en.json
   config/
     config.json
     styles.json
     translations.json
-    translations_en.json
   .github/workflows/
   cv_generator.py
   requirements.txt
@@ -69,7 +66,6 @@ python cv_generator.py -l en
 python cv_generator.py -o output/meu_cv.pdf
 python cv_generator.py -c config/config.json
 python cv_generator.py data/cv_data.json -l pt
-python cv_generator.py data/cv_data_en.json -l en
 ```
 
 Argumentos:
@@ -80,8 +76,10 @@ Argumentos:
 - `-c, --config`: arquivo de configuração.
 
 Observação de manutenção:
-- Os arquivos de dados e traduções foram separados por idioma para evitar mistura PT/EN no mesmo arquivo.
-- O idioma informado em `-l` seleciona automaticamente `data_by_language` e `translations_by_language` em `config/config.json`.
+- Dados e traduções ficam em arquivo único, com conteúdo bilíngue organizado por chave.
+- Para campos traduzíveis, use estrutura `{ \"pt\": \"...\", \"en\": \"...\" }`.
+- Para listas traduzíveis, use `{ \"pt\": [ ... ], \"en\": [ ... ] }`.
+- O idioma informado em `-l` escolhe automaticamente a variante correta no mesmo arquivo.
 
 ### Atalho macOS/Linux
 
