@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from infrastructure.pdf_styles.style_validation_helpers import require_dictionary_section
 from shared.exceptions import PdfRenderError
 
 REQUIRED_PARAGRAPH_STYLE_NAMES = [
@@ -33,7 +34,7 @@ REQUIRED_SPACING_KEYS = [
 
 def validate_pdf_style_configuration(style_configuration: dict[str, Any]) -> None:
     """Validate required style configuration blocks and required keys."""
-    paragraph_styles = _require_dictionary(
+    paragraph_styles = require_dictionary_section(
         style_configuration,
         "paragraph_styles",
         "Style configuration missing 'paragraph_styles' dictionary in styles.json",
@@ -42,17 +43,6 @@ def validate_pdf_style_configuration(style_configuration: dict[str, Any]) -> Non
     _require_section_keys(style_configuration, "margins", REQUIRED_MARGIN_KEYS)
     _require_section_keys(style_configuration, "spacing", REQUIRED_SPACING_KEYS)
     _require_social_link_color(style_configuration)
-
-
-def _require_dictionary(
-    style_configuration: dict[str, Any],
-    section_key: str,
-    error_message: str,
-) -> dict[str, Any]:
-    section_data = style_configuration.get(section_key)
-    if not isinstance(section_data, dict):
-        raise PdfRenderError(error_message)
-    return section_data
 
 
 def _require_paragraph_style_names(paragraph_styles: dict[str, Any]) -> None:
@@ -73,7 +63,7 @@ def _require_section_keys(
     section_key: str,
     required_keys: list[str],
 ) -> None:
-    section_data = _require_dictionary(
+    section_data = require_dictionary_section(
         style_configuration,
         section_key,
         f"Style configuration missing '{section_key}' dictionary in styles.json",
@@ -86,7 +76,7 @@ def _require_section_keys(
 
 
 def _require_social_link_color(style_configuration: dict[str, Any]) -> None:
-    links_section = _require_dictionary(
+    links_section = require_dictionary_section(
         style_configuration,
         "links",
         "Style configuration missing 'links' dictionary in styles.json",

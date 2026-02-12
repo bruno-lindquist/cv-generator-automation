@@ -13,10 +13,10 @@ activate_venv() {
     if [[ "$VIRTUAL_ENV" == "" ]]; then
         case "$OS" in
             Darwin|Linux)
-                source .venv/bin/activate 2>/dev/null || source venv/bin/activate 2>/dev/null || true
+                source .venv/bin/activate 2>/dev/null || true
                 ;;
             MINGW*|MSYS*|CYGWIN*)
-                source .venv/Scripts/activate 2>/dev/null || source venv/Scripts/activate 2>/dev/null || true
+                source .venv/Scripts/activate 2>/dev/null || true
                 ;;
         esac
     fi
@@ -29,7 +29,6 @@ generate_cv() {
     activate_venv
     
     PYTHON_CMD="./.venv/bin/python"
-    [ ! -f "$PYTHON_CMD" ] && PYTHON_CMD="./venv/bin/python"
     [ ! -f "$PYTHON_CMD" ] && PYTHON_CMD="python3"
     
     echo ""

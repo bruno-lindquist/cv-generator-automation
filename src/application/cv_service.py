@@ -164,10 +164,7 @@ class CvGenerationService:
         )
 
     def _resolve_runtime_path(self, raw_path: str | Path) -> Path:
-        candidate_path = Path(raw_path).expanduser()
-        if candidate_path.is_absolute():
-            return candidate_path.resolve()
-        return candidate_path.resolve()
+        return Path(raw_path).expanduser().resolve()
 
     def _resolve_config_relative_path(self, raw_path: str | Path) -> Path:
         candidate_path = Path(raw_path).expanduser()

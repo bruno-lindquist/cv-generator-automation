@@ -22,6 +22,7 @@ from infrastructure.pdf_sections.section_formatter_registry import (
     build_default_section_formatter_registry,
 )
 from infrastructure.pdf_sections.skills_section_formatter import SkillsSectionFormatter
+from infrastructure.pdf_sections.timeline_section_formatter import TimelineSectionFormatter
 
 __all__ = [
     "AwardsSectionFormatter",
@@ -33,5 +34,6 @@ __all__ = [
     "LanguagesSectionFormatter",
     "SectionFormatterRegistry",
     "SkillsSectionFormatter",
+    "TimelineSectionFormatter",
     "build_default_section_formatter_registry",
 ]

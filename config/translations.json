@@ -3,22 +3,6 @@
     "current": {
       "pt": "Atual",
       "en": "Present"
-    },
-    "error_file_not_found": {
-      "pt": "Erro: Arquivo não encontrado",
-      "en": "Error: File not found"
-    },
-    "error_invalid_data": {
-      "pt": "Erro: Arquivo inválido",
-      "en": "Error: Invalid file"
-    },
-    "error_invalid_json": {
-      "pt": "Erro: Arquivo JSON inválido",
-      "en": "Error: Invalid JSON file"
-    },
-    "success_generated": {
-      "pt": "✓ CV gerado com sucesso",
-      "en": "✓ CV generated successfully"
     }
   },
   "sections": {
