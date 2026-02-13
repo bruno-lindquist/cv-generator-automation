@@ -1,5 +1,4 @@
-"""Logging configuration helpers based on Loguru."""
-
+# Configura logging estruturado e cria contexto de rastreabilidade por requisicao.
 from __future__ import annotations
 
 import sys
@@ -25,10 +24,11 @@ DEFAULT_LOG_EXTRA = {
 }
 
 
+# Configura sinks de console/arquivo e padroniza campos extras para logs estruturados.
 def configure_logging(*, level: str = "INFO", enabled: bool = True, logs_directory: Path) -> None:
-    """Configure console and file sinks for Loguru."""
     logs_directory.mkdir(parents=True, exist_ok=True)
 
+    # Com logging desabilitado, mantém apenas avisos/erros para reduzir ruído.
     effective_level = level.upper() if enabled else "WARNING"
 
     logger.remove()
@@ -53,6 +53,7 @@ def configure_logging(*, level: str = "INFO", enabled: bool = True, logs_directo
     )
 
 
+# Anexa metadados da requisicao ao logger para correlacionar eventos do pipeline.
 def bind_logger_context(
     *,
     request_id: str,
@@ -60,7 +61,6 @@ def bind_logger_context(
     input_file: str,
     output_file: str,
 ) -> Any:
-    """Return a contextualized logger instance."""
     return logger.bind(
         request_id=request_id,
         language=language,

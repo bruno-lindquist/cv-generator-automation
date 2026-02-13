@@ -1,5 +1,4 @@
-"""Validation rules for CV input data."""
-
+# Regras de validacao do payload de entrada antes da etapa de renderizacao.
 from __future__ import annotations
 
 from typing import Any
@@ -11,10 +10,11 @@ REQUIRED_TOP_LEVEL_FIELDS = ["personal_info", "desired_role"]
 REQUIRED_PERSONAL_INFO_FIELDS = ["name", "email"]
 
 
+# Valida campos minimos exigidos pelo gerador e acumula erros para feedback completo.
 def validate_cv_data(cv_data: dict[str, Any]) -> None:
-    """Validate required data schema for CV generation."""
     validation_errors: list[str] = []
 
+    # Acumula todos os problemas para retornar feedback completo em uma única falha.
     for required_field in REQUIRED_TOP_LEVEL_FIELDS:
         if required_field not in cv_data:
             validation_errors.append(f"Missing top-level field: '{required_field}'")

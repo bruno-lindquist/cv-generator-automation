@@ -1,3 +1,4 @@
+# Valida regras de precedencia e fallback na resolucao de caminhos por idioma.
 from __future__ import annotations
 
 from pathlib import Path
@@ -9,6 +10,7 @@ from exceptions import OutputPathError
 from tests.helpers.file_helpers import write_json
 
 
+# Instancia servico apontando para config temporario para testar apenas resolucao de caminhos.
 def _build_generation_service(
     base_directory: Path,
     *,
@@ -26,9 +28,11 @@ def _build_generation_service(
             "logging": {"enabled": False, "level": "INFO", "directory": "../logs"},
         },
     )
+    # Retorna também o diretório base para facilitar assert de caminhos resolvidos.
     return CvGenerationService(config_file_path=config_path), config_directory
 
 
+# Garante o comportamento "data path prefers direct file when present" para evitar regressao dessa regra.
 def test_data_path_prefers_direct_file_when_present(tmp_path: Path) -> None:
     generation_service, config_directory = _build_generation_service(
         tmp_path,
@@ -46,6 +50,7 @@ def test_data_path_prefers_direct_file_when_present(tmp_path: Path) -> None:
     assert resolved_data_path == expected_data_path
 
 
+# Garante o comportamento "translations path uses mapping when direct path is absent" para evitar regressao dessa regra.
 def test_translations_path_uses_mapping_when_direct_path_is_absent(tmp_path: Path) -> None:
     generation_service, config_directory = _build_generation_service(
         tmp_path,
@@ -68,6 +73,7 @@ def test_translations_path_uses_mapping_when_direct_path_is_absent(tmp_path: Pat
     assert resolved_translations_path == expected_translations_path
 
 
+# Garante o comportamento "data path raises when language is not configured" para evitar regressao dessa regra.
 def test_data_path_raises_when_language_is_not_configured(tmp_path: Path) -> None:
     generation_service, _ = _build_generation_service(
         tmp_path,

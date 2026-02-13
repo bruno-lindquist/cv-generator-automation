@@ -1,3 +1,4 @@
+# Factories que montam estruturas de projeto temporarias para exercitar fluxos completos.
 from __future__ import annotations
 
 from pathlib import Path
@@ -6,6 +7,7 @@ from typing import Any
 from tests.helpers.file_helpers import write_json, write_project_styles
 
 
+# Constroi configuracao base valida para reduzir repeticao de setup nos testes.
 def build_default_app_config() -> dict[str, Any]:
     return {
         "files": {
@@ -26,6 +28,7 @@ def build_default_app_config() -> dict[str, Any]:
     }
 
 
+# Cria estrutura minima de projeto (config, dados, traducoes e estilos) em pasta temporaria.
 def create_test_project_files(
     base_directory: Path,
     *,
@@ -42,6 +45,7 @@ def create_test_project_files(
     styles_path = config_directory / "styles.json"
     translations_path = config_directory / "translations.json"
 
+    # Mantém estrutura equivalente à esperada em execução real.
     write_json(config_path, build_default_app_config())
     write_json(data_path, cv_data)
     write_project_styles(styles_path)

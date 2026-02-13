@@ -1,3 +1,4 @@
+# Garante validacao e resolucao correta das configuracoes de estilo do PDF.
 from __future__ import annotations
 
 from copy import deepcopy
@@ -16,8 +17,10 @@ from exceptions import PdfRenderError
 from tests.helpers.style_helpers import load_project_style_configuration
 
 
+# Garante o comportamento "validate pdf style configuration rejects missing required style" para evitar regressao dessa regra.
 def test_validate_pdf_style_configuration_rejects_missing_required_style() -> None:
     style_configuration = load_project_style_configuration()
+    # Deep copy evita contaminar o fixture base entre testes.
     mutable_style_configuration = deepcopy(style_configuration)
     paragraph_styles = mutable_style_configuration["paragraph_styles"]
     paragraph_styles.pop("NameStyle", None)
@@ -28,6 +31,7 @@ def test_validate_pdf_style_configuration_rejects_missing_required_style() -> No
     assert "Style configuration missing required paragraph styles: NameStyle" in str(raised_error.value)
 
 
+# Garante o comportamento "build pdf stylesheet converts alignment and color" para evitar regressao dessa regra.
 def test_build_pdf_stylesheet_converts_alignment_and_color() -> None:
     style_configuration = load_project_style_configuration()
     mutable_style_configuration = deepcopy(style_configuration)
@@ -43,6 +47,7 @@ def test_build_pdf_stylesheet_converts_alignment_and_color() -> None:
     assert rendered_body_style.textColor == colors.toColor("#123456")
 
 
+# Garante o comportamento "pdf style engine exposes semantic style access" para evitar regressao dessa regra.
 def test_pdf_style_engine_exposes_semantic_style_access() -> None:
     style_configuration = load_project_style_configuration()
 
@@ -53,6 +58,7 @@ def test_pdf_style_engine_exposes_semantic_style_access() -> None:
     assert style_engine.social_link_color() == "#1f4e79"
 
 
+# Garante o comportamento "pdf style engine build stylesheet returns expected style" para evitar regressao dessa regra.
 def test_pdf_style_engine_build_stylesheet_returns_expected_style() -> None:
     style_configuration = load_project_style_configuration()
 
@@ -62,6 +68,7 @@ def test_pdf_style_engine_build_stylesheet_returns_expected_style() -> None:
     assert "NameStyle" in stylesheet.byName
 
 
+# Garante o comportamento "validate pdf style configuration rejects missing social link color" para evitar regressao dessa regra.
 def test_validate_pdf_style_configuration_rejects_missing_social_link_color() -> None:
     style_configuration = load_project_style_configuration()
     mutable_style_configuration = deepcopy(style_configuration)
@@ -73,6 +80,7 @@ def test_validate_pdf_style_configuration_rejects_missing_social_link_color() ->
     assert "Style configuration missing 'links.social_link_color'" in str(raised_error.value)
 
 
+# Garante o comportamento "resolve social link color rejects missing social link color" para evitar regressao dessa regra.
 def test_resolve_social_link_color_rejects_missing_social_link_color() -> None:
     style_configuration = load_project_style_configuration()
     mutable_style_configuration = deepcopy(style_configuration)
@@ -84,6 +92,7 @@ def test_resolve_social_link_color_rejects_missing_social_link_color() -> None:
     assert "Style configuration missing 'links.social_link_color'" in str(raised_error.value)
 
 
+# Garante o comportamento "pdf style engine constructor validates configuration" para evitar regressao dessa regra.
 def test_pdf_style_engine_constructor_validates_configuration() -> None:
     style_configuration = load_project_style_configuration()
     mutable_style_configuration = deepcopy(style_configuration)

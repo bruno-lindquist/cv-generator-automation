@@ -1,5 +1,4 @@
-"""Style engine components for PDF rendering."""
-
+# Exporta o motor de estilos e funcoes auxiliares usadas na renderizacao do PDF.
 from infrastructure.pdf_styles.pdf_style_engine import (
     PdfStyleEngine,
     REQUIRED_PARAGRAPH_STYLE_NAMES,

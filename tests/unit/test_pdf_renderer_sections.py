@@ -1,3 +1,4 @@
+# Garante comportamento do renderizador ao montar secoes dinamicas e tratar tipos invalidos.
 from __future__ import annotations
 
 from typing import Any
@@ -6,25 +7,32 @@ from infrastructure.pdf_renderer import CvPdfRenderer
 from tests.helpers.style_helpers import load_project_style_configuration
 
 
+# Duble simples de logger para capturar mensagens emitidas pelo renderizador.
 class FakeBoundLogger:
+    # Inicializa armazenamento de mensagens para asserts no fim do teste.
     def __init__(self) -> None:
         self.bound_context: dict[str, Any] = {}
         self.warning_events: list[tuple[dict[str, Any], str]] = []
         self.info_events: list[tuple[dict[str, Any], str]] = []
 
+    # Imita API encadeavel do logger retornando a propria instancia.
     def bind(self, **kwargs: Any) -> "FakeBoundLogger":
+        # Replica comportamento básico de `logger.bind` para capturar contexto incremental.
         updated_context = dict(self.bound_context)
         updated_context.update(kwargs)
         self.bound_context = updated_context
         return self
 
+    # Registra mensagens de warning para verificacao de comportamentos de fallback.
     def warning(self, message: str) -> None:
         self.warning_events.append((dict(self.bound_context), message))
 
+    # Registra mensagens informativas para validar fluxos esperados.
     def info(self, message: str) -> None:
         self.info_events.append((dict(self.bound_context), message))
 
 
+# Garante o comportamento "renderer warns for unknown section type" para evitar regressao dessa regra.
 def test_renderer_warns_for_unknown_section_type() -> None:
     renderer = CvPdfRenderer(
         language="pt",
@@ -49,6 +57,7 @@ def test_renderer_warns_for_unknown_section_type() -> None:
     assert warning_message == "Unknown section type; skipping section"
 
 
+# Garante o comportamento "renderer resolves section order from configuration" para evitar regressao dessa regra.
 def test_renderer_resolves_section_order_from_configuration() -> None:
     renderer = CvPdfRenderer(
         language="pt",

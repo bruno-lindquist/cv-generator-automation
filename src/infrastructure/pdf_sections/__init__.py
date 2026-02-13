@@ -1,5 +1,4 @@
-"""Section formatters for PDF renderer."""
-
+# Ponto unico de exportacao dos formatadores de secao e do registro padrao.
 from infrastructure.pdf_sections.base import BaseSectionFormatter
 from infrastructure.pdf_sections.registry import (
     SectionFormatterRegistry,

@@ -1,9 +1,11 @@
+# Confirma regras minimas exigidas para aceitar ou rejeitar dados de entrada.
 import pytest
 
 from validators import validate_cv_data
 from exceptions import DataValidationError
 
 
+# Garante o comportamento "validate cv data accepts minimal valid payload" para evitar regressao dessa regra.
 def test_validate_cv_data_accepts_minimal_valid_payload() -> None:
     valid_payload = {
         "personal_info": {
@@ -18,6 +20,7 @@ def test_validate_cv_data_accepts_minimal_valid_payload() -> None:
     validate_cv_data(valid_payload)
 
 
+# Garante o comportamento "validate cv data rejects missing required fields" para evitar regressao dessa regra.
 def test_validate_cv_data_rejects_missing_required_fields() -> None:
     invalid_payload = {
         "personal_info": {

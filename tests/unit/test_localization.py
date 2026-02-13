@@ -1,3 +1,4 @@
+# Exercita fallback de idioma, escape e formatacao dos utilitarios de localizacao.
 from localization import (
     escape_xml_attribute,
     escape_text_preserving_tags,
@@ -9,6 +10,7 @@ from localization import (
 )
 
 
+# Garante o comportamento "get localized field prefers target language" para evitar regressao dessa regra.
 def test_get_localized_field_prefers_target_language() -> None:
     field_data = {
         "position_pt": "Desenvolvedor",
@@ -18,6 +20,7 @@ def test_get_localized_field_prefers_target_language() -> None:
     assert get_localized_field(field_data, "position", "en") == "Developer"
 
 
+# Garante o comportamento "get localized field falls back to portuguese" para evitar regressao dessa regra.
 def test_get_localized_field_falls_back_to_portuguese() -> None:
     field_data = {
         "position_pt": "Desenvolvedor",
@@ -27,6 +30,7 @@ def test_get_localized_field_falls_back_to_portuguese() -> None:
     assert get_localized_field(field_data, "position", "en") == "Desenvolvedor"
 
 
+# Garante o comportamento "get localized field supports unified language map" para evitar regressao dessa regra.
 def test_get_localized_field_supports_unified_language_map() -> None:
     field_data = {
         "position": {
@@ -38,6 +42,7 @@ def test_get_localized_field_supports_unified_language_map() -> None:
     assert get_localized_field(field_data, "position", "en") == "Developer"
 
 
+# Garante o comportamento "get localized list supports unified language map" para evitar regressao dessa regra.
 def test_get_localized_list_supports_unified_language_map() -> None:
     field_data = {
         "description": {
@@ -49,6 +54,7 @@ def test_get_localized_list_supports_unified_language_map() -> None:
     assert get_localized_list(field_data, "description", "en") == ["English text"]
 
 
+# Garante o comportamento "escape text preserves supported tags" para evitar regressao dessa regra.
 def test_escape_text_preserves_supported_tags() -> None:
     raw_text = "<b>Hello</b> & <i>world</i>"
     escaped_text = escape_text_preserving_tags(raw_text)
@@ -58,6 +64,7 @@ def test_escape_text_preserves_supported_tags() -> None:
     assert "&amp;" in escaped_text
 
 
+# Garante o comportamento "escape xml attribute escapes quotes" para evitar regressao dessa regra.
 def test_escape_xml_attribute_escapes_quotes() -> None:
     escaped_attribute = escape_xml_attribute('https://example.com?q="x"&tag=\'y\'')
 
@@ -66,6 +73,7 @@ def test_escape_xml_attribute_escapes_quotes() -> None:
     assert "&amp;" in escaped_attribute
 
 
+# Garante o comportamento "format period uses present label when missing end date" para evitar regressao dessa regra.
 def test_format_period_uses_present_label_when_missing_end_date() -> None:
     translations = {
         "labels": {
@@ -88,6 +96,7 @@ def test_format_period_uses_present_label_when_missing_end_date() -> None:
     assert period_text == "Jan 2022 - Present"
 
 
+# Garante o comportamento "get translation supports unified language map" para evitar regressao dessa regra.
 def test_get_translation_supports_unified_language_map() -> None:
     translations = {
         "sections": {
@@ -102,6 +111,7 @@ def test_get_translation_supports_unified_language_map() -> None:
     assert get_translation(translations, "en", "sections", "summary", "summary") == "Summary"
 
 
+# Garante o comportamento "sanitize filename component removes unsafe characters" para evitar regressao dessa regra.
 def test_sanitize_filename_component_removes_unsafe_characters() -> None:
     sanitized_value = sanitize_filename_component("../Senior Developer (Lead)")
 

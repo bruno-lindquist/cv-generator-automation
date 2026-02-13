@@ -1,5 +1,4 @@
-"""Registry for mapping section types to section formatters."""
-
+# Registro que mapeia cada tipo de secao para o formatador responsavel.
 from __future__ import annotations
 
 from typing import Any
@@ -19,24 +18,26 @@ from infrastructure.pdf_sections.timeline import (
 from infrastructure.pdf_styles import PdfStyleEngine
 
 
+# Encapsula o lookup de formatadores para desacoplar renderizador de classes concretas.
 class SectionFormatterRegistry:
-    """Central registry for section formatter lookup."""
 
+    # Recebe o mapa de formatadores ja prontos para consulta por tipo de secao.
     def __init__(self, formatter_by_type: dict[str, BaseSectionFormatter]) -> None:
         self._formatter_by_type = formatter_by_type
 
+    # Retorna formatador da secao ou None para permitir skip controlado de tipos desconhecidos.
     def get_formatter(self, section_type: str) -> BaseSectionFormatter | None:
-        """Return formatter for section type, or None when not registered."""
         return self._formatter_by_type.get(section_type)
 
 
+# Monta o registro padrao com todos os formatadores suportados pelo projeto.
 def build_default_section_formatter_registry(
     *,
     language: str,
     translations: dict[str, Any],
     pdf_style_engine: PdfStyleEngine,
 ) -> SectionFormatterRegistry:
-    """Build the default project registry with all supported section formatters."""
+    # Cada formatador recebe o mesmo contexto para manter consistência visual/idioma.
     formatter_by_type = {
         "experience": ExperienceSectionFormatter(
             language=language,

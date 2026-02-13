@@ -1,15 +1,4 @@
-# Este arquivo implementa a camada de renderização de currículo em PDF.
-# Ele serve para transformar dados estruturados do CV em elementos visuais (ReportLab).
-# Organização:
-# - classe `CvPdfRenderer` com fluxo principal de renderização
-# - métodos auxiliares para cabeçalho, resumo, seções dinâmicas e títulos
-# - resolução da ordem de seções com fallback padrão
-# Entradas esperadas:
-# - dados do currículo (`cv_data`), traduções, idioma e configurações visuais
-# Saídas esperadas:
-# - arquivo PDF gravado em disco e retorno do caminho (`Path`)
-# - logs de progresso/erros durante a renderização
-
+# Renderizador principal que converte dados do curriculo em um documento PDF com ReportLab.
 from __future__ import annotations
 
 import time
@@ -37,6 +26,7 @@ from infrastructure.pdf_styles import (
 from exceptions import PdfRenderError
 
 
+# Renderizador do documento que combina estilos, traducoes e formatadores de secao.
 class CvPdfRenderer:
     # Propósito:
     # - montar um PDF a partir dos dados do CV usando estilos e formatadores de seção.

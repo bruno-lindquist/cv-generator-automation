@@ -1,5 +1,4 @@
-"""PDF style engine and helpers for validation/value resolution."""
-
+# Valida e converte o JSON de estilos para objetos ReportLab usados no documento final.
 from __future__ import annotations
 
 from typing import Any
@@ -46,34 +45,35 @@ REQUIRED_SPACING_KEYS = [
 ]
 
 
+# Faixada de acesso semantico para margens, espacamentos e estilos ja validados.
 class PdfStyleEngine:
-    """Provide semantic access to validated PDF style configuration."""
 
+    # Valida a configuracao recebida no construtor para falhar cedo em caso de inconsistencia.
     def __init__(self, style_configuration: dict[str, Any]) -> None:
         self.style_configuration = (
             style_configuration if isinstance(style_configuration, dict) else {}
         )
         validate_pdf_style_configuration(self.style_configuration)
 
+    # Constroi stylesheet ReportLab a partir da configuracao validada.
     def build_stylesheet(self) -> StyleSheet1:
-        """Create a ReportLab stylesheet from the style configuration."""
         return build_pdf_stylesheet(self.style_configuration)
 
+    # Retorna valor de margem requerido pela montagem do documento.
     def margin(self, margin_key: str) -> float:
-        """Resolve a required margin value."""
         return resolve_margin_value(self.style_configuration, margin_key)
 
+    # Retorna valor de espacamento semantico usado entre blocos do PDF.
     def spacing(self, spacing_key: str) -> float:
-        """Resolve a required spacing value."""
         return resolve_spacing_value(self.style_configuration, spacing_key)
 
+    # Retorna a cor configurada para links sociais no cabecalho.
     def social_link_color(self) -> str:
-        """Resolve the social link color configured for hyperlinks."""
         return resolve_social_link_color(self.style_configuration)
 
 
+# Garante presencia de secoes e chaves obrigatorias antes de iniciar renderizacao.
 def validate_pdf_style_configuration(style_configuration: dict[str, Any]) -> None:
-    """Validate required style blocks and keys for PDF generation."""
     paragraph_styles = _require_dictionary_section(
         style_configuration,
         "paragraph_styles",
@@ -85,8 +85,8 @@ def validate_pdf_style_configuration(style_configuration: dict[str, Any]) -> Non
     resolve_social_link_color(style_configuration)
 
 
+# Transforma definicoes do JSON em ParagraphStyle compreensivel pelo ReportLab.
 def build_pdf_stylesheet(style_configuration: dict[str, Any]) -> StyleSheet1:
-    """Build a ReportLab stylesheet from paragraph style definitions."""
     paragraph_styles = style_configuration["paragraph_styles"]
     stylesheet = getSampleStyleSheet()
 
@@ -102,6 +102,7 @@ def build_pdf_stylesheet(style_configuration: dict[str, Any]) -> StyleSheet1:
             if parent_name in stylesheet.byName
             else stylesheet["Normal"]
         )
+        # Traduz nomenclatura do JSON para os parâmetros esperados pelo ReportLab.
         style_kwargs = _build_paragraph_style_kwargs(style_definition)
         stylesheet.add(
             ParagraphStyle(
@@ -114,8 +115,8 @@ def build_pdf_stylesheet(style_configuration: dict[str, Any]) -> StyleSheet1:
     return stylesheet
 
 
+# Extrai margem obrigatoria e gera erro claro quando a chave nao existe.
 def resolve_margin_value(style_configuration: dict[str, Any], margin_key: str) -> float:
-    """Resolve a required margin value."""
     margins_section = _require_dictionary_section(
         style_configuration,
         "margins",
@@ -129,11 +130,11 @@ def resolve_margin_value(style_configuration: dict[str, Any], margin_key: str) -
     return float(margin_value)
 
 
+# Extrai espacamento obrigatorio e gera erro claro quando a chave nao existe.
 def resolve_spacing_value(
     style_configuration: dict[str, Any],
     spacing_key: str,
 ) -> float:
-    """Resolve a required spacing value."""
     spacing_section = _require_dictionary_section(
         style_configuration,
         "spacing",
@@ -147,8 +148,8 @@ def resolve_spacing_value(
     return float(spacing_value)
 
 
+# Valida e retorna a cor de links sociais usada no header.
 def resolve_social_link_color(style_configuration: dict[str, Any]) -> str:
-    """Resolve configured social link color."""
     links_section = _require_dictionary_section(
         style_configuration,
         "links",
@@ -162,6 +163,7 @@ def resolve_social_link_color(style_configuration: dict[str, Any]) -> str:
     return link_color
 
 
+# Valida se uma secao existe como dicionario antes de acessar suas chaves.
 def _require_dictionary_section(
     style_configuration: dict[str, Any],
     section_key: str,
@@ -173,6 +175,7 @@ def _require_dictionary_section(
     return section_data
 
 
+# Confere se todos os estilos essenciais existem para evitar quebra de layout.
 def _require_paragraph_style_names(paragraph_styles: dict[str, Any]) -> None:
     missing_required_styles = [
         style_name
@@ -186,6 +189,7 @@ def _require_paragraph_style_names(paragraph_styles: dict[str, Any]) -> None:
         )
 
 
+# Valida se cada secao contem todas as chaves minimas esperadas.
 def _require_required_keys(
     style_configuration: dict[str, Any],
     section_key: str,
@@ -203,6 +207,7 @@ def _require_required_keys(
             )
 
 
+# Converte campos do JSON para kwargs compatíveis com ParagraphStyle.
 def _build_paragraph_style_kwargs(style_definition: dict[str, Any]) -> dict[str, Any]:
     style_kwargs: dict[str, Any] = {}
     for setting_key, reportlab_key in STYLE_FIELD_MAPPING.items():
@@ -222,14 +227,17 @@ def _build_paragraph_style_kwargs(style_definition: dict[str, Any]) -> dict[str,
     return style_kwargs
 
 
+# Traduz alinhamento textual para constantes do ReportLab com fallback seguro.
 def _resolve_alignment(alignment_value: Any) -> int:
     if isinstance(alignment_value, int):
         return alignment_value
     if not isinstance(alignment_value, str):
         return TA_LEFT
+    # Fallback para alinhamento à esquerda evita falha com configuração inválida.
     return ALIGNMENT_BY_NAME.get(alignment_value.lower(), TA_LEFT)
 
 
+# Converte string de cor para objeto ReportLab e falha com mensagem explicita se invalida.
 def _resolve_color(color_value: Any) -> colors.Color:
     if not isinstance(color_value, str) or not color_value.strip():
         raise PdfRenderError("Paragraph style 'text_color' must be a non-empty string")

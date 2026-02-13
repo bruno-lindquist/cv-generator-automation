@@ -1,3 +1,4 @@
+# Cobre o fluxo integrado de geracao de CV, do input ate o arquivo PDF final.
 from __future__ import annotations
 
 from pathlib import Path
@@ -8,8 +9,10 @@ from cv_service import CvGenerationService
 from tests.helpers.project_builders import create_test_project_files
 
 
+# Prepara workspace isolado com arquivos necessarios para os testes de integracao.
 @pytest.fixture()
 def isolated_project_files(tmp_path: Path) -> Path:
+    # Fixture representa ambiente mínimo de projeto para execução end-to-end.
     return create_test_project_files(
         tmp_path,
         cv_data={
@@ -76,6 +79,7 @@ def isolated_project_files(tmp_path: Path) -> Path:
     )
 
 
+# Garante o comportamento "cv generation service generates pdf with expected name" para evitar regressao dessa regra.
 @pytest.mark.parametrize(
     ("language", "expected_suffix"),
     [
@@ -101,6 +105,7 @@ def test_cv_generation_service_generates_pdf_with_expected_name(
     assert generated_file_path.name.endswith(expected_suffix)
 
 
+# Garante o comportamento "cv generation service respects output override" para evitar regressao dessa regra.
 def test_cv_generation_service_respects_output_override(
     isolated_project_files: Path,
 ) -> None:

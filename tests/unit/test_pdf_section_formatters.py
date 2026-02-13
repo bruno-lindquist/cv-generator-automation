@@ -1,3 +1,4 @@
+# Valida como cada formatador transforma itens de secao em elementos reportlab.
 from __future__ import annotations
 
 from typing import Any
@@ -19,10 +20,12 @@ from infrastructure.pdf_styles import PdfStyleEngine
 from tests.helpers.style_helpers import load_project_style_configuration
 
 
+# Cria contexto compartilhado de estilos/traducoes para todos os formatadores de secao.
 @pytest.fixture()
 def formatter_context() -> tuple[PdfStyleEngine, StyleSheet1, dict[str, Any]]:
     style_engine = PdfStyleEngine(load_project_style_configuration())
     styles = style_engine.build_stylesheet()
+    # Traduções mínimas necessárias para validar rótulo de "atual/present".
     translations = {
         "labels": {
             "current": {
@@ -34,6 +37,7 @@ def formatter_context() -> tuple[PdfStyleEngine, StyleSheet1, dict[str, Any]]:
     return style_engine, styles, translations
 
 
+# Garante o comportamento "experience section formatter renders item" para evitar regressao dessa regra.
 def test_experience_section_formatter_renders_item(
     formatter_context: tuple[PdfStyleEngine, StyleSheet1, dict[str, Any]],
 ) -> None:
@@ -61,6 +65,7 @@ def test_experience_section_formatter_renders_item(
     assert isinstance(elements[-1], Spacer)
 
 
+# Garante o comportamento "education section formatter renders item" para evitar regressao dessa regra.
 def test_education_section_formatter_renders_item(
     formatter_context: tuple[PdfStyleEngine, StyleSheet1, dict[str, Any]],
 ) -> None:
@@ -90,6 +95,7 @@ def test_education_section_formatter_renders_item(
     assert isinstance(elements[-1], Spacer)
 
 
+# Garante o comportamento "core skills section formatter renders item" para evitar regressao dessa regra.
 def test_core_skills_section_formatter_renders_item(
     formatter_context: tuple[PdfStyleEngine, StyleSheet1, dict[str, Any]],
 ) -> None:
@@ -114,6 +120,7 @@ def test_core_skills_section_formatter_renders_item(
     assert isinstance(elements[-1], Spacer)
 
 
+# Garante o comportamento "skills section formatter renders item" para evitar regressao dessa regra.
 def test_skills_section_formatter_renders_item(
     formatter_context: tuple[PdfStyleEngine, StyleSheet1, dict[str, Any]],
 ) -> None:
@@ -138,6 +145,7 @@ def test_skills_section_formatter_renders_item(
     assert isinstance(elements[-1], Spacer)
 
 
+# Garante o comportamento "languages section formatter renders item" para evitar regressao dessa regra.
 def test_languages_section_formatter_renders_item(
     formatter_context: tuple[PdfStyleEngine, StyleSheet1, dict[str, Any]],
 ) -> None:
@@ -162,6 +170,7 @@ def test_languages_section_formatter_renders_item(
     assert isinstance(elements[0], Paragraph)
 
 
+# Garante o comportamento "awards section formatter renders item" para evitar regressao dessa regra.
 def test_awards_section_formatter_renders_item(
     formatter_context: tuple[PdfStyleEngine, StyleSheet1, dict[str, Any]],
 ) -> None:
@@ -186,6 +195,7 @@ def test_awards_section_formatter_renders_item(
     assert isinstance(elements[0], Paragraph)
 
 
+# Garante o comportamento "certifications section formatter renders item" para evitar regressao dessa regra.
 def test_certifications_section_formatter_renders_item(
     formatter_context: tuple[PdfStyleEngine, StyleSheet1, dict[str, Any]],
 ) -> None:
@@ -211,6 +221,7 @@ def test_certifications_section_formatter_renders_item(
     assert isinstance(elements[0], Paragraph)
 
 
+# Garante o comportamento "certifications section formatter ignores year when name is missing" para evitar regressao dessa regra.
 def test_certifications_section_formatter_ignores_year_when_name_is_missing(
     formatter_context: tuple[PdfStyleEngine, StyleSheet1, dict[str, Any]],
 ) -> None:

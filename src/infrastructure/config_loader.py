@@ -1,5 +1,4 @@
-"""Load and validate application configuration from JSON."""
-
+# Le e valida a configuracao da aplicacao, devolvendo estruturas tipadas e imutaveis.
 from __future__ import annotations
 
 import json
@@ -10,6 +9,7 @@ from typing import Any
 from exceptions import ConfigurationError
 
 
+# Agrupa caminhos de entrada/saida usados no fluxo de geracao apos validacao.
 @dataclass(frozen=True)
 class FileSettings:
     data: str
@@ -20,12 +20,14 @@ class FileSettings:
     output_dir: str
 
 
+# Guarda idioma e encoding aplicados quando a CLI nao informa overrides.
 @dataclass(frozen=True)
 class DefaultSettings:
     language: str
     encoding: str
 
 
+# Representa nivel, diretorio e estado de habilitacao do logging.
 @dataclass(frozen=True)
 class LoggingSettings:
     enabled: bool
@@ -33,6 +35,7 @@ class LoggingSettings:
     directory: str
 
 
+# Objeto raiz imutavel com todas as secoes necessarias para executar a aplicacao.
 @dataclass(frozen=True)
 class AppConfig:
     files: FileSettings
@@ -40,8 +43,8 @@ class AppConfig:
     logging: LoggingSettings
 
 
+# Le o arquivo de configuracao, valida JSON e devolve configuracao tipada.
 def load_app_config(config_file_path: Path) -> AppConfig:
-    """Load config file and return parsed app configuration."""
     resolved_config_path = config_file_path.expanduser().resolve()
 
     if not resolved_config_path.exists():
@@ -58,6 +61,7 @@ def load_app_config(config_file_path: Path) -> AppConfig:
     return _parse_config(raw_config)
 
 
+# Valida chaves obrigatorias e converte valores crus em estruturas com tipos explicitos.
 def _parse_config(raw_config: dict[str, Any]) -> AppConfig:
     files_section = raw_config.get("files")
     defaults_section = raw_config.get("defaults", {})
@@ -71,6 +75,7 @@ def _parse_config(raw_config: dict[str, Any]) -> AppConfig:
         key for key in required_file_keys if not files_section.get(key)
     ]
 
+    # Permite configuração por caminho único ou por mapeamento de idioma.
     has_data_mapping = isinstance(files_section.get("data_by_language"), dict)
     has_translations_mapping = isinstance(
         files_section.get("translations_by_language"),
@@ -124,6 +129,7 @@ def _parse_config(raw_config: dict[str, Any]) -> AppConfig:
     )
 
 
+# Valida mapeamentos por idioma e normaliza codigos para lowercase.
 def _parse_language_mapping(
     raw_mapping: Any,
     mapping_key: str,
@@ -144,6 +150,7 @@ def _parse_language_mapping(
             raise ConfigurationError(
                 f"Key '{mapping_key}' has invalid path for language '{language_code}'"
             )
+        # Chaves de idioma são normalizadas para evitar falhas por caixa mista.
         parsed_mapping[language_code.lower()] = file_path
 
     if not parsed_mapping:

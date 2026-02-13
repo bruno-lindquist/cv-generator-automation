@@ -1,5 +1,4 @@
-"""JSON loading helper with domain-specific error mapping."""
-
+# Responsavel por carregar JSON de disco e traduzir erros tecnicos para erros de dominio.
 from __future__ import annotations
 
 import json
@@ -9,8 +8,8 @@ from typing import Any
 from exceptions import JsonFileNotFoundError, JsonParsingError
 
 
+# Le um JSON como dicionario e converte erros de arquivo/parser para excecoes de dominio.
 def load_json(file_path: Path, *, encoding: str = "utf-8") -> dict[str, Any]:
-    """Load a JSON file as dictionary with consistent domain errors."""
     resolved_path = file_path.expanduser().resolve()
 
     if not resolved_path.exists():
@@ -22,6 +21,7 @@ def load_json(file_path: Path, *, encoding: str = "utf-8") -> dict[str, Any]:
     except json.JSONDecodeError as exc:
         raise JsonParsingError(f"Invalid JSON file: {resolved_path}") from exc
 
+    # O serviço assume estrutura de objeto no nível raiz para acessar chaves nomeadas.
     if not isinstance(data, dict):
         raise JsonParsingError(
             f"Top-level JSON object must be a dictionary: {resolved_path}"

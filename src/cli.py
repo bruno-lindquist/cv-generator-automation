@@ -1,5 +1,4 @@
-"""Command-line interface for the CV Generator."""
-
+# Entrada de linha de comando que transforma argumentos do usuario em uma execucao segura do gerador.
 from __future__ import annotations
 
 import argparse
@@ -11,6 +10,7 @@ from cv_service import run_generation
 from exceptions import CvGeneratorError
 
 
+# Monta o parser da CLI com defaults do projeto e validacao de opcoes aceitas.
 def build_argument_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Generate CV in PDF from JSON file (with multilingual support)",
@@ -43,6 +43,7 @@ def build_argument_parser() -> argparse.ArgumentParser:
     return parser
 
 
+# Conduz o fluxo da CLI, convertendo excecoes em codigo de saida adequado para shell/CI.
 def main(argv: list[str] | None = None) -> int:
     parser = build_argument_parser()
     arguments = parser.parse_args(argv)

@@ -1,5 +1,4 @@
-"""Simple section formatters with compact rendering rules."""
-
+# Formatadores de secoes diretas (premios, idiomas, habilidades) com composicao enxuta.
 from __future__ import annotations
 
 from typing import Any
@@ -9,9 +8,10 @@ from reportlab.lib.styles import StyleSheet1
 from infrastructure.pdf_sections.base import BaseSectionFormatter
 
 
+# Renderiza itens de premios no formato titulo + descricao.
 class AwardsSectionFormatter(BaseSectionFormatter):
-    """Render one award item into reportlab elements."""
 
+    # Converte um premio em linha composta para o corpo da secao.
     def format_section_item(
         self,
         elements: list[Any],
@@ -28,9 +28,10 @@ class AwardsSectionFormatter(BaseSectionFormatter):
         )
 
 
+# Renderiza idiomas com nivel de proficiencia em formato compacto.
 class LanguagesSectionFormatter(BaseSectionFormatter):
-    """Render one language item into reportlab elements."""
 
+    # Monta linha de idioma combinando nome e proficiencia localizada.
     def format_section_item(
         self,
         elements: list[Any],
@@ -47,9 +48,10 @@ class LanguagesSectionFormatter(BaseSectionFormatter):
         )
 
 
+# Renderiza certificacoes preservando contexto de emissor e ano quando disponivel.
 class CertificationsSectionFormatter(BaseSectionFormatter):
-    """Render one certification item into reportlab elements."""
 
+    # Compoe texto de certificacao evitando exibir ano isolado sem nome do certificado.
     def format_section_item(
         self,
         elements: list[Any],
@@ -61,6 +63,7 @@ class CertificationsSectionFormatter(BaseSectionFormatter):
         year = str(section_item.get("year", "")).strip()
 
         detail_text = issuer_name
+        # Ano só aparece quando existe nome da certificação para evitar rótulo órfão.
         if certification_name and issuer_name and year:
             detail_text = f"{issuer_name} ({year})"
 
@@ -72,9 +75,10 @@ class CertificationsSectionFormatter(BaseSectionFormatter):
         )
 
 
+# Renderiza grupos de habilidades em formato categoria + lista separada por virgulas.
 class SkillsSectionFormatter(BaseSectionFormatter):
-    """Render one skills group item into reportlab elements."""
 
+    # Adiciona titulo da categoria e lista de habilidades mantendo espacamento padrao.
     def format_section_item(
         self,
         elements: list[Any],
@@ -90,9 +94,10 @@ class SkillsSectionFormatter(BaseSectionFormatter):
         self.add_spacing(elements, "item_bottom")
 
 
+# Renderiza habilidades centrais como bullets por categoria.
 class CoreSkillsSectionFormatter(BaseSectionFormatter):
-    """Render one core skills item into reportlab elements."""
 
+    # Adiciona categoria e descricoes em bullet com espacamento minimo entre itens.
     def format_section_item(
         self,
         elements: list[Any],

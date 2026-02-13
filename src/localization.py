@@ -1,5 +1,4 @@
-"""Localization and text formatting helpers."""
-
+# Funcoes de localizacao para traducao, fallback de idioma e sanitizacao segura de texto.
 from __future__ import annotations
 
 import re
@@ -11,19 +10,13 @@ MONTHS_BY_LANGUAGE = {
     "en": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
 }
 
-TAG_MARKERS = {
-    "<b>": "___BOLD_START___",
-    "</b>": "___BOLD_END___",
-    "<i>": "___ITALIC_START___",
-    "</i>": "___ITALIC_END___",
-    "<u>": "___UNDERLINE_START___",
-    "</u>": "___UNDERLINE_END___",
-}
+TAG_MARKERS = {"<b>": "___BOLD_START___", "</b>": "___BOLD_END___", "<i>": "___ITALIC_START___", "</i>": "___ITALIC_END___", "<u>": "___UNDERLINE_START___", "</u>": "___UNDERLINE_END___"}
 
 FILENAME_SANITIZATION_PATTERN = re.compile(r"[^A-Za-z0-9._-]+")
 XML_ESCAPE_ENTITIES = {"'": "&apos;", '"': "&quot;"}
 
 
+# Busca traducao aceitando schema antigo e novo, com fallback seguro para valor default.
 def get_translation(
     translations: dict[str, Any],
     language: str,
@@ -31,7 +24,6 @@ def get_translation(
     key: str,
     default: str,
 ) -> str:
-    """Read a translated string with safe fallback."""
     language_scope = translations.get(language)
     if isinstance(language_scope, dict):
         return language_scope.get(section, {}).get(key, default)
@@ -48,8 +40,8 @@ def get_translation(
     return _normalize_string(translated_value, default)
 
 
+# Resolve campo localizado por idioma com fallback para portugues e valor neutro.
 def get_localized_field(data: Any, field_name: str, language: str, default: str = "") -> str:
-    """Resolve localized fields with Portuguese and base-field fallback."""
     if not isinstance(data, dict):
         return default
 
@@ -66,8 +58,8 @@ def get_localized_field(data: Any, field_name: str, language: str, default: str 
     return _normalize_string(resolved_value, default)
 
 
+# Resolve listas localizadas preservando compatibilidade entre formatos legado e unificado.
 def get_localized_list(data: Any, field_name: str, language: str) -> list[str]:
-    """Resolve localized list fields in both unified and legacy formats."""
     if not isinstance(data, dict):
         return []
 
@@ -89,10 +81,11 @@ def get_localized_list(data: Any, field_name: str, language: str) -> list[str]:
     return [str(item) for item in legacy_values]
 
 
+# Escapa entidades XML sem remover tags de formatacao permitidas (<b>, <i>, <u>).
 def escape_text_preserving_tags(raw_text: Any) -> str:
-    """Escape XML entities while preserving supported formatting tags."""
     text = str(raw_text)
 
+    # Usa marcadores temporários para preservar apenas as tags permitidas.
     protected_text = text
     for tag, marker in TAG_MARKERS.items():
         protected_text = protected_text.replace(tag, marker)
@@ -105,18 +98,18 @@ def escape_text_preserving_tags(raw_text: Any) -> str:
     return escaped_text
 
 
+# Escapa conteudo para atributos XML, incluindo aspas simples e duplas.
 def escape_xml_attribute(raw_value: Any) -> str:
-    """Escape XML attribute content (including single and double quotes)."""
     return escape(str(raw_value), XML_ESCAPE_ENTITIES)
 
 
+# Prepara texto rico para Paragraph convertendo quebras de linha em <br/>.
 def process_rich_text(raw_text: Any) -> str:
-    """Escape text and map line breaks to ReportLab line breaks."""
     return escape_text_preserving_tags(raw_text).replace("\n", "<br/>")
 
 
+# Converte mes numerico para abreviacao local, mantendo valor original quando invalido.
 def format_month(raw_month: Any, language: str) -> str:
-    """Convert numeric month into locale-aware abbreviation."""
     try:
         month_number = int(raw_month)
     except (TypeError, ValueError):
@@ -129,6 +122,7 @@ def format_month(raw_month: Any, language: str) -> str:
     return months[month_number - 1]
 
 
+# Monta periodo de inicio/fim usando traducao de "atual" quando nao houver data final.
 def format_period(
     *,
     start_month: Any,
@@ -138,7 +132,6 @@ def format_period(
     translations: dict[str, Any],
     language: str,
 ) -> str:
-    """Format a work/education period using locale-aware labels."""
     initial_month = format_month(start_month, language)
     start_period = f"{initial_month} {start_year}".strip()
 
@@ -150,18 +143,20 @@ def format_period(
     return f"{start_period} - {current_label}".strip()
 
 
+# Limpa componente de nome de arquivo removendo caracteres inseguros.
 def sanitize_filename_component(raw_value: Any, fallback: str = "CV") -> str:
-    """Return a safe filename component without path separators or unsafe characters."""
     escaped_value = FILENAME_SANITIZATION_PATTERN.sub("_", str(raw_value).strip())
     normalized_value = escaped_value.strip("._-")
     return normalized_value or fallback
 
 
+# Identifica dicionarios que seguem o padrao de variantes por idioma.
 def _contains_language_variants(value: dict[str, Any]) -> bool:
     language_keys = {"pt", "en", "default"}
     return bool(language_keys.intersection(value.keys()))
 
 
+# Define criterio unico de "valor preenchido" usado nas regras de fallback.
 def _is_non_empty(value: Any) -> bool:
     if value is None:
         return False
@@ -172,7 +167,9 @@ def _is_non_empty(value: Any) -> bool:
     return True
 
 
+# Seleciona a melhor variante disponivel seguindo ordem de prioridade por idioma.
 def _select_language_variant(variants: dict[str, Any], language: str) -> Any:
+    # Ordem de busca prioriza idioma pedido, depois fallbacks explícitos e padrão.
     lookup_order = [language]
     if language != "pt":
         lookup_order.append("pt")
@@ -195,6 +192,7 @@ def _select_language_variant(variants: dict[str, Any], language: str) -> Any:
     return None
 
 
+# Converte qualquer valor para string limpa e aplica default quando necessario.
 def _normalize_string(value: Any, default: str) -> str:
     if value is None:
         return default
