@@ -110,7 +110,7 @@ def test_cv_generation_service_respects_output_override(
     isolated_project_files: Path,
 ) -> None:
     generation_service = CvGenerationService(config_file_path=isolated_project_files)
-    custom_output_path = isolated_project_files.parent / "output" / "custom_name.pdf"
+    custom_output_path = isolated_project_files.parent / "__output" / "custom_name.pdf"
 
     generated_file_path = generation_service.generate(
         language="pt",

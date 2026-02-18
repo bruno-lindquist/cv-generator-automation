@@ -11,7 +11,7 @@ dist/
 build/
 
 # PDFs gerados
-output/
+__output/
 
 # Arquivos do SO
 .DS_Store

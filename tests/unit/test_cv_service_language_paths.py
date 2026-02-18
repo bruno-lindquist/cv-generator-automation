@@ -40,7 +40,7 @@ def test_data_path_prefers_direct_file_when_present(tmp_path: Path) -> None:
             "data": "../data/default_cv.json",
             "styles": "styles.json",
             "translations": "translations.json",
-            "output_dir": "../output",
+            "output_dir": "../__output",
         },
     )
 
@@ -59,7 +59,7 @@ def test_translations_path_uses_mapping_when_direct_path_is_absent(tmp_path: Pat
             "styles": "styles.json",
             "translations": "",
             "translations_by_language": {"en": "../i18n/translations_en.json"},
-            "output_dir": "../output",
+            "output_dir": "../__output",
         },
     )
 
@@ -82,7 +82,7 @@ def test_data_path_raises_when_language_is_not_configured(tmp_path: Path) -> Non
             "data_by_language": {"pt": "../data/cv_pt.json"},
             "styles": "styles.json",
             "translations": "translations.json",
-            "output_dir": "../output",
+            "output_dir": "../__output",
         },
     )
 

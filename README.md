@@ -98,7 +98,7 @@ cv-generator-automation/
 │   └── integration/                 # Teste de integração (pipeline completo)
 │       └── test_cv_generation_service.py
 │
-├── output/                          # PDFs gerados (criado automaticamente)
+├── __output/                        # PDFs gerados (criado automaticamente)
 ├── logs/                            # Logs da aplicação (criado automaticamente)
 │
 ├── pyproject.toml                   # Definição do projeto, dependências e scripts
@@ -203,7 +203,7 @@ chmod +x start_mac.sh
 ./start_mac.sh
 ```
 
-Os PDFs são salvos em `output/`.
+Os PDFs são salvos em `__output/`.
 
 ### CLI manual
 
@@ -251,7 +251,7 @@ Localizado em `config/config.json`. Define caminhos (relativos ao diretório do 
     "data": "../data/cv_data.json",
     "styles": "styles.json",
     "translations": "translations.json",
-    "output_dir": "../output"
+    "output_dir": "../__output"
   },
   "defaults": {
     "language": "pt",
@@ -372,7 +372,7 @@ Os testes de integração criam projetos temporários completos em `tmp_path` e 
 | Script | Função |
 |--------|--------|
 | `start_mac.sh` | Gera CV em PT e EN automaticamente (detecta venv e SO) |
-| `clean_project.command` | Remove `output/`, `logs/`, `__pycache__/`, `.egg-info`, `.pyc` e artefatos de build. Preserva `.venv/` e `.git/` |
+| `clean_project.command` | Remove `__output/`, `logs/`, `__pycache__/`, `.egg-info`, `.pyc` e artefatos de build. Preserva `.venv/` e `.git/` |
 
 ---
 

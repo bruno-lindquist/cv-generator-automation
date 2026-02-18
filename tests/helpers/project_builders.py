@@ -14,7 +14,7 @@ def build_default_app_config() -> dict[str, Any]:
             "data": "../data/cv_data.json",
             "styles": "styles.json",
             "translations": "translations.json",
-            "output_dir": "../output",
+            "output_dir": "../__output",
         },
         "defaults": {
             "language": "pt",
