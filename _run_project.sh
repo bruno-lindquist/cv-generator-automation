@@ -18,17 +18,17 @@ generate_cv_for_all_languages() {
     done
 }
 
-# Observa alterações de mtime no JSON e dispara nova geração quando houver mudança.
+# Observa alterações no conteúdo do JSON e dispara nova geração quando houver mudança.
 watch_cv_data_and_regenerate() {
     [ -f "$CV_DATA_JSON_FILE_PATH" ] || { echo "Arquivo não encontrado: $CV_DATA_JSON_FILE_PATH"; exit 1; }
     generate_cv_for_all_languages
-    local previous_modification_time current_modification_time
-    previous_modification_time="$(stat -f %m "$CV_DATA_JSON_FILE_PATH")"
+    local previous_file_checksum current_file_checksum
+    previous_file_checksum="$(cksum "$CV_DATA_JSON_FILE_PATH")"
     while sleep 1; do
         [ -f "$CV_DATA_JSON_FILE_PATH" ] || continue
-        current_modification_time="$(stat -f %m "$CV_DATA_JSON_FILE_PATH")"
-        [ "$current_modification_time" = "$previous_modification_time" ] && continue
-        previous_modification_time="$current_modification_time"
+        current_file_checksum="$(cksum "$CV_DATA_JSON_FILE_PATH")"
+        [ "$current_file_checksum" = "$previous_file_checksum" ] && continue
+        previous_file_checksum="$current_file_checksum"
         generate_cv_for_all_languages
     done
 }
