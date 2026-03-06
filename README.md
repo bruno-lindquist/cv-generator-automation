@@ -196,14 +196,20 @@ Inclui `pytest`, `pytest-cov`, `flake8` e `pip-audit`.
 
 ### Geração rápida (script automático)
 
-O script `start_mac.sh` gera automaticamente o CV em Português e Inglês:
+O script `_run_project.sh` gera automaticamente o CV em Português e Inglês:
 
 ```bash
-chmod +x start_mac.sh
-./start_mac.sh
+chmod +x _run_project.sh
+./_run_project.sh
 ```
 
 Os PDFs são salvos em `__output/`.
+
+Para reexecutar automaticamente ao salvar `data/cv_data.json`:
+
+```bash
+./_run_project.sh --watch
+```
 
 ### CLI manual
 

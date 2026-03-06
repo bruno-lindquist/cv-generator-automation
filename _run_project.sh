@@ -1,64 +1,37 @@
 #!/bin/bash
-# Gera o CV em PDF nas versões PT e EN
+set -euo pipefail
 
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd "$SCRIPT_DIR"
+# Garante execução a partir da raiz do projeto, independente do diretório atual do terminal.
+cd "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Gera o CV para o idioma informado.
-# Ordem de tentativa:
-# 1) executável local em .venv/bin (Unix);
-# 2) executável local em .venv/Scripts (Windows);
-# 3) comando global cv-generator no PATH;
-# 4) execução do módulo CLI com Python.
-generate_cv() {
-    local lang=$1
-    local lang_flag=$2
+# Arquivo monitorado no modo --watch.
+CV_DATA_JSON_FILE_PATH="data/cv_data.json"
 
-    printf '\n%s Gerando CV em %s...\n' "$lang_flag" "$lang"
-    if [ -x "./.venv/bin/cv-generator" ]; then
-        # Prioriza o binário do projeto para garantir versão consistente
-        "./.venv/bin/cv-generator" -l "$lang"
-        return
-    fi
+# Usa apenas o Python da venv do projeto para manter execução determinística.
+PYTHON_EXECUTABLE_PATH="./.venv/bin/python"
+[ -f "$PYTHON_EXECUTABLE_PATH" ] || { echo "Python da venv não encontrado em $PYTHON_EXECUTABLE_PATH"; exit 1; }
 
-    if [ -x "./.venv/Scripts/cv-generator" ]; then
-        # Compatibilidade com estrutura de venv no Windows
-        "./.venv/Scripts/cv-generator" -l "$lang"
-        return
-    fi
-
-    if command -v "cv-generator" >/dev/null 2>&1; then
-        # Usa a instalação global apenas quando não houver binário local do projeto
-        cv-generator -l "$lang"
-        return
-    fi
-
-    # Fallback final via Python, preservando imports locais em src
-    PYTHON_CMD="./.venv/bin/python"
-    [ ! -f "$PYTHON_CMD" ] && PYTHON_CMD="./.venv/Scripts/python.exe"
-    [ ! -f "$PYTHON_CMD" ] && PYTHON_CMD="python3"
-    PYTHONPATH="src${PYTHONPATH:+:$PYTHONPATH}" "$PYTHON_CMD" -m cli -l "$lang"
+# Executa a geração para os dois idiomas suportados.
+generate_cv_for_all_languages() {
+    for language_code in pt en; do
+        PYTHONPATH="src${PYTHONPATH:+:$PYTHONPATH}" "$PYTHON_EXECUTABLE_PATH" -c "from cv_service import run_generation; run_generation(config_file_path='config/config.json', language='${language_code}', input_file_path=None, output_file_path=None)"
+    done
 }
 
-# Executa a geração para os dois idiomas suportados
-printf '\n'
-echo "========================================"
-echo "             CV Generator"
-echo "========================================"
+# Observa alterações de mtime no JSON e dispara nova geração quando houver mudança.
+watch_cv_data_and_regenerate() {
+    [ -f "$CV_DATA_JSON_FILE_PATH" ] || { echo "Arquivo não encontrado: $CV_DATA_JSON_FILE_PATH"; exit 1; }
+    generate_cv_for_all_languages
+    local previous_modification_time current_modification_time
+    previous_modification_time="$(stat -f %m "$CV_DATA_JSON_FILE_PATH")"
+    while sleep 1; do
+        [ -f "$CV_DATA_JSON_FILE_PATH" ] || continue
+        current_modification_time="$(stat -f %m "$CV_DATA_JSON_FILE_PATH")"
+        [ "$current_modification_time" = "$previous_modification_time" ] && continue
+        previous_modification_time="$current_modification_time"
+        generate_cv_for_all_languages
+    done
+}
 
-for lang in pt en; do
-    # Associa cada idioma à bandeira exibida no log
-    case "$lang" in
-        pt) flag="🇧🇷" ;;
-        en) flag="🇬🇧" ;;
-    esac
-
-    generate_cv "$lang" "$flag"
-done
-
-#generate_cv "pt" "🇧🇷"
-
-printf '\n'
-echo "✅ Both versions generated successfully!"
-echo "========================================"
-printf '\n'
+# Sem argumentos: executa uma vez. Com --watch: execução contínua por mudanças no JSON.
+[ "${1:-}" = "--watch" ] && watch_cv_data_and_regenerate || generate_cv_for_all_languages

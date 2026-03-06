@@ -1,6 +1,7 @@
 # Cobre o fluxo integrado de geracao de CV, do input ate o arquivo PDF final.
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 import pytest
@@ -103,6 +104,24 @@ def test_cv_generation_service_generates_pdf_with_expected_name(
     assert generated_file_path.exists()
     assert generated_file_path.stat().st_size > 1000
     assert generated_file_path.name.endswith(expected_suffix)
+
+
+# Garante o comportamento "default output is grouped by english role and stores input data copy".
+def test_cv_generation_service_groups_output_by_english_role_and_copies_input_data(
+    isolated_project_files: Path,
+) -> None:
+    generation_service = CvGenerationService(config_file_path=isolated_project_files)
+
+    generated_file_path = generation_service.generate(
+        language="pt",
+        input_file_path=None,
+        output_file_path=None,
+    )
+
+    copied_cv_data_path = generated_file_path.parent / "cv_data.json"
+    assert generated_file_path.parent.name == "Frontend_Developer"
+    assert copied_cv_data_path.exists()
+    assert json.loads(copied_cv_data_path.read_text(encoding="utf-8"))["personal_info"]["name"] == "Maria Testadora"
 
 
 # Garante o comportamento "cv generation service respects output override" para evitar regressao dessa regra.

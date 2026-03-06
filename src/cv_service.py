@@ -2,6 +2,7 @@
 from __future__ import annotations
 import time
 from pathlib import Path
+from shutil import copy2
 from typing import Any
 from loguru import logger
 from localization import get_localized_field, sanitize_filename_component
@@ -81,6 +82,10 @@ class CvGenerationService:
             output_file_path=output_path,
             app_logger=contextual_logger,
         )
+        self._save_used_cv_data_copy(
+            data_file_path=data_file_path,
+            output_directory=generated_pdf_path.parent,
+        )
 
         elapsed_ms = int((time.perf_counter() - started_at) * 1000)
         contextual_logger.bind(
@@ -93,26 +98,52 @@ class CvGenerationService:
 
     # Monta nome final do PDF com dados do candidato e impede escrita fora do diretorio configurado.
     def _build_output_file_path(self, *, cv_data: dict[str, Any], language: str) -> Path:
-        output_directory = self._resolve_config_relative_path(
+        output_root_directory = self._resolve_config_relative_path(
             self.config.files.output_dir
         )
-        output_directory.mkdir(parents=True, exist_ok=True)
+        output_root_directory.mkdir(parents=True, exist_ok=True)
 
         personal_info = cv_data.get("personal_info", {})
         desired_role = cv_data.get("desired_role", {})
+        english_role_component = sanitize_filename_component(
+            get_localized_field(desired_role, "desired_role", "en", "CV"),
+            fallback="CV",
+        )
+        role_output_directory = output_root_directory / english_role_component
+        role_output_directory.mkdir(parents=True, exist_ok=True)
 
-        name_component = sanitize_filename_component(personal_info.get("name", "CV"), fallback="CV")
-        role_component = sanitize_filename_component(get_localized_field(desired_role, "desired_role", language, "CV"),fallback="CV")
+        name_component = sanitize_filename_component(
+            personal_info.get("name", "CV"),
+            fallback="CV",
+        )
+        role_component = sanitize_filename_component(
+            get_localized_field(desired_role, "desired_role", language, "CV"),
+            fallback="CV",
+        )
         language_suffix = "" if language == "pt" else f"_{language.upper()}"
 
-        candidate_output_path = output_directory / f"{name_component}_{role_component}{language_suffix}.pdf"
+        candidate_output_path = (
+            role_output_directory
+            / f"{name_component}_{role_component}{language_suffix}.pdf"
+        )
         resolved_output_path = candidate_output_path.resolve()
 
         # Garante que componentes do nome não permitam escapar da pasta de saída.
-        if output_directory.resolve() not in resolved_output_path.parents:
+        if role_output_directory.resolve() not in resolved_output_path.parents:
             raise OutputPathError("Generated output path escaped output directory")
 
         return resolved_output_path
+
+    # Copia o JSON de entrada usado na geração para a mesma pasta dos PDFs gerados.
+    def _save_used_cv_data_copy(
+        self,
+        *,
+        data_file_path: Path,
+        output_directory: Path,
+    ) -> None:
+        copied_data_path = (output_directory / data_file_path.name).resolve()
+        if copied_data_path != data_file_path.resolve():
+            copy2(data_file_path, copied_data_path)
 
     # Seleciona o arquivo de dados correto para o idioma solicitado.
     def _resolve_language_aware_data_path(self, language: str) -> Path:
