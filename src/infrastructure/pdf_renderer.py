@@ -1,7 +1,6 @@
 # Renderizador principal que converte dados do curriculo em um documento PDF com ReportLab.
 from __future__ import annotations
 
-import time
 from pathlib import Path
 from typing import Any
 
@@ -77,7 +76,7 @@ class CvPdfRenderer:
     # Efeitos:
     # - cria diretório de saída se necessário
     # - grava o arquivo PDF
-    # - registra logs de início/fim e pode lançar `PdfRenderError`.
+    # - registra log de conclusão e pode lançar `PdfRenderError`.
     def render_cv(
         self,
         *,
@@ -96,10 +95,6 @@ class CvPdfRenderer:
             leftMargin=self.pdf_style_engine.margin("left") * mm,
             topMargin=self.pdf_style_engine.margin("top") * mm,
             bottomMargin=self.pdf_style_engine.margin("bottom") * mm,
-        )
-
-        app_logger.bind(event="pdf_build_started", step="pdf_renderer").info(
-            "Building PDF document"
         )
 
         # `elements` é a sequência de blocos visuais que o ReportLab vai desenhar.
@@ -124,7 +119,7 @@ class CvPdfRenderer:
     # - percorrer seções habilitadas e adicionar itens formatados ao documento.
     # Efeitos:
     # - modifica lista `elements` (estrutura final do PDF)
-    # - escreve logs de início/fim de cada seção.
+    # - escreve avisos para seções inválidas.
     def _add_dynamic_sections(
         self,
         elements: list[Any],
@@ -153,21 +148,11 @@ class CvPdfRenderer:
                 )
                 continue
 
-            # Mede duração de renderização da seção para observabilidade.
-            section_start = time.perf_counter()
-
             self._add_section_title(elements, styles, section_type)
             for item in section_items:
                 # Delega a formatação do item para o formatador específico da seção.
                 formatter.format_section_item(elements, styles, item)
             elements.append(Spacer(1, self.pdf_style_engine.spacing("item_bottom") * mm))
-
-            elapsed_ms = int((time.perf_counter() - section_start) * 1000)
-            app_logger.bind(
-                event="section_render_finished",
-                step=section_type,
-                duration_ms=str(elapsed_ms),
-            ).info("Finished section")
 
     # Propósito:
     # - decidir quais seções serão renderizadas e em qual ordem.

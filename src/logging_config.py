@@ -9,13 +9,12 @@ from loguru import logger
 
 DEFAULT_LOG_FORMAT = (
     "{time:YYYY-MM-DD HH:mm:ss.SSS} | {level:<8} | {extra[event]} | "
-    "request_id={extra[request_id]} | language={extra[language]} | "
+    "language={extra[language]} | "
     "step={extra[step]} | {message}"
 )
 
 DEFAULT_LOG_EXTRA = {
     "event": "-",
-    "request_id": "-",
     "language": "-",
     "input_file": "-",
     "output_file": "-",
@@ -56,13 +55,11 @@ def configure_logging(*, level: str = "INFO", enabled: bool = True, logs_directo
 # Anexa metadados da requisicao ao logger para correlacionar eventos do pipeline.
 def bind_logger_context(
     *,
-    request_id: str,
     language: str,
     input_file: str,
     output_file: str,
 ) -> Any:
     return logger.bind(
-        request_id=request_id,
         language=language,
         input_file=input_file,
         output_file=output_file,

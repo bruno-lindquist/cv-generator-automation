@@ -1,7 +1,6 @@
 # Caso de uso principal que coordena configuracao, leitura de dados e geracao final do PDF.
 from __future__ import annotations
 import time
-import uuid
 from pathlib import Path
 from typing import Any
 from loguru import logger
@@ -36,7 +35,6 @@ class CvGenerationService:
     def generate(self, *, language: str | None, input_file_path: str | None, output_file_path: str | None) -> Path:
         # Idioma explícito em runtime tem prioridade sobre o padrão da configuração.
         effective_language = (language or self.config.defaults.language).lower()
-        generation_request_id = uuid.uuid4().hex[:8]
 
         if input_file_path:
             data_file_path = self._resolve_runtime_path(input_file_path)
@@ -63,15 +61,14 @@ class CvGenerationService:
             )
 
         contextual_logger = bind_logger_context(
-            request_id=generation_request_id,
             language=effective_language,
             input_file=str(data_file_path),
             output_file=str(output_path),
         )
-        contextual_logger.bind(event="app_start", step="cv_service").info("Starting CV generation workflow")
+        contextual_logger.bind(event="app_start", step="cv_service").debug("Starting CV generation workflow")
 
         validate_cv_data(cv_data)
-        contextual_logger.bind(event="input_validated", step="validators").info("Input data validated successfully")
+        contextual_logger.bind(event="input_validated", step="validators").debug("Input data validated successfully")
 
         pdf_renderer = CvPdfRenderer(
             language=effective_language,
@@ -182,7 +179,7 @@ def run_generation(
         input_file_path=input_file_path,
         output_file_path=output_file_path,
     )
-    logger.bind(event="app_finished", step="entrypoint").info(
+    logger.bind(event="app_finished", step="entrypoint").debug(
         f"Generated file: {generated_path}"
     )
     return generated_path

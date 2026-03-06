@@ -39,7 +39,7 @@ O projeto recebe um JSON com os dados profissionais do candidato e produz um PDF
 4. Renderização de cada seção em PDF via ReportLab
 5. Gravação do arquivo final com nome derivado do candidato
 
-Cada etapa é instrumentada com logs estruturados contendo `request_id`, idioma e duração.
+Cada etapa é instrumentada com logs estruturados contendo idioma, etapa e duração.
 
 ---
 
@@ -329,10 +329,9 @@ Todos os campos textuais aceitam localização por idioma (`{"pt": "...", "en": 
 
 O sistema usa **Loguru** com logs estruturados contendo:
 
-- `request_id` — identificador único da geração
 - `language` — idioma ativo
 - `step` — etapa do pipeline (`cli`, `validators`, `pdf_renderer`, etc.)
-- `event` — tipo de evento (`app_start`, `section_render_finished`, etc.)
+- `event` — tipo de evento (`app_finished`, `pdf_build_finished`, etc.)
 - `duration_ms` — duração de etapas críticas
 
 Logs são gravados em `logs/cv_generator.log` (rotação a cada 5 MB, retenção de 14 dias) e exibidos no console. O logging pode ser desabilitado em `config.json` (`"enabled": false`).
