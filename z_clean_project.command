@@ -186,11 +186,31 @@ collect_root_level_directories() {
   return 0
 }
 
-# Coleta entradas com `find` para um tipo e padrão específicos.
-collect_matches_from_find() {
+# Aplica múltiplos padrões em uma única chamada de `find` para reduzir forks.
+collect_patterns() {
   local entry_type="$1"
-  local name_pattern="$2"
+  shift
   local match_path
+  local name_expression=()
+  local pattern
+  local is_first_pattern=1
+
+  # Sai cedo quando nao ha padroes para buscar.
+  if [ $# -eq 0 ]; then
+    return 0
+  fi
+
+  # Monta expressao agrupada `\( -name p1 -o -name p2 ... \)` para varrer tudo de uma vez.
+  name_expression+=(\()
+  for pattern in "$@"; do
+    if [ "$is_first_pattern" -eq 1 ]; then
+      is_first_pattern=0
+    else
+      name_expression+=(-o)
+    fi
+    name_expression+=(-name "$pattern")
+  done
+  name_expression+=(\))
 
   # Usa separador nulo para suportar espaços/caracteres especiais.
   while IFS= read -r -d '' match_path; do
@@ -198,18 +218,8 @@ collect_matches_from_find() {
   done < <(
     find "$PROJECT_ROOT" \
       \( "${PROTECTED_FIND_PRUNE_ARGS[@]}" \) -prune \
-      -o -type "$entry_type" -name "$name_pattern" -print0
+      -o -type "$entry_type" "${name_expression[@]}" -print0
   )
-}
-
-# Aplica múltiplos padrões reutilizando a função de busca genérica.
-collect_patterns() {
-  local entry_type="$1"
-  shift
-  local pattern
-  for pattern in "$@"; do
-    collect_matches_from_find "$entry_type" "$pattern"
-  done
 }
 
 # Ordena/remove duplicados e carrega os candidatos em memória.

@@ -17,10 +17,20 @@ from infrastructure.pdf_sections.timeline import (
 )
 from infrastructure.pdf_styles import PdfStyleEngine
 
+# Tipo de secao -> classe concreta do formatador responsavel.
+_FORMATTER_CLASS_BY_TYPE: dict[str, type[BaseSectionFormatter]] = {
+    "experience": ExperienceSectionFormatter,
+    "education": EducationSectionFormatter,
+    "core_skills": CoreSkillsSectionFormatter,
+    "skills": SkillsSectionFormatter,
+    "languages": LanguagesSectionFormatter,
+    "awards": AwardsSectionFormatter,
+    "certifications": CertificationsSectionFormatter,
+}
+
 
 # Encapsula o lookup de formatadores para desacoplar renderizador de classes concretas.
 class SectionFormatterRegistry:
-
     # Recebe o mapa de formatadores ja prontos para consulta por tipo de secao.
     def __init__(self, formatter_by_type: dict[str, BaseSectionFormatter]) -> None:
         self._formatter_by_type = formatter_by_type
@@ -39,40 +49,11 @@ def build_default_section_formatter_registry(
 ) -> SectionFormatterRegistry:
     # Cada formatador recebe o mesmo contexto para manter consistência visual/idioma.
     formatter_by_type = {
-        "experience": ExperienceSectionFormatter(
+        section_type: formatter_class(
             language=language,
             translations=translations,
             pdf_style_engine=pdf_style_engine,
-        ),
-        "education": EducationSectionFormatter(
-            language=language,
-            translations=translations,
-            pdf_style_engine=pdf_style_engine,
-        ),
-        "core_skills": CoreSkillsSectionFormatter(
-            language=language,
-            translations=translations,
-            pdf_style_engine=pdf_style_engine,
-        ),
-        "skills": SkillsSectionFormatter(
-            language=language,
-            translations=translations,
-            pdf_style_engine=pdf_style_engine,
-        ),
-        "languages": LanguagesSectionFormatter(
-            language=language,
-            translations=translations,
-            pdf_style_engine=pdf_style_engine,
-        ),
-        "awards": AwardsSectionFormatter(
-            language=language,
-            translations=translations,
-            pdf_style_engine=pdf_style_engine,
-        ),
-        "certifications": CertificationsSectionFormatter(
-            language=language,
-            translations=translations,
-            pdf_style_engine=pdf_style_engine,
-        ),
+        )
+        for section_type, formatter_class in _FORMATTER_CLASS_BY_TYPE.items()
     }
     return SectionFormatterRegistry(formatter_by_type=formatter_by_type)

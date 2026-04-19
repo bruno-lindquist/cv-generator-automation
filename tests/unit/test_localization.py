@@ -1,7 +1,7 @@
 # Exercita fallback de idioma, escape e formatacao dos utilitarios de localizacao.
 from localization import (
-    escape_xml_attribute,
     escape_text_preserving_tags,
+    escape_xml_attribute,
     format_period,
     get_localized_field,
     get_localized_list,
@@ -66,7 +66,7 @@ def test_escape_text_preserves_supported_tags() -> None:
 
 # Garante o comportamento "escape xml attribute escapes quotes" para evitar regressao dessa regra.
 def test_escape_xml_attribute_escapes_quotes() -> None:
-    escaped_attribute = escape_xml_attribute('https://example.com?q="x"&tag=\'y\'')
+    escaped_attribute = escape_xml_attribute("https://example.com?q=\"x\"&tag='y'")
 
     assert "&quot;" in escaped_attribute
     assert "&apos;" in escaped_attribute

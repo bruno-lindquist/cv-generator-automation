@@ -23,8 +23,6 @@ def load_json(file_path: Path, *, encoding: str = "utf-8") -> dict[str, Any]:
 
     # O serviço assume estrutura de objeto no nível raiz para acessar chaves nomeadas.
     if not isinstance(data, dict):
-        raise JsonParsingError(
-            f"Top-level JSON object must be a dictionary: {resolved_path}"
-        )
+        raise JsonParsingError(f"Top-level JSON object must be a dictionary: {resolved_path}")
 
     return data

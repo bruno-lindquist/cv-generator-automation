@@ -5,9 +5,9 @@ import json
 from pathlib import Path
 
 import pytest
+from tests.helpers.project_builders import create_test_project_files
 
 from cv_service import CvGenerationService
-from tests.helpers.project_builders import create_test_project_files
 
 
 # Prepara workspace isolado com arquivos necessarios para os testes de integracao.
@@ -121,7 +121,8 @@ def test_cv_generation_service_groups_output_by_english_role_and_copies_input_da
     copied_cv_data_path = generated_file_path.parent / "cv_data.json"
     assert generated_file_path.parent.name == "Frontend_Developer"
     assert copied_cv_data_path.exists()
-    assert json.loads(copied_cv_data_path.read_text(encoding="utf-8"))["personal_info"]["name"] == "Maria Testadora"
+    copied_cv_data = json.loads(copied_cv_data_path.read_text(encoding="utf-8"))
+    assert copied_cv_data["personal_info"]["name"] == "Maria Testadora"
 
 
 # Garante o comportamento "cv generation service respects output override" para evitar regressao dessa regra.

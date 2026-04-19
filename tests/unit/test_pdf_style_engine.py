@@ -6,19 +6,14 @@ from copy import deepcopy
 import pytest
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_RIGHT
-
-from infrastructure.pdf_styles import (
-    PdfStyleEngine,
-    build_pdf_stylesheet,
-    resolve_social_link_color,
-    validate_pdf_style_configuration,
-)
-from exceptions import PdfRenderError
 from tests.helpers.style_helpers import load_project_style_configuration
 
+from exceptions import PdfRenderError
+from infrastructure.pdf_styles import PdfStyleEngine
 
-# Garante o comportamento "validate pdf style configuration rejects missing required style" para evitar regressao dessa regra.
-def test_validate_pdf_style_configuration_rejects_missing_required_style() -> None:
+
+# Garante o comportamento "pdf style engine rejects missing required style" para evitar regressao dessa regra.
+def test_pdf_style_engine_rejects_missing_required_style() -> None:
     style_configuration = load_project_style_configuration()
     # Deep copy evita contaminar o fixture base entre testes.
     mutable_style_configuration = deepcopy(style_configuration)
@@ -26,13 +21,15 @@ def test_validate_pdf_style_configuration_rejects_missing_required_style() -> No
     paragraph_styles.pop("NameStyle", None)
 
     with pytest.raises(PdfRenderError) as raised_error:
-        validate_pdf_style_configuration(mutable_style_configuration)
+        PdfStyleEngine(mutable_style_configuration)
 
-    assert "Style configuration missing required paragraph styles: NameStyle" in str(raised_error.value)
+    assert "Style configuration missing required paragraph styles: NameStyle" in str(
+        raised_error.value
+    )
 
 
-# Garante o comportamento "build pdf stylesheet converts alignment and color" para evitar regressao dessa regra.
-def test_build_pdf_stylesheet_converts_alignment_and_color() -> None:
+# Garante o comportamento "pdf style engine build stylesheet converts alignment and color" para evitar regressao dessa regra.
+def test_pdf_style_engine_build_stylesheet_converts_alignment_and_color() -> None:
     style_configuration = load_project_style_configuration()
     mutable_style_configuration = deepcopy(style_configuration)
 
@@ -40,7 +37,7 @@ def test_build_pdf_stylesheet_converts_alignment_and_color() -> None:
     body_style["alignment"] = "right"
     body_style["text_color"] = "#123456"
 
-    stylesheet = build_pdf_stylesheet(mutable_style_configuration)
+    stylesheet = PdfStyleEngine(mutable_style_configuration).build_stylesheet()
     rendered_body_style = stylesheet["BodyStyle"]
 
     assert rendered_body_style.alignment == TA_RIGHT
@@ -68,26 +65,14 @@ def test_pdf_style_engine_build_stylesheet_returns_expected_style() -> None:
     assert "NameStyle" in stylesheet.byName
 
 
-# Garante o comportamento "validate pdf style configuration rejects missing social link color" para evitar regressao dessa regra.
-def test_validate_pdf_style_configuration_rejects_missing_social_link_color() -> None:
+# Garante o comportamento "pdf style engine rejects missing social link color" para evitar regressao dessa regra.
+def test_pdf_style_engine_rejects_missing_social_link_color() -> None:
     style_configuration = load_project_style_configuration()
     mutable_style_configuration = deepcopy(style_configuration)
     mutable_style_configuration["links"].pop("social_link_color", None)
 
     with pytest.raises(PdfRenderError) as raised_error:
-        validate_pdf_style_configuration(mutable_style_configuration)
-
-    assert "Style configuration missing 'links.social_link_color'" in str(raised_error.value)
-
-
-# Garante o comportamento "resolve social link color rejects missing social link color" para evitar regressao dessa regra.
-def test_resolve_social_link_color_rejects_missing_social_link_color() -> None:
-    style_configuration = load_project_style_configuration()
-    mutable_style_configuration = deepcopy(style_configuration)
-    mutable_style_configuration["links"].pop("social_link_color", None)
-
-    with pytest.raises(PdfRenderError) as raised_error:
-        resolve_social_link_color(mutable_style_configuration)
+        PdfStyleEngine(mutable_style_configuration)
 
     assert "Style configuration missing 'links.social_link_color'" in str(raised_error.value)
 
@@ -101,4 +86,6 @@ def test_pdf_style_engine_constructor_validates_configuration() -> None:
     with pytest.raises(PdfRenderError) as raised_error:
         PdfStyleEngine(mutable_style_configuration)
 
-    assert "Style configuration missing required paragraph styles: NameStyle" in str(raised_error.value)
+    assert "Style configuration missing required paragraph styles: NameStyle" in str(
+        raised_error.value
+    )

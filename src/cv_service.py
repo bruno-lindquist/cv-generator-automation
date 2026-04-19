@@ -1,64 +1,69 @@
 # Caso de uso principal que coordena configuracao, leitura de dados e geracao final do PDF.
 from __future__ import annotations
+
 import time
 from pathlib import Path
 from shutil import copy2
-from typing import Any
+
 from loguru import logger
-from localization import get_localized_field, sanitize_filename_component
-from validators import validate_cv_data
+
 from infrastructure.config_loader import AppConfig, load_app_config
 from infrastructure.json_repository import load_json
 from infrastructure.pdf_renderer import CvPdfRenderer
-from exceptions import OutputPathError
 from logging_config import bind_logger_context, configure_logging
+from path_resolver import CvPathResolver
+from validators import validate_cv_data
 
 
 # Coordena todo o pipeline de geracao: caminhos, validacao, renderizacao e observabilidade.
 class CvGenerationService:
-
-    # Carrega configuracao e inicializa logging para que cada geracao rode com contexto consistente.
+    # Carrega configuracao para disponibilizar defaults e caminhos ao pipeline de geracao.
     def __init__(self, config_file_path: str | Path) -> None:
         self.config_file_path = Path(config_file_path).expanduser().resolve()
         self.config: AppConfig = load_app_config(self.config_file_path)
         self.config_directory = self.config_file_path.parent
-
-        logs_directory = self._resolve_config_relative_path(
-            self.config.logging.directory
-        )
-        configure_logging(
-            level=self.config.logging.level,
-            enabled=self.config.logging.enabled,
-            logs_directory=logs_directory,
-        )
+        self.path_resolver = CvPathResolver(config_directory=self.config_directory)
 
     # Conduz a geracao ponta a ponta e retorna o caminho absoluto do PDF produzido.
-    def generate(self, *, language: str | None, input_file_path: str | None, output_file_path: str | None) -> Path:
+    def generate(
+        self, *, language: str | None, input_file_path: str | None, output_file_path: str | None
+    ) -> Path:
         # Idioma explícito em runtime tem prioridade sobre o padrão da configuração.
         effective_language = (language or self.config.defaults.language).lower()
 
         if input_file_path:
-            data_file_path = self._resolve_runtime_path(input_file_path)
+            data_file_path = self.path_resolver.resolve_runtime_path(input_file_path)
         else:
-            data_file_path = self._resolve_language_aware_data_path(effective_language)
+            data_file_path = self.path_resolver.resolve_language_aware_path(
+                direct_path=self.config.files.data,
+                path_by_language=self.config.files.data_by_language,
+                language=effective_language,
+                path_label="data",
+            )
 
-        visual_settings_path = self._resolve_config_relative_path(self.config.files.styles)
-        translations_path = self._resolve_language_aware_translations_path(effective_language)
+        visual_settings_path = self.path_resolver.resolve_config_relative_path(
+            self.config.files.styles
+        )
+        translations_path = self.path_resolver.resolve_language_aware_path(
+            direct_path=self.config.files.translations,
+            path_by_language=self.config.files.translations_by_language,
+            language=effective_language,
+            path_label="translations",
+        )
 
         started_at = time.perf_counter()
         file_encoding = self.config.defaults.encoding
 
         cv_data = load_json(data_file_path, encoding=file_encoding)
-        visual_settings = load_json(visual_settings_path, encoding=file_encoding)
-        translations = load_json(translations_path, encoding=file_encoding)
 
         if output_file_path:
-            output_path = self._resolve_runtime_path(output_file_path)
+            output_path = self.path_resolver.resolve_runtime_path(output_file_path)
             output_path.parent.mkdir(parents=True, exist_ok=True)
         else:
-            output_path = self._build_output_file_path(
+            output_path = self.path_resolver.build_output_file_path(
                 cv_data=cv_data,
                 language=effective_language,
+                output_dir_config=self.config.files.output_dir,
             )
 
         contextual_logger = bind_logger_context(
@@ -66,10 +71,17 @@ class CvGenerationService:
             input_file=str(data_file_path),
             output_file=str(output_path),
         )
-        contextual_logger.bind(event="app_start", step="cv_service").debug("Starting CV generation workflow")
+        contextual_logger.bind(event="app_start", step="cv_service").debug(
+            "Starting CV generation workflow"
+        )
+
+        visual_settings = load_json(visual_settings_path, encoding=file_encoding)
+        translations = load_json(translations_path, encoding=file_encoding)
 
         validate_cv_data(cv_data)
-        contextual_logger.bind(event="input_validated", step="validators").debug("Input data validated successfully")
+        contextual_logger.bind(event="input_validated", step="validators").debug(
+            "Input data validated successfully"
+        )
 
         pdf_renderer = CvPdfRenderer(
             language=effective_language,
@@ -96,44 +108,6 @@ class CvGenerationService:
 
         return generated_pdf_path
 
-    # Monta nome final do PDF com dados do candidato e impede escrita fora do diretorio configurado.
-    def _build_output_file_path(self, *, cv_data: dict[str, Any], language: str) -> Path:
-        output_root_directory = self._resolve_config_relative_path(
-            self.config.files.output_dir
-        )
-        output_root_directory.mkdir(parents=True, exist_ok=True)
-
-        personal_info = cv_data.get("personal_info", {})
-        desired_role = cv_data.get("desired_role", {})
-        english_role_component = sanitize_filename_component(
-            get_localized_field(desired_role, "desired_role", "en", "CV"),
-            fallback="CV",
-        )
-        role_output_directory = output_root_directory / english_role_component
-        role_output_directory.mkdir(parents=True, exist_ok=True)
-
-        name_component = sanitize_filename_component(
-            personal_info.get("name", "CV"),
-            fallback="CV",
-        )
-        role_component = sanitize_filename_component(
-            get_localized_field(desired_role, "desired_role", language, "CV"),
-            fallback="CV",
-        )
-        language_suffix = "" if language == "pt" else f"_{language.upper()}"
-
-        candidate_output_path = (
-            role_output_directory
-            / f"{name_component}_{role_component}{language_suffix}.pdf"
-        )
-        resolved_output_path = candidate_output_path.resolve()
-
-        # Garante que componentes do nome não permitam escapar da pasta de saída.
-        if role_output_directory.resolve() not in resolved_output_path.parents:
-            raise OutputPathError("Generated output path escaped output directory")
-
-        return resolved_output_path
-
     # Copia o JSON de entrada usado na geração para a mesma pasta dos PDFs gerados.
     def _save_used_cv_data_copy(
         self,
@@ -145,56 +119,6 @@ class CvGenerationService:
         if copied_data_path != data_file_path.resolve():
             copy2(data_file_path, copied_data_path)
 
-    # Seleciona o arquivo de dados correto para o idioma solicitado.
-    def _resolve_language_aware_data_path(self, language: str) -> Path:
-        return self._resolve_language_aware_path(
-            direct_path=self.config.files.data,
-            path_by_language=self.config.files.data_by_language,
-            language=language,
-            path_label="data",
-        )
-
-    # Seleciona o arquivo de traducoes correto para o idioma solicitado.
-    def _resolve_language_aware_translations_path(self, language: str) -> Path:
-        return self._resolve_language_aware_path(
-            direct_path=self.config.files.translations,
-            path_by_language=self.config.files.translations_by_language,
-            language=language,
-            path_label="translations",
-        )
-
-    # Normaliza caminhos recebidos em runtime para forma absoluta e segura.
-    def _resolve_runtime_path(self, raw_path: str | Path) -> Path:
-        return Path(raw_path).expanduser().resolve()
-
-    # Resolve caminhos relativos ao diretorio do config, preservando caminhos absolutos.
-    def _resolve_config_relative_path(self, raw_path: str | Path) -> Path:
-        candidate_path = Path(raw_path).expanduser()
-        if candidate_path.is_absolute():
-            return candidate_path.resolve()
-        return (self.config_directory / candidate_path).resolve()
-
-    # Aplica prioridade entre caminho direto e mapeamento por idioma, falhando com erro explicito quando faltar configuracao.
-    def _resolve_language_aware_path(
-        self,
-        *,
-        direct_path: str,
-        path_by_language: dict[str, str] | None,
-        language: str,
-        path_label: str,
-    ) -> Path:
-        # Caminho único tem precedência; mapeamento por idioma atua como fallback.
-        if direct_path:
-            return self._resolve_config_relative_path(direct_path)
-
-        mapped_path = (path_by_language or {}).get(language)
-        if mapped_path:
-            return self._resolve_config_relative_path(mapped_path)
-
-        raise OutputPathError(
-            f"No {path_label} file configured for language '{language}'"
-        )
-
 
 # Atalho de entrada usado por CLI/testes para executar a geracao em uma unica chamada.
 def run_generation(
@@ -205,12 +129,19 @@ def run_generation(
     output_file_path: str | None,
 ) -> Path:
     service = CvGenerationService(config_file_path=config_file_path)
+    # Configura logging uma única vez por processo antes de qualquer emissão de log da geração.
+    logs_directory = service.path_resolver.resolve_config_relative_path(
+        service.config.logging.directory
+    )
+    configure_logging(
+        level=service.config.logging.level,
+        enabled=service.config.logging.enabled,
+        logs_directory=logs_directory,
+    )
     generated_path = service.generate(
         language=language,
         input_file_path=input_file_path,
         output_file_path=output_file_path,
     )
-    logger.bind(event="app_finished", step="entrypoint").debug(
-        f"Generated file: {generated_path}"
-    )
+    logger.bind(event="app_finished", step="entrypoint").debug(f"Generated file: {generated_path}")
     return generated_path

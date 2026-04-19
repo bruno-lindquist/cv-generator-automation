@@ -5,7 +5,6 @@ from typing import Any
 
 from exceptions import DataValidationError
 
-
 REQUIRED_TOP_LEVEL_FIELDS = ["personal_info", "desired_role"]
 REQUIRED_PERSONAL_INFO_FIELDS = ["name", "email"]
 

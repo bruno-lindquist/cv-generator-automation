@@ -22,9 +22,16 @@ DEFAULT_LOG_EXTRA = {
     "duration_ms": "-",
 }
 
+# Guarda estado de configuracao para evitar adicionar sinks duplicados em chamadas repetidas.
+_logging_configured = False
+
 
 # Configura sinks de console/arquivo e padroniza campos extras para logs estruturados.
 def configure_logging(*, level: str = "INFO", enabled: bool = True, logs_directory: Path) -> None:
+    global _logging_configured
+    if _logging_configured:
+        return
+
     logs_directory.mkdir(parents=True, exist_ok=True)
 
     # Com logging desabilitado, mantém apenas avisos/erros para reduzir ruído.
@@ -50,6 +57,8 @@ def configure_logging(*, level: str = "INFO", enabled: bool = True, logs_directo
         backtrace=True,
         diagnose=False,
     )
+
+    _logging_configured = True
 
 
 # Anexa metadados da requisicao ao logger para correlacionar eventos do pipeline.

@@ -4,6 +4,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from tests.helpers.style_helpers import PROJECT_STYLES_PATH
+
 
 # Grava JSON de teste com indentacao para facilitar leitura e debug de fixtures.
 def write_json(file_path: Path, content: dict) -> None:
@@ -13,5 +15,4 @@ def write_json(file_path: Path, content: dict) -> None:
 # Replica o styles.json real no ambiente temporario para aproximar teste de producao.
 def write_project_styles(file_path: Path) -> None:
     # Reusa o estilo real do projeto para manter testes alinhados com produção.
-    project_styles_path = Path(__file__).resolve().parents[2] / "config" / "styles.json"
-    file_path.write_text(project_styles_path.read_text(encoding="utf-8"), encoding="utf-8")
+    file_path.write_text(PROJECT_STYLES_PATH.read_text(encoding="utf-8"), encoding="utf-8")

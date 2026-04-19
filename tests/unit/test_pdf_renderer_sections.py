@@ -3,8 +3,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from infrastructure.pdf_renderer import CvPdfRenderer
 from tests.helpers.style_helpers import load_project_style_configuration
+
+from infrastructure.pdf_renderer import CvPdfRenderer
 
 
 # Duble simples de logger para capturar mensagens emitidas pelo renderizador.
@@ -16,7 +17,7 @@ class FakeBoundLogger:
         self.info_events: list[tuple[dict[str, Any], str]] = []
 
     # Imita API encadeavel do logger retornando a propria instancia.
-    def bind(self, **kwargs: Any) -> "FakeBoundLogger":
+    def bind(self, **kwargs: Any) -> FakeBoundLogger:
         # Replica comportamento básico de `logger.bind` para capturar contexto incremental.
         updated_context = dict(self.bound_context)
         updated_context.update(kwargs)

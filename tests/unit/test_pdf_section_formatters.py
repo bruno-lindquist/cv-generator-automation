@@ -6,6 +6,7 @@ from typing import Any
 import pytest
 from reportlab.lib.styles import StyleSheet1
 from reportlab.platypus import Paragraph, Spacer
+from tests.helpers.style_helpers import load_project_style_configuration
 
 from infrastructure.pdf_sections import (
     AwardsSectionFormatter,
@@ -17,7 +18,6 @@ from infrastructure.pdf_sections import (
     SkillsSectionFormatter,
 )
 from infrastructure.pdf_styles import PdfStyleEngine
-from tests.helpers.style_helpers import load_project_style_configuration
 
 
 # Cria contexto compartilhado de estilos/traducoes para todos os formatadores de secao.

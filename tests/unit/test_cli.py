@@ -3,8 +3,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from cli import main
 from tests.helpers.project_builders import create_test_project_files
+
+from cli import main
 
 
 # Monta arquivos minimos para exercitar a CLI em um ambiente temporario controlado.

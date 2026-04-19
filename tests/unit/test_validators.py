@@ -1,8 +1,8 @@
 # Confirma regras minimas exigidas para aceitar ou rejeitar dados de entrada.
 import pytest
 
-from validators import validate_cv_data
 from exceptions import DataValidationError
+from validators import validate_cv_data
 
 
 # Garante o comportamento "validate cv data accepts minimal valid payload" para evitar regressao dessa regra.

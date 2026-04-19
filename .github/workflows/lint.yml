@@ -1,4 +1,4 @@
-name: Lint & Static Checks
+name: Lint & Type Checks
 
 on:
   push:
@@ -24,10 +24,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
 
-      - name: Run flake8
-        run: |
-          flake8 src tests
+      - name: Run ruff (lint)
+        run: ruff check src tests
+
+      - name: Run ruff (format check)
+        run: ruff format --check src tests
+
+      - name: Run mypy
+        run: mypy src
 
       - name: Check Python syntax
-        run: |
-          python -m compileall -q src tests
+        run: python -m compileall -q src tests

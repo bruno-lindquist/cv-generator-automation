@@ -4,10 +4,10 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from tests.helpers.file_helpers import write_json
 
 from cv_service import CvGenerationService
-from exceptions import OutputPathError
-from tests.helpers.file_helpers import write_json
+from exceptions import ConfigurationError
 
 
 # Instancia servico apontando para config temporario para testar apenas resolucao de caminhos.
@@ -44,7 +44,12 @@ def test_data_path_prefers_direct_file_when_present(tmp_path: Path) -> None:
         },
     )
 
-    resolved_data_path = generation_service._resolve_language_aware_data_path("en")
+    resolved_data_path = generation_service.path_resolver.resolve_language_aware_path(
+        direct_path=generation_service.config.files.data,
+        path_by_language=generation_service.config.files.data_by_language,
+        language="en",
+        path_label="data",
+    )
     expected_data_path = (config_directory / "../data/default_cv.json").resolve()
 
     assert resolved_data_path == expected_data_path
@@ -63,12 +68,13 @@ def test_translations_path_uses_mapping_when_direct_path_is_absent(tmp_path: Pat
         },
     )
 
-    resolved_translations_path = generation_service._resolve_language_aware_translations_path(
-        "en"
+    resolved_translations_path = generation_service.path_resolver.resolve_language_aware_path(
+        direct_path=generation_service.config.files.translations,
+        path_by_language=generation_service.config.files.translations_by_language,
+        language="en",
+        path_label="translations",
     )
-    expected_translations_path = (
-        config_directory / "../i18n/translations_en.json"
-    ).resolve()
+    expected_translations_path = (config_directory / "../i18n/translations_en.json").resolve()
 
     assert resolved_translations_path == expected_translations_path
 
@@ -86,7 +92,12 @@ def test_data_path_raises_when_language_is_not_configured(tmp_path: Path) -> Non
         },
     )
 
-    with pytest.raises(OutputPathError) as raised_error:
-        generation_service._resolve_language_aware_data_path("en")
+    with pytest.raises(ConfigurationError) as raised_error:
+        generation_service.path_resolver.resolve_language_aware_path(
+            direct_path=generation_service.config.files.data,
+            path_by_language=generation_service.config.files.data_by_language,
+            language="en",
+            path_label="data",
+        )
 
     assert "No data file configured for language 'en'" in str(raised_error.value)
